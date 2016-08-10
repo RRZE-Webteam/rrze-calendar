@@ -1,0 +1,52 @@
+// Define fonts
+$fontStack: 'roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
+$fontStackSerifs: Georgia, serif;
+
+// Define text colors
+$colorText:		#444;
+$colorTextLight:	#797676;
+
+// Define colors of each faculty
+$colorPhilFak:	    #A36B0D;
+$colorRwFak:	    #8d1429;
+$colorMedFak:	    #0381A2;
+$colorNatFak:	    #048767;
+$colorTechFak:	    #6E7881;
+$colorZUV:	    #003366;
+$colorDefault:	    #003366;
+
+// Define defaults and variables
+$colorPrimary: $colorZUV;	
+$colorPrimaryContrast: #fff;
+$PalettonHellste:	desaturate(lighten($colorPrimary, 73%), 75%);
+$PalettonHeller:	desaturate(lighten($colorPrimary, 69%), 75%);
+$PalettonDunkler:	desaturate(lighten($colorPrimary, 10%), 90%);
+$PalettonDunkelste:	desaturate(lighten($colorPrimary, 10%), 40%);
+
+$colorHover:		    $PalettonDunkelste;
+$colorLight:		    $PalettonHeller;
+$colorLightContrast:	    #fff;
+$colorLightest:		    $PalettonHellste;
+$colorLightestContrast:	    $PalettonDunkelste;
+$colorPrimaryHero:	    $colorPrimary;
+$colorPrimaryHeroLight:	    lighten($colorPrimary, 15%); 
+
+
+$colorSubNavCurrent:		#fff;
+$colorSubNavCurrentBackground:  $PalettonDunkler;
+$colorSubNavCurrentHover:	#fff;
+$colorSubNavCurrentHoverBackground: $colorHover;
+$colorSubNav:			$PalettonDunkelste;
+$colorSubNavBackground:		$colorLightest;
+$colorSubNavBackgroundHover:	$PalettonDunkler; // darken($colorSubNavBackground, 5%);
+$colorMainMenu:			#fff;
+
+
+$colorButton:			$PalettonDunkelste;
+$colorButtonBackground:		$colorLightest;
+$colorButtonBackgroundHover:	darken($colorButtonBackground, 5%);
+
+$colorSearchPlaceholder:        #111;
+$colorSearchInput:		#000;
+$colorSearchInputBackground:	$colorLightest;
+$colorSearchInputBackgroundFocus:  #fff;

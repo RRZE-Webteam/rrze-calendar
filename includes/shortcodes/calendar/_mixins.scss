@@ -1,0 +1,22 @@
+@mixin no-list() {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+
+    &:before {
+        display: none;
+    }
+}
+
+@mixin inline-block() {
+    display: inline-block; 
+    *display:inline; 
+    *zoom:1;
+}
+
+@mixin border-radius($radius) {
+	-webkit-border-radius: $radius;
+	-moz-border-radius: $radius;
+	border-radius: $radius;
+}

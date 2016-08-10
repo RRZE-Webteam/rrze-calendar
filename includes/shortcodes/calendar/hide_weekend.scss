@@ -1,0 +1,64 @@
+//Wochende in Wochenansicht ausblenden
+.kalender .wochenansicht .wochenende {
+	display: none!important;
+}
+
+.kalender {
+	.wochenansicht {
+		.tage .tag {
+			width: (90%/5)!important;
+		}
+
+		.kopfzeile, .woche {
+			>div {
+				width: (90%/5)!important;
+			}
+		}
+
+		.kopfzeile {
+			.datum {
+				font-size: 0.8em!important;
+			}
+
+			.tag {
+				font-size: 0.7em!important;
+			}
+
+			>div {
+				padding-left: 3px;
+				padding-right: 3px;
+			}
+		}
+	}
+}
+
+//Wochende in Monatsansicht ausblenden
+.kalender .monatsansicht .wochenende {
+	display: none!important;
+}
+
+.kalender {
+	.monatsansicht {
+		.kopfzeile, .woche {
+			>div {
+				width: (100%/5)!important;
+			}
+		}
+
+		.kopfzeile {
+			.datum {
+				font-size: 0.8em!important;
+			}
+
+			.tag {
+				font-size: 0.7em!important;
+			}
+
+			>div {
+				padding-left: 3px;
+				padding-right: 3px;
+			}
+		}
+	}
+}
+

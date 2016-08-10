@@ -1,0 +1,905 @@
+@import "_variables.scss";
+@import "_mixins.scss";
+@import "_media-queries.scss";
+
+body {
+    font-family: $fontStack;
+}
+
+.kalender {
+    .clear-fix:after {  /* für Firefox, IE8, Opera, Safari, etc. */
+        content: ".";  
+        display: inline-block;
+        visibility: hidden;
+    }
+
+    * + html .clear-fix { /* für IE7 */
+        display: inline-block;
+    }
+
+    * html .clear-fix { /* für IE6 */
+        height: 1%;
+    }
+
+    /**
+     * For modern browsers
+     * 1. The space content is one way to avoid an Opera bug when the
+     *    contenteditable attribute is included anywhere else in the document.
+     *    Otherwise it causes space to appear at the top and bottom of elements
+     *    that are clearfixed.
+     * 2. The use of `table` rather than `block` is only necessary if using
+     *    `:before` to contain the top-margins of child elements.
+     */
+    .cf:before,
+        .cf:after {
+        content: " "; /* 1 */
+        display: table; /* 2 */
+    }
+
+    .cf:after {
+        clear: both;
+    }
+
+    /**
+     * For IE 6/7 only
+     * Include this rule to trigger hasLayout and contain floats.
+     */
+    .cf {
+        *zoom: 1;
+    }
+
+    .titip-liste {
+        line-height: 1.2em;
+    }
+
+    border: solid 1px #DDD;
+    color: #444;
+    max-width: 80em;
+
+    .menue {
+        $menue_font_color: #555;
+        $menue_height: 40px;
+
+        position: relative;
+        background-color: red;
+        border: solid 1px white;
+        background-image: -webkit-linear-gradient(top,#fff,#f2f2f2);
+        background-color: #FAFAFA;
+        box-shadow: 0 1px 2px #CCC;
+        margin-bottom: 4px;
+        height: $menue_height;
+
+
+        a {
+            text-decoration: none;
+            color: $menue_font_color;
+        }
+
+        a:hover {
+            color: #B00E0E;
+            font-weight: 100;
+        }
+
+        .buttons {
+            font-size: 1em;
+            margin: 6px;
+            padding: 0 6px;
+            padding-top: 2px;
+
+            border: solid 1px #CCC;
+            display: inline-block;
+
+            background-image: -webkit-linear-gradient(top,#fff,#f2f2f2);
+            text-shadow: 0 1px 0 white;
+            line-height: 24px;
+
+            .aktiv {
+                font-weight: 600;
+            }
+
+            .aktiv:hover {
+                color: $menue_font_color;
+            }
+        }
+
+        .zeit {
+            position: absolute;
+
+        }
+
+        .intervall {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+
+            .buttons {
+                display: inline-block;
+
+                position: relative;
+                top: 0px;
+                right: 0px;
+                box-shadow: none;
+
+                background-image: -webkit-linear-gradient(top,#fff,#f2f2f2);
+
+                a {
+                    padding: 2px;
+                }
+
+            }
+
+            .aktion {
+                font-size: 1.5em;
+                display: none;
+                line-height: 35px;
+                margin-right: 10px;
+            }
+
+
+        }
+
+        .titel {
+            display: block;
+            position: relative;
+            top: 9px;
+
+            margin-left: 105px;
+            margin-right: 220px;
+
+            text-align: center;
+            font-size: 1.2em;
+        }
+    } // End .menue
+
+    .inhalt {
+
+        .listenansicht {
+            position: relative;
+            padding: 10px;
+        }
+
+        .tagesansicht {
+            position: relative;
+            * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+            .kopfzeile {
+                height: 28px;
+                border-bottom: solid 1px #EEE;
+                box-shadow: inset 0 -1px 0px #FBFBFB;
+
+                div {
+
+                    height: 26px;
+                    padding: 0 6px;
+                    padding-top: 2px;
+                    margin-top: 2px;
+                    margin-left: 10%;
+
+                }
+
+                .tag .lang {
+                    display: inline!important;
+                }
+                
+            }
+
+            .ganztagige {
+                div:first-child {
+                    margin-left: 10%;
+                }
+
+            }
+            
+            .ganztagige {
+                >span {
+                    position: relative;
+                    float: left;
+                    width: 10%;
+                    text-align: center;
+                    color: #999;
+                }
+            }
+
+            .ganztagige {
+                .tag {
+                    position: relative;
+                    width: 90%;
+                    min-height: 1px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    text-align: left;
+
+                    .termin {
+
+                        width: 98%;
+                        margin: 4px auto;
+                        padding: 5px;
+
+                        color: white;
+                        overflow: hidden;
+
+                        font-size: 0.9em;
+
+                        text-decoration: none;
+
+                        cursor: pointer;
+
+                        .titel {
+                            font-weight: bold;
+                        }
+
+                    }
+
+                    .termin:hover {
+
+                    }
+                }
+            }
+            
+            .tag-container {
+                border-top: 1px solid #eee;
+                
+                .tag {
+                    position: relative;
+                    float: left;
+                    width: 90%;
+                    margin-top: 0px!important;
+                    border-left: solid 1px #EEE;
+
+                    .termin {
+
+                        position: absolute;
+                        left: 5%;
+                        right: 5%;
+                        padding: 4px;
+
+                        color: grey;
+
+                        text-decoration: none;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+
+                        border-left: 3px solid grey;
+
+                        background: repeating-linear-gradient(
+                            -55deg,
+                            #EAEAEA,
+                            #EAEAEA 5px,
+                            #FAFAFA 4px,
+                            #FAFAFA 8px
+                            );
+
+                        .titel {
+                            font-weight: bold;
+                        }
+
+                        .raum, .zeit {
+                            display: block;
+                        }
+
+                    }
+
+                    .termin:hover, .termin:focus {
+                        z-index: 5!important;
+
+                        width: 90%!important;
+                        left: 5%!important;
+
+                        .titel, .raum, .zeit {
+                            zoom: 1;
+                            filter: alpha(opacity=100);
+                            opacity: 1;
+                        }                        
+                    }
+
+                }
+
+                .stunden {
+                    float: left;
+                    width: (100%/10);
+
+                    .stunde {
+                        position: relative;
+                        color: #999;
+                        line-height: 14px;
+                        margin-top: 46px;
+                        margin-right: 10px;
+                        text-align: right;
+                    }
+
+                    .stunde:first-child {
+                        visibility: hidden;
+                        margin-top: -7px;
+                    }
+
+                }
+            }
+
+        }
+
+        .wochenansicht {
+            position: relative;
+            * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+            
+            .ganztagige {
+                >span {
+                    position: relative;
+                    float: left;
+                    width: 10%;
+                    text-align: center;
+                    color: #999;
+                }
+            }
+            
+            .ganztagige {
+                >div {
+                    position: relative;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    margin: 2px 0;
+                    border-left: 1px solid #f6f6f6;
+
+                    .termin {
+
+                        width: 98%;
+                        margin: 4px auto;
+                        padding: 5px;
+
+                        color: white;
+                        overflow: hidden;
+
+                        font-size: 0.9em;
+
+                        text-decoration: none;
+
+                        cursor: pointer;
+
+                        .titel {                            
+                            font-weight: bold;
+                        }
+
+                    }
+
+                    .termin:hover {
+
+                    }
+                }
+            }
+            .kopfzeile {
+
+                box-shadow: inset 0 -1px 0px #FBFBFB;
+                height: 24px;
+
+                >div {
+                    position: relative;
+                    width: (90%/7);
+                    float: left;
+
+
+                    top: 0px;
+                    padding: 0 6px;
+                    padding-top: 2px;
+                    margin-top: 2px;
+                    border-left: solid 1px #F6F6F6;
+
+
+                    .datum {
+                        font-size: 1em;
+                    }
+
+                    .tag {
+
+                        position: relative;
+
+
+                        font-size: 0.8em;
+
+                        .lang {
+                            display: inline-block;
+                        }
+                    }
+
+
+                }
+
+                div:first-child {
+                    margin-left: 10%;
+                }
+            }
+
+            .tage {
+                width: 100%;
+                margin-top: 0px!important;
+                border-top: solid 1px #EEE;
+
+                >.tag {
+                    position: relative;
+                    width: (90%/7);
+                    float: left;
+
+                    border-left: solid 1px #EEE;
+
+                    .termin {
+
+                        position: absolute;
+                        width: 98%;
+                        padding: 4px;
+
+                        color: grey;
+
+                        text-decoration: none;
+
+                        border-left: 3px solid grey;
+
+                        background: repeating-linear-gradient(
+                            -55deg,
+                            #EAEAEA,
+                            #EAEAEA 5px,
+                            #FAFAFA 4px,
+                            #FAFAFA 8px
+                            );
+
+                        .permalink {
+                            display: block;
+                        }
+                        
+                        .titel, .raum, .zeit {
+                            padding-top: 3px;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            display: block;
+                        }
+
+                        .titel {
+                            font-weight: bold;
+                        }
+
+                    }
+
+                    .termin:hover, .termin:focus {
+
+                        z-index: 5!important;
+
+                        width: 90%!important;
+                        left: 5%!important;
+                        cursor: pointer;
+
+                        .titel, .raum, .zeit {
+                            zoom: 1;
+                            filter: alpha(opacity=100);
+                            opacity: 1;
+                        }                        
+
+                    }
+
+
+                }
+
+                >div:last-child {
+                    border-right: none;
+                }
+
+                >div:first-child .stunden {
+                    display: block;
+                }
+
+                >div.wochenende {
+                    background-color: #fafafa;
+                }
+
+                .stunden {
+
+                    float: left;
+                    width: (100%/10);
+
+                    .stunde {
+                        position: relative;
+                        color: #999;
+                        line-height: 14px;
+                        margin-top: 46px;
+                        margin-right: 10px;
+                        text-align: right;
+                    }
+
+                    .stunde:first-child {
+                        visibility: hidden;
+                        margin-top: -7px;
+                    }
+                }
+            }
+        }
+
+        .monatsansicht {
+            position: relative;
+            * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+            .kopfzeile {
+                height: 28px;
+                border-bottom: solid 1px #EEE;
+                box-shadow: inset 0 -1px 0px #FBFBFB;
+
+                >div {
+                    position: relative;
+                    width: 14.28%;
+                    float: left;
+
+                    height: 26px;
+                    top: 0px;
+                    padding: 0 6px;
+                    padding-top: 2px;
+                    margin-top: 2px;
+                    border-right: solid 1px #F6F6F6;
+
+                    .tag {
+                        display: block;
+                        text-align: center;
+                        position: relative;
+                        font-size: 1em;
+
+                        .lang {
+                            display: inline-block;
+                        }
+                    }
+                }
+
+                >div:last-child {
+                    border-right: none;
+                }
+            }
+
+
+            .woche {
+                position: relative;
+                height: 125px;
+                border-bottom: solid 1px #ddd;
+
+                >div {
+                    display: inline-block;
+                    float: left;
+                    width: 14.285%;
+                    height: 100%;
+                    border-right: solid 1px #eee;
+                    padding: 4px;
+
+                    .datum {
+                        display: block;
+                        text-align: right;
+                        font-size: 1.2em;
+                        color: #777;
+                    }
+
+                    .termine {
+                        width: 100%;
+                        text-align: left;
+                        margin-top: 2px;
+
+                        .center {
+
+                            .termin {
+                                float:left;
+                                width: 100%;
+                                font-size: 0.9em;
+                                text-decoration: none;
+                                cursor: pointer;
+
+                                .marker {
+                                    font-size: 1em;
+                                    line-height: 1.5;
+                                }
+                                .titel {
+                                    display: block;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+
+                                }
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                >div.heute {
+                    background-color: #fdfad3;
+                }
+
+                >div.wochenende {
+                    background-color: #fafafa;
+                }
+
+                .nicht-aktuell {
+                    background: repeating-linear-gradient(
+                        -55deg,
+                        #FAFAFA,
+                        #FAFAFA 5px,
+                        #FFF 4px,
+                        #FFF 8px
+                        );
+
+                }
+
+                >div:last-child {
+                    border-right: none;
+                }
+            }
+        }
+    }
+
+}
+
+.events-list {
+    padding-bottom: 10px;
+}
+
+.widget_event_widget,
+.events-list {
+    ul {
+        @include no-list;
+
+        li {
+            @include no-list;
+            padding: 10px 0 0 0;
+            min-height: 42px;
+            font-size: 12px;
+            line-height: 18px;
+            background-image: none;
+        }
+    }
+}
+
+.event-date {
+    float: left;
+    display: block;
+    color: #fff;
+    padding: 5px;
+    width: 30px;
+    text-align: center;
+}
+
+.event-date-month {
+    font-size: 9px;
+    line-height: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.event-date-day {
+    font-size: 20px;
+    line-height: 20px;
+    font-weight: bold;
+}
+
+.event-info {
+    margin-left: 60px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.event-title {
+    font-weight: bold;
+}
+
+.event-time {
+    color: $colorText;
+}
+
+.event-location {
+    color: $colorTextLight;
+}
+
+.event-info {
+    a, .event-time {
+        color: $colorText;
+    }
+}
+
+.event-category-fau .event-date {
+    background: $colorZUV;
+
+}
+.event-category-einrichtungen .event-date {
+    background: $colorDefault;
+}
+
+.event-category-techfak .event-date {
+    background: $colorTechFak;
+}
+
+.event-category-rwfak .event-date {
+    background: $colorRwFak;
+}
+
+.event-category-philfak .event-date {
+    background: $colorPhilFak;
+}
+
+.event-category-natfak .event-date {
+    background: $colorNatFak;
+}
+
+.event-category-medfak .event-date {
+    background: $colorMedFak;
+}
+
+.widget_event_widget a {
+    text-decoration: none;
+
+    &:hover, &:focus {
+        text-decoration: underline;
+    }
+}
+
+.events-list {
+    ul {
+        @include no-list;
+
+        li {
+            @include no-list;
+        }
+    }
+}
+
+.event-detail-item {
+    margin-bottom: 20px;
+    min-height: 50px;
+
+    .event-info {
+        margin-left: 70px;
+        font-size: 15px;
+        line-height: 20px;
+        padding-top: 6px;
+    }
+
+    .event-date {
+        width: 50px;
+        padding: 7px 0;
+    }
+
+    .event-date-month {
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .event-date-day {
+        font-size: 28px;
+        line-height: 28px;
+    }
+}
+
+.events-more-links {
+    padding: 0;
+    text-align: left;
+    margin-bottom: 5px;
+
+    a {
+        @include inline-block;
+        line-height: 15px;
+        margin-left: 60px;
+    }
+
+    .events-more {
+        color: $colorButton;
+        background: $colorButtonBackground;
+        padding: 8px 10px;
+        text-decoration: none;
+        @include border-radius(3px);
+        font-size: 14px;
+
+        &:hover, &:focus {
+            background: $colorButtonBackgroundHover;
+            text-decoration: none;
+        }
+    }
+}
+
+
+@include max-screen(1970) {
+    // Kurze Tagesnamen verwenden
+    .kalender .tag .lang {
+        display: none!important;
+    }	
+}
+
+// @include max-screen(1400) {
+// 	// Wochende ausblenden
+// 	.kalender .wochenansicht .wochenende {
+// 		display: none!important;
+// 	}
+
+// 	.kalender {
+// 		.wochenansicht {
+// 			.tage .tag {
+// 				width: (900%/50)!important;	
+// 			}
+
+// 			.kopfzeile, .woche {
+// 				>div {
+// 					width: (900%/50)!important;
+// 				}
+// 			}
+
+// 			.kopfzeile {
+// 				.datum {
+// 					font-size: 0.8em!important;
+// 				}
+
+// 				.tag {
+// 					font-size: 0.7em!important;
+// 				}
+
+// 				>div {
+// 					padding-left: 3px;
+// 					padding-right: 3px;
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+@include min-screen(1020) {
+    .kalender .menue .intervall .buttons {
+        display: inline-block!important;
+    }
+}
+
+@include max-screen(1020)  {
+    // Kleine Navbar verwenden
+    .kalender .menue {
+        .intervall {
+            z-index: 1;
+            .buttons {
+                display: none;
+                position: absolute;
+                right: -5px;
+                top: 30px;
+
+                background-color: white;
+                background-image: none;
+
+                box-shadow: 0 0 3px rgba(0,0,0,0.3);
+
+                a {
+                    padding: 10px;
+                }
+            }
+
+            .aktion {
+                display: inline-block;
+            }
+        }
+
+        .titel {
+            margin-right: 30px;
+        }
+    }
+
+    .tagesansicht .stunde, .wochenansicht .stunde {
+        margin-right: 5px!important; 
+
+        span {
+            display: none;
+        }
+    }
+
+}
+
+@include max-screen(1020) {
+    // Wochenende ausblenden
+    // .kalender .wochenansicht .wochenende {
+    // 	display: none!important;
+    // }
+
+    // .kalender .wochenansicht {
+    // 	.tage, .kopfzeile {
+    // 		>div {
+    // 			width: (100%/5)!important;
+    // 		}
+    // 	}
+    // }
+}
