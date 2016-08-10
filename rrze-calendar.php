@@ -1314,7 +1314,7 @@ class RRZE_Calendar {
         }
 
         if (strlen($name) > 40) {
-            $_REQUEST['form-errors']['name'] = __('Der Name darf maximal 40 Zeichen lang sein. Bitte versuchen Sie einen kürzeren Namen.', 'rrze-calendar');
+            $_REQUEST['form-errors']['name'] = __('Der Name darf maximal 40 Zeichen lang sein. Bitte verwenden Sie einen kürzeren Namen.', 'rrze-calendar');
         }
 
         if (count($_REQUEST['form-errors'])) {
@@ -1387,7 +1387,7 @@ class RRZE_Calendar {
         }
 
         if (strlen($name) > 40) {
-            $_REQUEST['form-errors']['name'] = __('Der Name darf maximal 40 Zeichen lang sein. Bitte versuchen Sie einen kürzeren Namen.', 'rrze-calendar');
+            $_REQUEST['form-errors']['name'] = __('Der Name darf maximal 40 Zeichen lang sein. Bitte verwenden Sie einen kürzeren Namen.', 'rrze-calendar');
         }
 
         if (count($_REQUEST['form-errors'])) {

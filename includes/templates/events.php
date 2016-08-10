@@ -8,7 +8,7 @@ get_header(); ?>
 
     <div class="events-list">
         <?php if (empty($dates)): ?>
-        <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
+        <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
         <?php else: ?>
         <div>
             <?php foreach ($dates as $date): ?>

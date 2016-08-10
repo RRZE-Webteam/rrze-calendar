@@ -47,7 +47,7 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
             'location' => __('Ort', 'rrze-calendar'),
             'start' => __('Start', 'rrze-calendar'),
             'end' => __('Ende', 'rrze-calendar'),
-            'allday' => __('Ganztag', 'rrze-calendar'),
+            'allday' => __('gt.', 'rrze-calendar'),
             'recurrence_rules' => __('Wdh.', 'rrze-calendar')
         );
         return $columns;

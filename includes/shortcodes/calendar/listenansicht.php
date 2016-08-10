@@ -22,7 +22,7 @@
         <div class="listenansicht">
             <div class="events-list">
                 <?php if (empty($daten['termine'])): ?>
-                <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
+                <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
                 <?php else: ?>
                 <ul>
                     <?php foreach ($daten['termine'] as $termin): ?>

@@ -73,7 +73,7 @@ class RRZE_Calendar_Events_Shortcode {
         ?>
         <div class="events-list">
             <?php if (empty($dates)): ?>
-            <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
+            <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
             <?php else: ?>
             <div>
                 <?php foreach ($dates as $date): ?>

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-10 15:03+0200\n"
+"POT-Creation-Date: 2016-08-10 17:44+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: RRZE-Webteam <webmaster@rrze.fau.de>\n"
@@ -21,35 +21,35 @@ msgstr ""
 "X-Poedit-SearchPath-1: ..\n"
 
 #: ../includes/categories-list-table.php:35 ../includes/tags-list-table.php:35
-#: ../rrze-calendar.php:861 ../rrze-calendar.php:896 ../rrze-calendar.php:952
-#: ../rrze-calendar.php:980
+#: ../rrze-calendar.php:869 ../rrze-calendar.php:904 ../rrze-calendar.php:960
+#: ../rrze-calendar.php:988
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
-#: ../includes/categories-list-table.php:36 ../rrze-calendar.php:866
-#: ../rrze-calendar.php:901
+#: ../includes/categories-list-table.php:36 ../rrze-calendar.php:874
+#: ../rrze-calendar.php:909
 msgid "Farbe"
-msgstr ""
+msgstr "Color"
 
 #: ../includes/categories-list-table.php:37
 #: ../includes/events-list-table.php:46 ../includes/tags-list-table.php:36
-#: ../rrze-calendar.php:905 ../rrze-calendar.php:956 ../rrze-calendar.php:985
+#: ../rrze-calendar.php:913 ../rrze-calendar.php:964 ../rrze-calendar.php:993
 msgid "Beschreibung"
-msgstr ""
+msgstr "Description"
 
 #: ../includes/categories-list-table.php:38 ../includes/tags-list-table.php:37
 msgid "Titelform"
-msgstr ""
+msgstr "Slug"
 
 #: ../includes/categories-list-table.php:39 ../includes/tags-list-table.php:38
-#: ../rrze-calendar.php:565 ../rrze-calendar.php:939
+#: ../rrze-calendar.php:565 ../rrze-calendar.php:947
 msgid "Feeds"
-msgstr ""
+msgstr "Feeds"
 
 #: ../includes/categories-list-table.php:53 ../includes/feeds-list-table.php:74
 #: ../includes/feeds-list-table.php:79 ../includes/tags-list-table.php:52
 msgid "Bearbeiten"
-msgstr ""
+msgstr "Edit"
 
 #: ../includes/categories-list-table.php:56 ../includes/feeds-list-table.php:81
 #: ../includes/feeds-list-table.php:124 ../includes/tags-list-table.php:55
@@ -77,88 +77,88 @@ msgid "Ende"
 msgstr "End"
 
 #: ../includes/events-list-table.php:50
-msgid "Ganztag"
-msgstr ""
+msgid "gt."
+msgstr "AD"
 
 #: ../includes/events-list-table.php:51
 msgid "Wdh."
-msgstr ""
+msgstr "REC"
 
 #: ../includes/feeds-list-table.php:73 ../includes/feeds-list-table.php:121
-#: ../rrze-calendar.php:877 ../rrze-calendar.php:960
+#: ../rrze-calendar.php:885 ../rrze-calendar.php:968
 msgid "Aktualisieren"
-msgstr ""
+msgstr "Update"
 
 #: ../includes/feeds-list-table.php:75 ../includes/feeds-list-table.php:123
 msgid "Deaktivieren"
-msgstr ""
+msgstr "Deactivate"
 
 #: ../includes/feeds-list-table.php:80 ../includes/feeds-list-table.php:122
 msgid "Aktivieren"
-msgstr ""
+msgstr "Activate"
 
 #: ../includes/feeds-list-table.php:102 ../rrze-calendar.php:457
 #: ../rrze-calendar.php:465
 msgid "Feed-URL"
-msgstr ""
+msgstr "Feed URL"
 
 #: ../includes/feeds-list-table.php:104 ../rrze-calendar.php:459
 #: ../rrze-calendar.php:467
 msgid "Kategorie"
-msgstr ""
+msgstr "Category"
 
 #: ../includes/feeds-list-table.php:105 ../rrze-calendar.php:460
 #: ../rrze-calendar.php:468 ../rrze-calendar.php:568
 msgid "Schlagworte"
-msgstr ""
+msgstr "Tags"
 
 #: ../includes/feeds-list-table.php:106 ../rrze-calendar.php:566
 msgid "Termine"
-msgstr ""
+msgstr "Events"
 
 #: ../includes/shortcodes/calendar/class_Ansicht.php:114
 #: ../includes/shortcodes/calendar/class_Ansicht.php:115
 #: ../includes/shortcodes/calendar/class_Ansicht.php:166
 #: ../includes/shortcodes/calendar/class_Ansicht.php:178
 msgid "d.m.Y"
-msgstr ""
+msgstr "Y-m-d"
 
 #: ../includes/shortcodes/calendar/class_Ansicht.php:159
 #, php-format
 msgid "Jeden %s"
-msgstr ""
+msgstr "Every %s"
 
 #: ../includes/shortcodes/calendar/class_Ansicht.php:161
 #, php-format
 msgid "Jeden %s. %s"
-msgstr ""
+msgstr "Every %s. %s"
 
 #: ../includes/shortcodes/calendar/class_Monatsansicht.php:109
 #: ../includes/shortcodes/calendar/class_Tagesansicht.php:50
 #: ../includes/shortcodes/calendar/class_Wochenansicht.php:41
 msgid "F Y"
-msgstr ""
+msgstr "F Y"
 
 #: ../includes/shortcodes/calendar/listenansicht.php:9
 #: ../includes/shortcodes/calendar/monatsansicht.php:14
 #: ../includes/shortcodes/calendar/tagesansicht.php:14
 #: ../includes/shortcodes/calendar/wochenansicht.php:14
 msgid "Tag"
-msgstr ""
+msgstr "Day"
 
 #: ../includes/shortcodes/calendar/listenansicht.php:10
 #: ../includes/shortcodes/calendar/monatsansicht.php:15
 #: ../includes/shortcodes/calendar/tagesansicht.php:15
 #: ../includes/shortcodes/calendar/wochenansicht.php:15
 msgid "Woche"
-msgstr ""
+msgstr "Week"
 
 #: ../includes/shortcodes/calendar/listenansicht.php:11
 #: ../includes/shortcodes/calendar/monatsansicht.php:16
 #: ../includes/shortcodes/calendar/tagesansicht.php:16
 #: ../includes/shortcodes/calendar/wochenansicht.php:16
 msgid "Monat"
-msgstr ""
+msgstr "Month"
 
 #: ../includes/shortcodes/calendar/listenansicht.php:14
 #: ../includes/shortcodes/calendar/monatsansicht.php:19
@@ -167,36 +167,36 @@ msgstr ""
 #: ../includes/shortcodes/events/events.php:122
 #: ../includes/templates/single-event.php:47
 msgid "Abonnement"
-msgstr ""
+msgstr "Subscription"
 
 #: ../includes/shortcodes/calendar/listenansicht.php:25
 #: ../includes/shortcodes/events/events.php:76
 #: ../includes/templates/events.php:11
-msgid "Keine bevorstehenden Termine"
-msgstr ""
+msgid "Keine bevorstehenden Termine."
+msgstr "No upcoming events."
 
 #: ../includes/shortcodes/calendar/listenansicht.php:31
 #: ../includes/shortcodes/calendar/monatsansicht.php:71
 #: ../includes/shortcodes/calendar/wochenansicht.php:111
 #, php-format
 msgid "%s Uhr"
-msgstr ""
+msgstr "%s"
 
 #: ../includes/shortcodes/calendar/monatsansicht.php:5
 #: ../includes/shortcodes/calendar/tagesansicht.php:5
 #: ../includes/shortcodes/calendar/wochenansicht.php:5
 msgid "Heute"
-msgstr ""
+msgstr "Today"
 
 #: ../includes/shortcodes/calendar/monatsansicht.php:17
 #: ../includes/shortcodes/calendar/tagesansicht.php:17
 #: ../includes/shortcodes/calendar/wochenansicht.php:17
 msgid "Liste"
-msgstr ""
+msgstr "List"
 
 #: ../includes/shortcodes/calendar/monatsansicht.php:77
 msgid "Weitere Termine"
-msgstr ""
+msgstr "Other events"
 
 #: ../includes/shortcodes/calendar/tagesansicht.php:36
 #: ../includes/shortcodes/calendar/wochenansicht.php:52
@@ -204,7 +204,7 @@ msgstr ""
 #: ../includes/templates/events.php:26
 #: ../includes/templates/single-event.php:21
 msgid "Ganztägig"
-msgstr ""
+msgstr "All-Day"
 
 #: ../includes/shortcodes/calendar/tagesansicht.php:62
 #: ../includes/shortcodes/events/events.php:95
@@ -214,18 +214,18 @@ msgstr ""
 #: ../includes/templates/single-event.php:29
 #, php-format
 msgid "%1$s bis %2$s"
-msgstr ""
+msgstr "%1$s - %2$s"
 
 #: ../includes/shortcodes/events/events.php:103
 #: ../includes/templates/events.php:38
 #: ../includes/templates/single-event.php:33
 #, php-format
 msgid "%1$s Uhr bis %2$s Uhr"
-msgstr ""
+msgstr "%1$s - %2$s"
 
 #: ../includes/shortcodes/events/events.php:116
 msgid "Mehr Veranstaltungen"
-msgstr ""
+msgstr "More events"
 
 #: ../rrze-calendar.php:132 ../rrze-calendar.php:569
 msgid "Einstellungen"
@@ -233,15 +233,15 @@ msgstr "Settings"
 
 #: ../rrze-calendar.php:140
 msgid "Stündlich"
-msgstr ""
+msgstr "Hourly"
 
 #: ../rrze-calendar.php:141
 msgid "Zweimal täglich"
-msgstr ""
+msgstr "Twice daily"
 
 #: ../rrze-calendar.php:142
 msgid "Täglich"
-msgstr ""
+msgstr "Daily"
 
 #: ../rrze-calendar.php:146
 msgid "Einstellungen gespeichert."
@@ -250,16 +250,16 @@ msgstr "Settings saved."
 #: ../rrze-calendar.php:147
 msgid ""
 "Bitte korrigieren Sie den Formularfehler unten und versuchen Sie es erneut."
-msgstr ""
+msgstr "Please correct the error form below and try again."
 
 #: ../rrze-calendar.php:148
 msgid "Schummeln, was?"
-msgstr ""
+msgstr "Cheatin&#8217; uh?"
 
 #: ../rrze-calendar.php:149
 msgid ""
 "Sie haben nicht die erforderlichen Rechte, um diese Aktion durchzuführen."
-msgstr ""
+msgstr "You do not have permission to perform this action."
 
 #: ../rrze-calendar.php:191
 #, php-format
@@ -281,200 +281,195 @@ msgstr ""
 
 #: ../rrze-calendar.php:350
 msgid "Termin nicht gefunden."
-msgstr ""
+msgstr "Event not found."
 
 #: ../rrze-calendar.php:375
 msgid "Alle"
-msgstr ""
+msgstr "All"
 
 #: ../rrze-calendar.php:376
 msgid "Ausgewählt"
-msgstr ""
+msgstr "Selected"
 
 #: ../rrze-calendar.php:377
 msgid "Suchen..."
-msgstr ""
+msgstr "Search..."
 
 #: ../rrze-calendar.php:416
 msgid "Kalender"
-msgstr ""
+msgstr "Calendar"
 
 #: ../rrze-calendar.php:442
 msgid "Einträge pro Seite:"
-msgstr ""
+msgstr "Number of items per page:"
 
 #: ../rrze-calendar.php:473
 msgid "Endpoint-Titelform"
-msgstr ""
+msgstr "Endpoint slug"
 
 #: ../rrze-calendar.php:474
 msgid "Endpoint-Name"
-msgstr ""
+msgstr "Endpoint name"
 
 #: ../rrze-calendar.php:475
 msgid "Überprüfen auf neue Termine"
-msgstr ""
+msgstr "Check for new events"
 
 #: ../rrze-calendar.php:506
 msgid "&mdash; Auswählen &mdash;"
-msgstr ""
+msgstr "&mdash; Please select &mdash;"
 
 #: ../rrze-calendar.php:555
 msgid "Einstellungen &rsaquo; Kalender"
-msgstr ""
+msgstr "Calendar"
 
 #: ../rrze-calendar.php:557 ../rrze-calendar.php:684 ../rrze-calendar.php:690
 msgid "Neues Feed hinzufügen"
-msgstr ""
+msgstr "Add New Feed"
 
 #: ../rrze-calendar.php:567
 msgid "Kategorien"
-msgstr ""
+msgstr "Categories"
 
 #: ../rrze-calendar.php:635 ../rrze-calendar.php:657
 msgid "Suche"
-msgstr ""
+msgstr "Search"
 
 #: ../rrze-calendar.php:698
 msgid "Feed bearbeiten"
-msgstr ""
+msgstr "Edit feed"
 
 #: ../rrze-calendar.php:704
 msgid "Änderungen übernehmen"
-msgstr ""
+msgstr "Save Changes"
 
-#: ../rrze-calendar.php:842 ../rrze-calendar.php:1745
+#: ../rrze-calendar.php:850 ../rrze-calendar.php:1753
 msgid "Die Kategorie existiert nicht."
-msgstr ""
+msgstr "The category does not exist."
 
-#: ../rrze-calendar.php:863 ../rrze-calendar.php:898
+#: ../rrze-calendar.php:871 ../rrze-calendar.php:906
 msgid "Der Name wird verwendet um die Kategorie zu identifizieren."
-msgstr ""
+msgstr "The name is used to identify the category."
 
-#: ../rrze-calendar.php:872 ../rrze-calendar.php:907 ../rrze-calendar.php:987
+#: ../rrze-calendar.php:880 ../rrze-calendar.php:915 ../rrze-calendar.php:995
 msgid "Die Beschreibung ist für administrative Zwecke vorhanden."
-msgstr ""
+msgstr "The description is provided for administrative purposes."
 
-#: ../rrze-calendar.php:892 ../rrze-calendar.php:911
+#: ../rrze-calendar.php:900 ../rrze-calendar.php:919
 msgid "Neue Kategorie hinzufügen"
-msgstr ""
+msgstr "Add a new category"
 
-#: ../rrze-calendar.php:926 ../rrze-calendar.php:1766
+#: ../rrze-calendar.php:934 ../rrze-calendar.php:1774
 msgid "Das Schlagwort existiert nicht."
-msgstr ""
+msgstr "The tag does not exist."
 
-#: ../rrze-calendar.php:976 ../rrze-calendar.php:991
+#: ../rrze-calendar.php:984 ../rrze-calendar.php:999
 msgid "Neues Schlagwort erstellen"
-msgstr ""
+msgstr "Add a new tag"
 
-#: ../rrze-calendar.php:982
+#: ../rrze-calendar.php:990
 msgid "Der Name wird verwendet um das Schlagwort zu identifizieren."
-msgstr ""
+msgstr "The name is used to identify the tag."
 
-#: ../rrze-calendar.php:1039
+#: ../rrze-calendar.php:1047
 msgid "URL erforderlich."
-msgstr ""
-
-#: ../rrze-calendar.php:1041
-msgid "Der URL ist ungültig."
-msgstr ""
-
-#: ../rrze-calendar.php:1043
-msgid "URL existiert bereits."
-msgstr ""
+msgstr "URL required."
 
 #: ../rrze-calendar.php:1049
+msgid "Der URL ist ungültig."
+msgstr "The URL is not valid."
+
+#: ../rrze-calendar.php:1051
+msgid "URL existiert bereits."
+msgstr "URL already exists."
+
+#: ../rrze-calendar.php:1057
 msgid "Titel erforderlich."
-msgstr ""
+msgstr "Title required."
 
-#: ../rrze-calendar.php:1162 ../rrze-calendar.php:1295
+#: ../rrze-calendar.php:1170 ../rrze-calendar.php:1303
 msgid "Bitte geben Sie einen Namen für die Kategorie ein."
-msgstr ""
+msgstr "Please enter a name for the category."
 
-#: ../rrze-calendar.php:1166 ../rrze-calendar.php:1230
-#: ../rrze-calendar.php:1300 ../rrze-calendar.php:1373
+#: ../rrze-calendar.php:1174 ../rrze-calendar.php:1238
+#: ../rrze-calendar.php:1308 ../rrze-calendar.php:1381
 msgid "Der Name wird bereits verwendet. Bitte wählen Sie einen anderen."
-msgstr ""
+msgstr "The name is already in use. Please choose another."
 
-#: ../rrze-calendar.php:1170 ../rrze-calendar.php:1234
-#: ../rrze-calendar.php:1305 ../rrze-calendar.php:1378
+#: ../rrze-calendar.php:1178 ../rrze-calendar.php:1242
+#: ../rrze-calendar.php:1313 ../rrze-calendar.php:1386
 msgid ""
 "Der Name steht in Konflikt mit einem reservierten Namen. Bitte wählen Sie "
 "erneut."
-msgstr ""
+msgstr "The name conflicts with a reserved name. Please select again."
 
-#: ../rrze-calendar.php:1174 ../rrze-calendar.php:1238
+#: ../rrze-calendar.php:1182 ../rrze-calendar.php:1246
+#: ../rrze-calendar.php:1317 ../rrze-calendar.php:1390
 msgid ""
 "Der Name darf maximal 40 Zeichen lang sein. Bitte verwenden Sie einen "
 "kürzeren Namen."
-msgstr ""
+msgstr "The name can be up to 40 characters long. Please use a shorter name."
 
-#: ../rrze-calendar.php:1189
+#: ../rrze-calendar.php:1197
 msgid "Fehler beim Hinzufügen einer Kategorie."
-msgstr ""
+msgstr "Error adding a category."
 
-#: ../rrze-calendar.php:1226 ../rrze-calendar.php:1368
+#: ../rrze-calendar.php:1234 ../rrze-calendar.php:1376
 msgid "Bitte geben Sie einen Namen für das Schlagwort ein."
-msgstr ""
+msgstr "Please enter a name for the tag."
 
-#: ../rrze-calendar.php:1253
+#: ../rrze-calendar.php:1261
 msgid "Fehler beim Hinzufügen eines Schlagwortes."
-msgstr ""
+msgstr "Error adding a tag."
 
-#: ../rrze-calendar.php:1309 ../rrze-calendar.php:1382
-msgid ""
-"Der Name darf maximal 40 Zeichen lang sein. Bitte versuchen Sie einen "
-"kürzeren Namen."
-msgstr ""
-
-#: ../rrze-calendar.php:1328
+#: ../rrze-calendar.php:1336
 msgid "Fehler bei der Aktualisierung der Kategorie."
-msgstr ""
+msgstr "Error updating the category."
 
-#: ../rrze-calendar.php:1401
+#: ../rrze-calendar.php:1409
 msgid "Fehler bei der Aktualisierung des Schlagwortes."
-msgstr ""
+msgstr "Error updating the tag."
 
-#: ../rrze-calendar.php:1436
+#: ../rrze-calendar.php:1444
 msgid "Fehler beim Löschen der Kategorie."
-msgstr ""
+msgstr "Failed to delete the category."
 
-#: ../rrze-calendar.php:1469
+#: ../rrze-calendar.php:1477
 msgid "Fehler beim Löschen des Schlagwortes."
-msgstr ""
+msgstr "Failed to delete the tag."
 
-#: ../rrze-calendar.php:1533
+#: ../rrze-calendar.php:1541
 msgid "Unbekannten Fehler"
-msgstr ""
+msgstr "Unknown error"
 
-#: ../rrze-calendar.php:1534
+#: ../rrze-calendar.php:1542
 msgid "FEHLER"
-msgstr ""
+msgstr "ERROR"
 
-#: ../rrze-calendar.php:1686
+#: ../rrze-calendar.php:1694
 msgid "Eine Kategorie muss einen Namen haben."
-msgstr ""
+msgstr "A category must have a name."
 
-#: ../rrze-calendar.php:1715
+#: ../rrze-calendar.php:1723
 msgid "Ein Schlagwort muss einen Namen haben."
-msgstr ""
+msgstr "A tag must have a name."
 
-#: ../rrze-calendar.php:1943
+#: ../rrze-calendar.php:1951
 msgid "Keine Elemente gefunden."
-msgstr ""
+msgstr "No items found."
 
-#: ../rrze-calendar.php:1978
+#: ../rrze-calendar.php:1986
 #, php-format
 msgid "%d Termine gelöscht."
-msgstr ""
+msgstr "%d events deleted."
 
-#: ../rrze-calendar.php:1978
+#: ../rrze-calendar.php:1986
 msgid "Ein Fehler ist aufgetretten."
-msgstr ""
+msgstr "An error has occurred."
 
-#: ../rrze-calendar.php:1985
+#: ../rrze-calendar.php:1993
 msgid "Ungültige Feed-ID."
-msgstr ""
+msgstr "Invalid Feed ID."
 
 #~ msgid "Medien"
 #~ msgstr "Media"
