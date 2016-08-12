@@ -89,7 +89,7 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
 
         $this->process_bulk_action();
 
-        $per_page = $this->get_items_per_page('feed_per_page', 20);
+        $per_page = $this->get_items_per_page('events_per_page', 20);
         $current_page = $this->get_pagenum();
         $total_items = count($this->list_data);
 
