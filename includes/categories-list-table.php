@@ -47,13 +47,13 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
     }
 
     public function column_name($category) {
-        $output = '<strong><a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'edit-category', 'category-id' => $category->term_id, 'tab' => 'categories'))) . '">' . esc_html($category->name) . '</a></strong>';
+        $output = '<strong><a href="' . esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit', 'category-id' => $category->term_id))) . '">' . esc_html($category->name) . '</a></strong>';
 
         $actions = array();
-        $actions['edit edit-category'] = sprintf('<a href="%1$s">' . __('Bearbeiten', 'rrze-calendar') . '</a>', RRZE_Calendar::options_general_url(array('action' => 'edit-category', 'category-id' => $category->term_id, 'tab' => 'categories')));
+        $actions['edit'] = sprintf('<a href="%1$s">' . __('Bearbeiten', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit', 'category-id' => $category->term_id)));
         
         if (empty($category->feed_ids)) {
-            $actions['delete delete-category'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', RRZE_Calendar::options_general_url(array('action' => 'delete-category', 'category-id' => $category->term_id, 'tab' => 'categories')));
+            $actions['delete'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'delete', 'category-id' => $category->term_id)));
         }
         $output .= $this->row_actions($actions, FALSE);
 

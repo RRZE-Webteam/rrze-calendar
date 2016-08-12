@@ -8,7 +8,7 @@ Import und Ausgabe der öffentlicher ICS-Veranstaltungen der FAU.
 
 ### Einstellungsmenü
 
-Einstellungen › Kalender
+Kalender › Einstellungen
 
 ### Shortcodes
 

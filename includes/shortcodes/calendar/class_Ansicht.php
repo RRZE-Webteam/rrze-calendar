@@ -105,7 +105,7 @@ abstract class Ansicht {
     
     private function event($event) {
         $event_data = array();
-                
+       
         $event_data["id"] = $event->id;
         $event_data["slug"] = $event->slug;
         $event_data["summary"] = $event->summary;
@@ -183,7 +183,7 @@ abstract class Ansicht {
         }
 
         // Farbmarkierung
-        $event_data["farbe"] = $event->category->color;
+        $event_data["farbe"] = isset($event->category->color) ? $event->category->color : 'grey';
             
         return $event_data;
         

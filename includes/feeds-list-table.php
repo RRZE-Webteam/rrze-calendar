@@ -30,7 +30,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
             case 'category':
                 if (!empty($item[$column_name]) && is_array($item[$column_name])) {
                     
-                    $edit_link = RRZE_Calendar::options_general_url(array('action' => 'edit-category', 'category-id' => $item[$column_name]['id'], 'tab' => 'categories'));
+                    $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit-category', 'category-id' => $item[$column_name]['id']));
                     $category = sprintf('<a href="%1$s" title="%2$s">%2$s</a><br>%3$s', $edit_link, $item[$column_name]['name'], $item[$column_name]['slug']);                    
                     $item[$column_name] = $category;
                 } else {
@@ -41,7 +41,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
                 if (!empty($item[$column_name]) && is_array($item[$column_name])) {
                     $tags = array();
                     foreach ($item[$column_name] as $tag) {
-                        $edit_link = RRZE_Calendar::options_general_url(array('action' => 'edit-tag', 'tag-id' => $tag['id'], 'tab' => 'tags'));
+                        $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit-tag', 'tag-id' => $tag['id']));
                         $tags[] = sprintf('<a href="%1$s" title="%2$s">%3$s</a>', $edit_link, $tag['slug'], $tag['name']);
                     }
                     $item[$column_name] = implode(', ', $tags);
@@ -70,15 +70,15 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
         // Build row actions
         if ($item['active']) {
             $actions = array(
-                'update' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'update', 'feed-id' => $item['id']))) . '">' . esc_html(__('Aktualisieren', 'rrze-calendar')) . '</a>',
-                'edit' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'edit', 'feed-id' => $item['id']))) . '">' . esc_html(__('Bearbeiten', 'rrze-calendar')) . '</a>',
-                'deactivate' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'deactivate', 'feed-id' => $item['id']))) . '">' . esc_html(__('Deaktivieren', 'rrze-calendar')) . '</a>'
+                'update' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'update', 'feed-id' => $item['id']))) . '">' . esc_html(__('Aktualisieren', 'rrze-calendar')) . '</a>',
+                'edit' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'edit', 'feed-id' => $item['id']))) . '">' . esc_html(__('Bearbeiten', 'rrze-calendar')) . '</a>',
+                'deactivate' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'deactivate', 'feed-id' => $item['id']))) . '">' . esc_html(__('Deaktivieren', 'rrze-calendar')) . '</a>'
             );
         } else {
             $actions = array(
-                'edit' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'edit', 'feed-id' => $item['id']))) . '">' . esc_html(__('Bearbeiten', 'rrze-calendar')) . '</a>',
-                'activate' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'activate', 'feed-id' => $item['id']))) . '">' . esc_html(__('Aktivieren', 'rrze-calendar')) . '</a>',                
-                'delete' => '<a href="' . esc_url(RRZE_Calendar::options_general_url(array('action' => 'delete', 'feed-id' => $item['id']))) . '">' . esc_html(__('Löschen', 'rrze-calendar')) . '</a>'
+                'edit' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'edit', 'feed-id' => $item['id']))) . '">' . esc_html(__('Bearbeiten', 'rrze-calendar')) . '</a>',
+                'activate' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'activate', 'feed-id' => $item['id']))) . '">' . esc_html(__('Aktivieren', 'rrze-calendar')) . '</a>',                
+                'delete' => '<a href="' . esc_url(RRZE_Calendar::options_url(array('action' => 'delete', 'feed-id' => $item['id']))) . '">' . esc_html(__('Löschen', 'rrze-calendar')) . '</a>'
             );
         }
         // Return the title contents
@@ -98,7 +98,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
 
     public function get_columns() {
         $columns = array(
-            'cb' => '<input type="checkbox" />', // Render a checkbox instead of text
+            'cb' => '<input type="checkbox">', // Render a checkbox instead of text
             'url' => __('Feed-URL', 'rrze-calendar'),
             'title' => __('Titel', 'rrze-calendar'),
             'category' => __('Kategorie', 'rrze-calendar'),
@@ -192,7 +192,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
 
         $this->process_bulk_action();
 
-        $per_page = $this->get_items_per_page('feed_per_page', 20);
+        $per_page = $this->get_items_per_page('feeds_per_page', 20);
         $current_page = $this->get_pagenum();
         $total_items = count($this->list_data);
 
