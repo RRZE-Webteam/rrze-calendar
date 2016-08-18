@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.1.2
+  Version: 1.1.3
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.1.2';
+    const version = '1.1.3';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -216,7 +216,7 @@ class RRZE_Calendar {
         $version = get_option(self::version_option_name, '0');
         
         if (version_compare($version, self::version, '<')) {
-            self::db_delta();            
+            self::db_update($version);            
             self::cron_schedule_event_setup();
         }
         
@@ -239,6 +239,8 @@ class RRZE_Calendar {
     private static function db_delta() {
         global $wpdb;
 
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE " . self::$db_feeds_table . " (
@@ -248,11 +250,13 @@ class RRZE_Calendar {
             active tinyint(1) NOT NULL default '0',
             created datetime NOT NULL default '0000-00-00 00:00:00',
             modified datetime NOT NULL default '0000-00-00 00:00:00',
-            PRIMARY KEY (id),
-            UNIQUE KEY url (url)
+            PRIMARY KEY  (id),
+            KEY url (url(191))
             ) $charset_collate;";
+        
+        dbDelta($sql);
 
-        $sql .= "CREATE TABLE " . self::$db_events_table . " (
+        $sql = "CREATE TABLE " . self::$db_events_table . " (
             id bigint(20) unsigned NOT NULL auto_increment,
             start datetime NOT NULL default '0000-00-00 00:00:00',
             end datetime,
@@ -269,23 +273,34 @@ class RRZE_Calendar {
             ical_feed_url varchar(255),
             ical_uid varchar(255),
             ical_source_url varchar(255),
-            PRIMARY KEY (id),
+            PRIMARY KEY  (id),
+            KEY slug (slug(191)),
             KEY ical_feed_id (ical_feed_id),
             KEY ical_uid (ical_uid)
             ) $charset_collate;";
         
-        $sql .= "CREATE TABLE " . self::$db_events_cache_table . " (
+        dbDelta($sql);
+        
+        $sql = "CREATE TABLE " . self::$db_events_cache_table . " (
             id bigint(20) unsigned NOT NULL auto_increment,
             event_id bigint(20) NOT NULL default 0,
             start datetime NOT NULL default '0000-00-00 00:00:00',
             end datetime NOT NULL default '0000-00-00 00:00:00',
             ical_feed_id bigint(20) unsigned NOT NULL default 0,            
-            PRIMARY KEY (id),
+            PRIMARY KEY  (id),
             KEY ical_feed_id (ical_feed_id)
             ) $charset_collate;";
         
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+    }
+    
+    private static function db_update($version) {
+        global $wpdb;
+        
+        if ($version < '1.1.3') {
+            $wpdb->query("ALTER TABLE " . self::$db_feeds_table . " DROP INDEX url, ADD INDEX url (url(191))");
+            $wpdb->query("ALTER TABLE " . self::$db_events_table . " ADD INDEX slug (slug(191))");
+        }
     }
     
     private function get_feeds_data($output_type = OBJECT) {
