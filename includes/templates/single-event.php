@@ -1,8 +1,11 @@
 <?php
-global $rrze_calendar_event;
 
-$event = &$rrze_calendar_event;
-$subscribe_url = RRZE_Calendar::webcal_url(array('event-ids' => $event->id));
+global $rrze_calendar_data;
+
+if (empty($rrze_calendar_data)) {
+    wp_die();
+}
+$event = &$rrze_calendar_data;
 
 get_header(); ?>
 
@@ -17,7 +20,7 @@ get_header(); ?>
                     </div>
                     <div class="event-info event-id-<?php echo $event->id ?> <?php if ($event->allday) echo 'event-allday'; ?>">
                         <?php if ($event->allday && !$event->multiday) : ?>
-                        <div class="event-allday" style="text-transform: uppercase;">
+                        <div class="event-allday">
                             <?php _e('Ganztägig', 'rrze-calendar'); ?>
                         </div>
                         <?php elseif ($event->allday && $event->multiday) : ?>
@@ -44,7 +47,7 @@ get_header(); ?>
                     <?php echo make_clickable(nl2br($event->description)); ?>
                 </p>
                 <p class="events-more-links">
-                    <a class="events-more" href="<?php echo $subscribe_url; ?>"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
+                    <a class="events-more" href="<?php echo $event->subscribe_url; ?>"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
                 </p>                
             </div>
     </div>

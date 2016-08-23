@@ -1,0 +1,93 @@
+.feeds .inactive th.check-column, .feeds tfoot td.check-column, .feeds thead td.check-column {
+    padding-left: 6px;
+}
+
+.feed-update-tr.active td, .feeds .active th.check-column {
+    border-left: 4px solid #00a0d2;
+}
+
+.feeds .active td, .feeds .active th {
+    background-color: #f7fcfe;
+}
+
+.feed-install #the-list td, .feeds .active td, .feeds .active th, .feeds .inactive td, .feeds .inactive th, .upgrade .feeds td, .upgrade .feeds th {
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.1) inset;
+}
+
+.feeds tr.active + tr.inactive td, .feeds tr.active + tr.inactive th, .feeds tr.active.feed-update-tr + tr.inactive td, .feeds tr.active.feed-update-tr + tr.inactive th {
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) inset, 0 -1px 0 #e1e1e1 inset;
+}
+
+.feeds th, .feeds td {
+    background: #fff none repeat scroll 0 0;
+}
+
+.feeds th.column-events_count, .feeds td.column-events_count {
+    width: 7%;
+}
+
+.events th.column-allday, .feeds td.column-allday,
+.events th.column-recurrence_rules, .feeds td.column-recurrence_rules {
+    width: 5%;
+}
+
+td.column-events_count {
+    text-align: center;
+}
+
+.list-filterizer-tools,
+.rrze-calendar-select-list {
+    max-width: 782px;
+}
+
+.rrze-calendar-select-list {
+    height: 300px;
+    overflow: auto;    
+}
+
+.rrze-calendar-select-list li {
+    padding: 10px 5px 5px 5px;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.rrze-calendar-select-list li:hover {
+    background: #EAF2FA;
+}
+
+.rrze-calendar-select-list li input {
+    float: right;
+}
+
+.rrze-calendar-select-list .rrze-calendar-selected-title {
+    display: block;
+    font-size: 14px;
+}
+
+.rrze-calendar-select-list .rrze-calendar-selected-subtitle {
+    display: block;
+    color: #ccc;
+    font-size: 12px;
+}
+
+input.field-invalid, input:focus.field-invalid, 
+select.field-invalid, select:focus.field-invalid {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 2px rgba(204, 0, 0, 0.8);
+}
+
+@media screen and (max-width: 782px) {
+    .feeds th.column-events_count, .feeds td.column-events_count {
+        width: inherit;
+    }
+    
+    td.column-events_count {
+        text-align: inherit;
+    }
+
+    .list-filterizer-tools,
+    .rrze-calendar-select-list {
+        width: 100%;   
+    }
+}
