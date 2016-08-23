@@ -4,7 +4,7 @@ RRZE Calendar
 Wordpress-Plugin
 ----------------
 
-Import und Ausgabe der öffentlicher ICS-Veranstaltungen der FAU.
+Import und Ausgabe der öffentlichen Veranstaltungen der FAU.
 
 ### Einstellungsmenü
 
