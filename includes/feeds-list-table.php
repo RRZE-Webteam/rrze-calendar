@@ -3,7 +3,6 @@
 class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
 
     private $list_data;
-    private $rrze_calendar;
 
     public function __construct($list_data = array()) {
         global $status, $page;

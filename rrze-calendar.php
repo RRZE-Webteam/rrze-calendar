@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.1.0
+  Version: 1.2.0
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.1.0';
+    const version = '1.2.0';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -112,7 +112,7 @@ class RRZE_Calendar {
         
         add_action(self::cron_hook, array($this, 'cron_schedule_event_hook'));
         
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
         
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
         
@@ -216,7 +216,7 @@ class RRZE_Calendar {
         $version = get_option(self::version_option_name, '0');
         
         if (version_compare($version, self::version, '<')) {
-            self::db_delta();            
+            self::db_update($version);            
             self::cron_schedule_event_setup();
         }
         
@@ -239,6 +239,8 @@ class RRZE_Calendar {
     private static function db_delta() {
         global $wpdb;
 
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE " . self::$db_feeds_table . " (
@@ -248,11 +250,13 @@ class RRZE_Calendar {
             active tinyint(1) NOT NULL default '0',
             created datetime NOT NULL default '0000-00-00 00:00:00',
             modified datetime NOT NULL default '0000-00-00 00:00:00',
-            PRIMARY KEY (id),
-            UNIQUE KEY url (url)
+            PRIMARY KEY  (id),
+            KEY url (url(191))
             ) $charset_collate;";
+        
+        dbDelta($sql);
 
-        $sql .= "CREATE TABLE " . self::$db_events_table . " (
+        $sql = "CREATE TABLE " . self::$db_events_table . " (
             id bigint(20) unsigned NOT NULL auto_increment,
             start datetime NOT NULL default '0000-00-00 00:00:00',
             end datetime,
@@ -269,23 +273,34 @@ class RRZE_Calendar {
             ical_feed_url varchar(255),
             ical_uid varchar(255),
             ical_source_url varchar(255),
-            PRIMARY KEY (id),
+            PRIMARY KEY  (id),
+            KEY slug (slug(191)),
             KEY ical_feed_id (ical_feed_id),
             KEY ical_uid (ical_uid)
             ) $charset_collate;";
         
-        $sql .= "CREATE TABLE " . self::$db_events_cache_table . " (
+        dbDelta($sql);
+        
+        $sql = "CREATE TABLE " . self::$db_events_cache_table . " (
             id bigint(20) unsigned NOT NULL auto_increment,
             event_id bigint(20) NOT NULL default 0,
             start datetime NOT NULL default '0000-00-00 00:00:00',
             end datetime NOT NULL default '0000-00-00 00:00:00',
             ical_feed_id bigint(20) unsigned NOT NULL default 0,            
-            PRIMARY KEY (id),
+            PRIMARY KEY  (id),
             KEY ical_feed_id (ical_feed_id)
             ) $charset_collate;";
         
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+    }
+    
+    private static function db_update($version) {
+        global $wpdb;
+        
+        if ($version < '1.1.3') {
+            $wpdb->query("ALTER TABLE " . self::$db_feeds_table . " DROP INDEX url, ADD INDEX url (url(191))");
+            $wpdb->query("ALTER TABLE " . self::$db_events_table . " ADD INDEX slug (slug(191))");
+        }
     }
     
     private function get_feeds_data($output_type = OBJECT) {
@@ -333,35 +348,55 @@ class RRZE_Calendar {
     }
     
     public function endpoint_template_redirect() {
-        global $wp_query, $rrze_calendar_event;
+        global $wp_query;
         
         if (!isset($wp_query->query_vars[self::$options['endpoint_slug']])) {
             return;
         }
-
+        
         $slug = $wp_query->query_vars[self::$options['endpoint_slug']];
-        $rrze_calendar_event = $this->get_event_by_slug($slug);
+        $event = !empty($slug) ? $this->get_event_by_slug($slug) : NULL;
         
         if (empty($slug)) {
-            if ($overridden_template = locate_template('rrze-calendar-events.php')) {
-                load_template($overridden_template);
+            if ($template = locate_template('rrze-calendar-events.php')) {
+                $this->load_template($template);
             } else {
-                load_template(dirname(__FILE__) . '/includes/templates/events.php');
+                wp_enqueue_style('rrze-calendar');
+                $this->load_template(dirname(__FILE__) . '/includes/templates/events.php');
             }          
-        } elseif (is_null($rrze_calendar_event)) {
-            if ($overridden_template = locate_template('404.php')) {
-                load_template($overridden_template);
+        } elseif (is_null($event)) {
+            if ($template = locate_template('404.php')) {
+                load_template($template);
             } else {
                 wp_die(__('Termin nicht gefunden.','rrze-calendar'));
             }
         } else {       
-            if ($overridden_template = locate_template('rrze-calendar-single-event.php')) {
-                load_template($overridden_template);
+            if ($template = locate_template('rrze-calendar-single-event.php')) {
+                $this->load_template($template, $event);
             } else {
-                load_template(dirname(__FILE__) . '/includes/templates/single-event.php');
+                wp_enqueue_style('rrze-calendar');
+                $this->load_template(dirname(__FILE__) . '/includes/templates/single-event.php', $event);
             }
+        }       
+    }
+    
+    private function load_template($template, $event = NULL) {
+        global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_endpoint_name;
+        
+        if (is_null($event)) {
+            $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
+            $events_result = self::get_events_relative_to($timestamp);
+            $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result['events']);                
+        } else {
+            $rrze_calendar_data = $event;
         }
-        exit;       
+
+        $rrze_calendar_endpoint_url = self::endpoint_url();
+        $endpoint_name = self::endpoint_name();
+        $rrze_calendar_endpoint_name = mb_strtoupper(mb_substr($endpoint_name, 0, 1)) . mb_substr($endpoint_name, 1);
+        
+        require_once($template);
+        exit;
     }
     
     public static function is_endpoint() {
@@ -369,21 +404,21 @@ class RRZE_Calendar {
         return isset($wp_query->query_vars[self::$options['endpoint_slug']]);       
     }
  
-    public function enqueue_scripts($hook) {
+    public function admin_enqueue_scripts($hook) {
         if (strpos($hook, 'rrze-calendar') === FALSE) {
             return;
         }
 
         wp_enqueue_script('jquery-listfilterizer');
-        wp_enqueue_script('rrze-calendar', plugins_url('js/rrze-calendar.js', __FILE__ ), array('jquery', 'jquery-listfilterizer'), self::version, TRUE);
+        wp_enqueue_script('rrze-calendar-admin', plugins_url('js/rrze-calendar-admin.js', __FILE__), array('jquery', 'jquery-listfilterizer'), self::version, TRUE);
 
-        wp_localize_script('rrze-calendar', 'rrze_calendar_vars', array(
+        wp_localize_script('rrze-calendar-admin', 'rrze_calendar_vars', array(
             'filters_label_1' => __('Alle', 'rrze-calendar'),
             'filters_label_2' => __('Ausgewählt', 'rrze-calendar'),
             'placeholder' => __('Suchen...', 'rrze-calendar'),
         ));
         
-        wp_enqueue_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__ ), array(), self::version);
+        wp_enqueue_style('rrze-calendar-admin', plugins_url('css/rrze-calendar-admin.css', __FILE__), array(), self::version);
         
         if (strpos($hook, 'rrze-calendar-categories') !== FALSE) {
             wp_enqueue_script('wp-color-picker');
@@ -394,16 +429,15 @@ class RRZE_Calendar {
     }
 
     public function wp_enqueue_scripts() {
-        global $post;
-        if(!is_a($post, 'WP_Post') || (!has_shortcode($post->post_content, 'rrze-calendar') && !has_shortcode($post->post_content, 'rrze-kalender'))) {
-            return;
-	}        
-        wp_register_style('rrze-calendar', plugins_url('includes/shortcodes/calendar/style.css', __FILE__ ));
-        wp_register_style('rrze-calendar-hint', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__ ));
-        wp_register_script('rrze-calendar-listenansicht', plugins_url('includes/shortcodes/calendar/listenansicht.js', __FILE__ ), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-monatsansicht', plugins_url('includes/shortcodes/calendar/monatsansicht.js', __FILE__ ), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-wochenansicht', plugins_url('includes/shortcodes/calendar/wochenansicht.js', __FILE__ ), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-tagesansicht', plugins_url('includes/shortcodes/calendar/tagesansicht.js', __FILE__ ), array('jquery'), FALSE, TRUE);
+        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));
+        
+        wp_register_style('rrze-calendar-shortcode', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
+        wp_register_style('rrze-calendar-hint', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
+        
+        wp_register_script('rrze-calendar-listenansicht', plugins_url('includes/shortcodes/calendar/listenansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
+        wp_register_script('rrze-calendar-monatsansicht', plugins_url('includes/shortcodes/calendar/monatsansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
+        wp_register_script('rrze-calendar-wochenansicht', plugins_url('includes/shortcodes/calendar/wochenansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
+        wp_register_script('rrze-calendar-tagesansicht', plugins_url('includes/shortcodes/calendar/tagesansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
     }
     
     public static function get_calendar_feed() {
@@ -1140,11 +1174,9 @@ class RRZE_Calendar {
             return;
         }        
         
-        if ($endpoint_slug != self::$options['endpoint_slug']) {
-            self::$options['endpoint_slug'] = $endpoint_slug;
-            self::add_endpoint();
-            flush_rewrite_rules();
-        }
+        self::$options['endpoint_slug'] = $endpoint_slug;
+        self::add_endpoint();
+        flush_rewrite_rules();
         
         self::$options['endpoint_name'] = trim(self::$options['endpoint_name']);               
         self::$options['schedule_event'] = $input['schedule_event'];      
@@ -1849,9 +1881,10 @@ class RRZE_Calendar {
         }
 
         $args_to_encode = array();
-        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $existing_category->description;
-        $args_to_encode['feed_ids'] = is_array($feeds) ? $feeds : $existing_category->feed_ids;
+        $args_to_encode['feed_ids'] = (!empty($feeds) && is_array($feeds)) ? $feeds : $existing_category->feed_ids;
         $args_to_encode['feed_ids'] = array_unique($args_to_encode['feed_ids']);
+        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $existing_category->description;
+
         $encoded_description = self::get_encoded_description($args_to_encode);
         $args['description'] = $encoded_description;
 
@@ -1870,9 +1903,10 @@ class RRZE_Calendar {
         }
 
         $args_to_encode = array();
+        $args_to_encode['feed_ids'] = (!empty($feeds) && is_array($feeds)) ? $feeds : $existing_tag->feed_ids;
+        $args_to_encode['feed_ids'] = array_unique($args_to_encode['feed_ids']);        
         $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $existing_tag->description;
-        $args_to_encode['feed_ids'] = is_array($feeds) ? $feeds : $existing_tag->feed_ids;
-        $args_to_encode['feed_ids'] = array_unique($args_to_encode['feed_ids']);
+        
         $encoded_description = self::get_encoded_description($args_to_encode);
         $args['description'] = $encoded_description;
 

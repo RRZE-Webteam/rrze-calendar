@@ -1,8 +1,6 @@
 <?php
 
 class RRZE_Calendar_Export {
-
-    private $rrze_calendar;
     
     protected static $instance = NULL;
 
