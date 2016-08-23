@@ -53,6 +53,12 @@ class RRZE_Calendar_Event {
 
             case 'uid':
                 return $this->$ical_feed_id . '@' . bloginfo('url');
+                
+            case 'endpoint_url':
+                return RRZE_Calendar::endpoint_url($this->slug);
+                
+            case 'subscribe_url':
+                return RRZE_Calendar::webcal_url(array('event-ids' => $this->id));
 
             case "multiday":
                 return (RRZE_Calendar_Functions::get_long_date($this->start) != RRZE_Calendar_Functions::get_long_date($this->end - 1));

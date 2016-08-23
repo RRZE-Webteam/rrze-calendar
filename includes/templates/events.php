@@ -1,28 +1,29 @@
 <?php
-$timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
-   
-$events_result = RRZE_Calendar::get_events_relative_to($timestamp);
-$dates = RRZE_Calendar_Functions::get_calendar_dates($events_result['events']);
+
+global $rrze_calendar_data;
 
 get_header(); ?>
+    <header class="entry-header">
+        <h1>Termine</h1>
+    </header>
 
-    <div class="events-list">
-        <?php if (empty($dates)): ?>
+    <div class="entry-content">
+        <?php if (empty($rrze_calendar_data)): ?>
         <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
         <?php else: ?>
-        <div>
-            <?php foreach ($dates as $date): ?>
+        <div>           
+            <?php foreach ($rrze_calendar_data as $date): ?>
                 <?php foreach ($date as $event): ?>                                         
                     <div class="event-detail-item">
                         <h2 class="event-title">
-                            <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>"><?php echo esc_html($event->summary); ?></a>
+                            <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                         </h2>
                         <div class="event-date">
                             <?php echo $event->long_start_date ?>
                         </div>
                         <div class="event-info <?php if ($event->allday) echo 'event-allday'; ?>">
                             <?php if ($event->allday && !$event->multiday) : ?>
-                                <div class="event-allday" style="text-transform: uppercase;">
+                                <div class="event-allday">
                                     <?php _e('Ganztägig', 'rrze-calendar'); ?>
                                 </div>
                             <?php elseif ($event->allday && $event->multiday) : ?>

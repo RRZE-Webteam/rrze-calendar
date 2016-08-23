@@ -227,7 +227,7 @@ abstract class Ansicht {
     }
 
     protected function rendere_template($daten) {        
-        wp_enqueue_style('rrze-calendar');
+        wp_enqueue_style('rrze-calendar-shortcode');
         wp_enqueue_style('rrze-calendar-hint');
         wp_enqueue_script('rrze-calendar-' . $this->template_name());
                 
