@@ -1,7 +1,7 @@
 <?php
 
 class RRZE_Calendar_Functions {
-    const windows_timezones = [
+    private static $windows_timezones = [
         "Africa/Bangui" => "W. Central Africa Standard Time",
         "Africa/Cairo" => "Egypt Standard Time",
         "Africa/Casablanca" => "Morocco Standard Time",
@@ -136,7 +136,7 @@ class RRZE_Calendar_Functions {
         if (isset($t['value']['tz']) && $t['value']['tz'] == 'Z') {
             $timezone = 'Z';
         } elseif (isset($t['params']['TZID'])) {
-            $key = array_search($t['params']['TZID'], self::windows_timezones);
+            $key = array_search($t['params']['TZID'], self::$windows_timezones);
             
             if ($key !== FALSE) {
                 $timezone = $key;
