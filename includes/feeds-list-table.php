@@ -5,8 +5,6 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
     private $list_data;
 
     public function __construct($list_data = array()) {
-        global $status, $page;
-
         $this->list_data = $list_data;
 
         parent::__construct(array(
@@ -64,7 +62,6 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
     }
     
     public function column_url($item) {
-        $page = $_REQUEST['page'];
         $id = $item['id'];
         // Build row actions
         if ($item['active']) {
