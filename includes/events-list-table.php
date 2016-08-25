@@ -74,7 +74,7 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
         
         usort($this->list_data, array(&$this, 'sort_data'));
         
-        if (isset($_GET['s']) && strlen(trim($_GET['s'])) > 0) {
+        if (isset($_GET['s']) && mb_strlen(trim($_GET['s'])) > 0) {
             $search = trim($_GET['s']);
             foreach ($this->list_data as $key => $data) {
                 $summary = mb_stripos($data['summary'], $search) === FALSE ? TRUE : FALSE;
