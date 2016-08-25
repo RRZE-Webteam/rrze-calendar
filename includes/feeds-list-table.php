@@ -2,9 +2,11 @@
 
 class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
 
+    protected $rrze_calendar;
     private $list_data;
 
     public function __construct($list_data = array()) {
+        $this->rrze_calendar = RRZE_Calendar::instance();
         $this->list_data = $list_data;
 
         parent::__construct(array(
@@ -12,8 +14,6 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
             'plural' => 'feeds',
             'ajax' => FALSE
         ));
-        
-        $this->rrze_calendar = RRZE_Calendar::instance();
     }
 
     public function column_default($item, $column_name) {
@@ -142,11 +142,11 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
         }
     }
 
-    public function feed_bulk_update($feed_ids) {
+    private function feed_bulk_update($feed_ids) {
         $this->rrze_calendar->feed_bulk_update($feed_ids);
     }
     
-    public function feed_bulk_delete($feed_ids) {
+    private function feed_bulk_delete($feed_ids) {
         $this->rrze_calendar->feed_bulk_delete($feed_ids);
     }
     
