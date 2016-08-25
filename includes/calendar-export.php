@@ -2,6 +2,7 @@
 
 class RRZE_Calendar_Export {
     
+    protected $rrze_calendar;
     protected static $instance = NULL;
 
     public static function instance() {
