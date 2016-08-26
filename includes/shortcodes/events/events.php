@@ -6,13 +6,14 @@ add_shortcode('rrze-termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode
 class RRZE_Calendar_Events_Shortcode {
     
     public static function shortcode($atts, $content = "") {
-        global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_subscribe_url;
+        global $rrze_calendar_data, $rrze_calendar_page_url, $rrze_calendar_subscribe_url;
         
         $atts = shortcode_atts(
             array(
                 'kategorien' => '',     // Mehrere Kategorien (Titelform) werden durch Komma getrennt.
                 'schlagworte' => '',    // Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
                 'anzahl' => 10,         // Anzahl der Termineausgabe. Standardwert: 10.
+                'page_link' => 0,       // ID einer Zielseite um z.B. weitere Termine anzuzeigen.
                 'abonnement_link' => 0  // Abonnement-Link anzeigen (1 oder 0).
             ), $atts
         );
@@ -50,6 +51,15 @@ class RRZE_Calendar_Events_Shortcode {
             }
         }
 
+        $page_url = '';
+        $post_id = absint($atts['page_link']);
+        if($post_id) {            
+            $post_type = get_post_type($post_id);
+            if ($post_type === 'page') {
+                $page_url = get_permalink($post_id);
+            }
+        }
+        
         $subscribe_url = '';
         if (!empty($atts['abonnement_link'])) {
             $subscribe_url = RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : ''));
@@ -63,7 +73,7 @@ class RRZE_Calendar_Events_Shortcode {
         $events_result = RRZE_Calendar::get_events_relative_to($timestamp, $anzahl, 0, $atts);
         
         $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result['events']);
-        $rrze_calendar_endpoint_url = RRZE_Calendar::endpoint_url();
+        $rrze_calendar_page_url = $page_url;
         $rrze_calendar_subscribe_url = $subscribe_url;
         
         $template = locate_template('rrze-calendar-events-shortcode.php');

@@ -1,6 +1,6 @@
 <?php
 
-global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_subscribe_url; ?>
+global $rrze_calendar_data, $rrze_calendar_page_url, $rrze_calendar_subscribe_url; ?>
 
 <div class="events-list">
     <?php if (empty($rrze_calendar_data)): ?>
@@ -43,9 +43,11 @@ global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_subscrib
                 </div>
             <?php endforeach; ?>
         <?php endforeach; ?>
+        <?php if ($rrze_calendar_page_url): ?>
         <p class="events-more-links">
-            <a class="events-more" href="<?php echo $rrze_calendar_endpoint_url; ?>"><?php _e('Mehr Veranstaltungen', 'rrze-calendar'); ?></a>
-        </p>                      
+            <a class="events-more" href="<?php echo $rrze_calendar_page_url; ?>"><?php _e('Mehr Veranstaltungen', 'rrze-calendar'); ?></a>
+        </p>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
     <?php if($subscribe_url): ?>
