@@ -21,6 +21,7 @@ Attribute:
 kategorien          Mehrere Kategorien (Titelform) werden durch Komma getrennt.
 schlagworte         Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
 anzahl              Anzahl der Termineausgabe. Standardwert: 10.
+page_link           ID einer Zielseite um z.B. weitere Termine anzuzeigen.
 abonnement_link     Abonnement-Link anzeigen (1 oder 0).
 </pre>
 
