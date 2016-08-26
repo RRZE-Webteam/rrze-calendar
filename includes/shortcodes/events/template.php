@@ -9,7 +9,7 @@ global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_subscrib
     <div>
         <?php foreach ($rrze_calendar_data as $date): ?>
             <?php foreach ($date as $event): ?>                                         
-                <div class="event-detail-item">
+                <div class="event-item">
                     <h2 class="event-title">
                         <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                     </h2>

@@ -14,7 +14,7 @@ get_header(); ?>
         <div>           
             <?php foreach ($rrze_calendar_data as $date): ?>
                 <?php foreach ($date as $event): ?>                                         
-                    <div class="event-detail-item">
+                    <div class="event-item">
                         <h2 class="event-title">
                             <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                         </h2>
