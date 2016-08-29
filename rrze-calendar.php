@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.2.6
+  Version: 1.3.0
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.2.6';
+    const version = '1.3.0';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -58,7 +58,14 @@ class RRZE_Calendar {
     const notice_transient = 'rrze-calendar-notice-';
     const notice_transient_expiration = 30;
     
-    const default_color = '#003366';
+    public static $fau_colors = [
+        '#003366' => 'default',
+        '#A36B0D' => 'phil',
+        '#8D1429' => 'rw',
+        '#0381A2' => 'med',
+        '#048767' => 'nat',
+        '#6E7881' => 'tf'
+        ];
 
     public static $plugin_file;
     
@@ -1056,7 +1063,7 @@ class RRZE_Calendar {
                     </div>
                     <div class="form-field">
                         <label for="color"><?php _e('Farbe', 'rrze-calendar'); ?></label>
-                        <input type="text" name="color" class="color-picker" data-default-color="<?php echo self::default_color; ?>" value="<?php echo self::default_color; ?>">
+                        <input type="text" name="color" class="color-picker" data-default-color="" value="">
                     </div>                    
                     <div class="form-field">
                         <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
@@ -1336,7 +1343,7 @@ class RRZE_Calendar {
         $name = $name ? strip_tags(trim($name)) : '';
         $description = $description ? strip_tags(trim($description)) : '';
         
-        $color = $color && self::sanitize_hex_color($color) ? $color : self::default_color;
+        $color = $color && self::sanitize_hex_color($color) ? $color : '';
 
         if (empty($name)) {
             $this->add_settings_error('name');
@@ -1463,7 +1470,7 @@ class RRZE_Calendar {
         $name = $name ? strip_tags(trim($name)) : '';
         $description = $description ? strip_tags(trim($description)) : '';
         
-        $color = $color && self::sanitize_hex_color($color) ? $color : self::default_color;
+        $color = $color && self::sanitize_hex_color($color) ? $color : '';
 
         if (empty($name)) {
             $this->add_settings_error('name');
@@ -2014,15 +2021,17 @@ class RRZE_Calendar {
     
     public static function get_category_for_feed($feed_id) {
         $all_categories = self::get_categories();
-        
+
         if (!empty($all_categories)) {
             foreach ($all_categories as $category) {
                 if (!in_array($feed_id, $category->feed_ids)) {
                     continue;
                 }
 
-                $color = get_term_meta($category->term_id, 'color', TRUE);
-                $category->color = $color ? $color : 'grey';
+                $color = strtoupper(get_term_meta($category->term_id, 'color', TRUE));
+                $category->color = $color ? $color : '';
+                $category->textcol = isset(self::$fau_colors[$color]) ? 'textcol-' . self::$fau_colors[$color]  : '';
+                $category->bgcol = isset(self::$fau_colors[$color]) ? 'bgcol-' . self::$fau_colors[$color]  : '';
                 
                 return $category;
             }
