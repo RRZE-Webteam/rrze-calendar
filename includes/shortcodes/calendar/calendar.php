@@ -24,10 +24,11 @@ class RRZE_Calendar_Shortcode {
         }
         $atts['anzahl'] = $anzahl;
         
+        $feed_ids = array();
+        
         $terms = explode(',', $atts['kategorien']);
         $terms = array_map('trim', $terms);
 
-        $feed_ids = array();
         foreach ($terms as $value) {
             $term = RRZE_Calendar::get_category_by('slug', $value);
             if (empty($term)) {
@@ -41,7 +42,6 @@ class RRZE_Calendar_Shortcode {
         $terms = explode(',', $atts['schlagworte']);
         $terms = array_map('trim', $terms);
 
-        $event_tag_ids = array();
         foreach ($terms as $value) {
             $term = RRZE_Calendar::get_tag_by('slug', $value);
             if (empty($term)) {
