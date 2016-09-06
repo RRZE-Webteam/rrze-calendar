@@ -41,6 +41,7 @@
                         $ganztagig[$termin['id']] = array(
                             'id' => $termin['id'],
                             'farbe' => $termin['farbe'],
+                            'slug' => $termin['slug'],
                             'summary' => $termin['summary'],
                             'start' => date('N', strtotime($termin['datum_start'])),
                             'ende' => date('N', strtotime($termin['datum_ende']))
