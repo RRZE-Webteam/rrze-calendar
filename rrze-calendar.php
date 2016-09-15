@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.3.2
+  Version: 1.3.3
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.3.2';
+    const version = '1.3.3';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -2081,14 +2081,14 @@ class RRZE_Calendar {
         }
     }
 
-    public function select_form($obj = NULL, $selected = NULL, $id = NULL, $title = NULL, $subtitle = NULL) {
+    public function select_form($list = NULL, $selected = NULL, $id = NULL, $title = NULL, $subtitle = NULL) {
         if (!is_array($selected)) {
             $selected = array();
         }
         ?>
-        <?php if (!is_object($obj) || count($obj)) : ?>
+        <?php if (is_array($list) && count($list)) : ?>
             <ul class="rrze-calendar-select-list">
-            <?php foreach ($obj as $v) : ?>
+            <?php foreach ($list as $v) : ?>
                 <?php $checked = in_array($v->$id, $selected) ? ' checked="checked"' : ''; ?>
                 <li>
                     <label for="rrze-calendar-selected">
