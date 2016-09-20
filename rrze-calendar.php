@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.3.3
+  Version: 1.3.4
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.3.3';
+    const version = '1.3.4';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -45,6 +45,8 @@ class RRZE_Calendar {
     
     const option_name = 'rrze_calendar';
     const version_option_name = 'rrze_calendar_version';
+    
+    const fau_events_import_option_name = 'rrze_calendar_fau_events_import';
     
     const php_version = '5.5'; // Minimal erforderliche PHP-Version
     const wp_version = '4.6'; // Minimal erforderliche WordPress-Version
@@ -57,6 +59,9 @@ class RRZE_Calendar {
     
     const notice_transient = 'rrze-calendar-notice-';
     const notice_transient_expiration = 30;
+    
+    public $settings_errors = [];
+    public $admin_notices = [];
     
     public static $fau_colors = [
         '#003366' => 'default',
@@ -102,6 +107,8 @@ class RRZE_Calendar {
         self::db_setup();
         
         self::update_version();
+        
+        //self::fau_events_import();
 
         if (!class_exists('WP_List_Table')) {
             require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
@@ -130,21 +137,13 @@ class RRZE_Calendar {
         add_action('admin_menu', array($this, 'calendar_menu'));
            
         add_action('admin_init', array($this, 'admin_settings'));
-        add_action('admin_init', array($this, 'admin_actions'));
         
         add_action('admin_notices', array($this, 'admin_notices'));
-
+        
         add_filter('set-screen-option', array($this, 'list_table_set_option'), 10, 3);
         
         add_action('init', array($this, 'register_taxonomies'));
-        
-        add_action('admin_init', array($this, 'validate_add_category'));
-        add_action('admin_init', array($this, 'validate_add_tag'));
-        add_action('admin_init', array($this, 'validate_edit_category'));
-        add_action('admin_init', array($this, 'validate_edit_tag'));
-        add_action('admin_init', array($this, 'validate_delete_category'));
-        add_action('admin_init', array($this, 'validate_delete_tag'));
-        
+                
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), function($links) {
             $settings_link = '<a href="' . self::options_url(array('page' => 'rrze-calendar-settings')) . '">' . esc_html(__('Einstellungen', 'rrze-calendar')) . '</a>';
             array_unshift($links, $settings_link);
@@ -179,7 +178,7 @@ class RRZE_Calendar {
         
         self::db_setup();
         self::db_delta();
-
+        
         self::cron_schedule_event_setup();
         
         self::add_endpoint();
@@ -233,7 +232,7 @@ class RRZE_Calendar {
         
         update_option(self::version_option_name, self::version);
     }
-        
+    
     private static function cron_schedule_event_setup() {
         wp_clear_scheduled_hook(self::cron_hook);
         wp_schedule_event(time(), self::$options['schedule_event'], self::cron_hook);
@@ -462,18 +461,22 @@ class RRZE_Calendar {
     }
        
     public function calendar_menu() {
+        $this->settings_errors();
+        
         $calendar_page = add_menu_page(__('Kalender', 'rrze-calendar'), __('Kalender', 'rrze-calendar'), 'manage_options', 'rrze-calendar', array($this, 'calendar_feeds_page'), 'dashicons-calendar-alt');
         add_submenu_page('rrze-calendar', __('Feeds', 'rrze-calendar'), __('Feeds', 'rrze-calendar'), 'manage_options', 'rrze-calendar', array($this, 'calendar_feeds_page'));
-        add_action( "load-{$calendar_page}", array($this, 'load_calendar_page'));
-        add_action( "load-{$calendar_page}", array($this, 'calendar_screen_options'));
+        add_action("load-{$calendar_page}", array($this, 'load_calendar_page'));
+        add_action("load-{$calendar_page}", array($this, 'calendar_screen_options'));
                 
         $events_page = add_submenu_page('rrze-calendar', __('Termine', 'rrze-calendar'), __('Termine', 'rrze-calendar'), 'manage_options', 'rrze-calendar-events', array($this, 'calendar_events_page'));
-        add_action( "load-{$events_page}", array($this, 'load_events_page'));
-        add_action( "load-{$events_page}", array($this, 'events_screen_options'));
+        add_action("load-{$events_page}", array($this, 'load_events_page'));
+        add_action("load-{$events_page}", array($this, 'events_screen_options'));
 
         add_submenu_page('rrze-calendar', __('Kategorien', 'rrze-calendar'), __('Kategorien', 'rrze-calendar'), 'manage_options', 'rrze-calendar-categories', array($this, 'calendar_categories_page'));
         add_submenu_page('rrze-calendar', __('Schlagworte', 'rrze-calendar'), __('Schlagworte', 'rrze-calendar'), 'manage_options', 'rrze-calendar-tags', array($this, 'calendar_tags_page'));
         add_submenu_page('rrze-calendar', __('Einstellungen', 'rrze-calendar'), __('Einstellungen', 'rrze-calendar'), 'manage_options', 'rrze-calendar-settings', array($this, 'calendar_settings_page'));
+    
+        $this->delete_settings_errors();
     }
     
     public function load_calendar_page() {
@@ -534,40 +537,38 @@ class RRZE_Calendar {
     }
     
     public function url_field() {
-        $settings_errors = $this->settings_errors();
         $calendar_feed = self::get_calendar_feed();
-        $feed_id = !is_null($calendar_feed) ? $calendar_feed->id : '';
         $url = !is_null($calendar_feed) ? $calendar_feed->url : '';
         $readonly = !empty($url) ? ' readonly="readonly"' : '';
-        if ($feed_id): ?>
-        <input type="hidden" value="<?php echo $feed_id; ?>" name="<?php printf('%s[feed_id]', self::option_name); ?>">
-        <?php endif; ?>
-        <input class="regular-text <?php echo (isset($settings_errors['url']['value'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (isset($settings_errors['url']['value'])) ? $settings_errors['url']['value'] : $url; ?>" name="<?php printf('%s[url]', self::option_name); ?>"<?php echo $readonly; ?>>
+        ?>
+        <input class="regular-text <?php echo (!empty($this->settings_errors['url']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (!empty($this->settings_errors['url']['error'])) ? $this->settings_errors['url']['value'] : $url; ?>" name="<?php printf('%s[url]', self::option_name); ?>"<?php echo $readonly; ?>>
         <?php
     }
 
     public function title_field() {
-        $settings_errors = $this->settings_errors();
         $calendar_feed = self::get_calendar_feed();
         $title = !is_null($calendar_feed) ? $calendar_feed->title : '';
         ?>
-        <input class="regular-text <?php echo (isset($settings_errors['title']['value'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (isset($settings_errors['title']['value'])) ? $settings_errors['title']['value'] : $title; ?>" name="<?php printf('%s[title]', self::option_name); ?>">
+        <input class="regular-text <?php echo (!empty($this->settings_errors['title']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (!empty($this->settings_errors['title']['error'])) ? $this->settings_errors['title']['value'] : $title; ?>" name="<?php printf('%s[title]', self::option_name); ?>">
         <?php
     }    
         
     public function category_field() {
-        $settings_error = $this->settings_errors();
         $calendar_feed = self::get_calendar_feed();
         $all_categories = self::get_categories();
         $category = !is_null($calendar_feed) ? self::get_category_for_feed($calendar_feed->id) : '';
-        $category = isset($settings_error['category']) ? $settings_error['category'] : $category;
+        $category = isset($this->settings_errors['category']) ? $this->settings_errors['category'] : $category;
         ?>
+        <?php if (!empty($all_categories)) : ?>
         <select name="<?php printf('%s[category]', self::option_name); ?>">
             <option value="0"><?php _e('&mdash; Auswählen &mdash;', 'rrze-calendar'); ?></option>            
             <?php foreach ($all_categories as $value) : ?>
             <option value="<?php echo $value->term_id; ?>" <?php $category ? selected($value->term_id, $category->term_id) : ''; ?>><?php echo $value->name; ?></option>
             <?php endforeach; ?>
         </select>
+        <?php else: ?>
+            <p><?php _e('Keine Elemente gefunden.', 'rrze-calendar'); ?></p>
+        <?php endif; ?>        
         <?php   
     }
     
@@ -579,25 +580,22 @@ class RRZE_Calendar {
     }
     
     public function endpoint_slug_field() {
-        $settings_error = $this->settings_errors();
-        $endpoint_slug = isset($settings_errors['endpoint_slug']['value']) ? $settings_errors['endpoint_slug']['value'] : self::$options['endpoint_slug'];
+        $endpoint_slug = !empty($this->settings_errors['endpoint_slug']['error']) ? $this->settings_errors['endpoint_slug']['value'] : self::$options['endpoint_slug'];
         ?>
         <code><?php echo site_url(); ?>/</code>
-        <input type="text" value="<?php echo $endpoint_slug; ?>" name="<?php printf('%s[endpoint_slug]', self::option_name); ?>">
+        <input <?php echo (!empty($this->settings_errors['endpoint_slug']['error'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_slug; ?>" name="<?php printf('%s[endpoint_slug]', self::option_name); ?>">
         <?php
     }        
         
     public function endpoint_name_field() {
-        $settings_error = $this->settings_errors();
-        $endpoint_name = isset($settings_errors['endpoint_name']['value']) ? $settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
+        $endpoint_name = !empty($this->settings_errors['endpoint_name']['error']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
         ?>
-        <input type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
+        <input <?php echo (!empty($this->settings_errors['endpoint_name']['error'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
         <?php
     }        
     
     public function schedule_event_field() {
-        $settings_error = $this->settings_errors();
-        $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
+        $schedule_event = !empty($settings_error['schedule_event']['error']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
         ?>
         <select name="<?php printf('%s[schedule_event]', self::option_name); ?>">
             <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
@@ -624,12 +622,30 @@ class RRZE_Calendar {
             } elseif ($action == 'edit' || $option_page == 'rrze-calendar-feed-edit') {
                 $this->feed_edit();
             } else {
+                $calendar_feed = self::get_calendar_feed();
+
+                if(!is_null($calendar_feed)) {
+                    switch ($action) {
+                        case 'update':
+                            $this->feed_update($calendar_feed);
+                            break;
+                        case 'delete':
+                            $this->feed_delete($calendar_feed);
+                            break;
+                        case 'activate':
+                            $this->feed_activate($calendar_feed);
+                            break;
+                        case 'deactivate':
+                            $this->feed_activate($calendar_feed, 0);
+                            break;               
+                    }
+                }
+                
                 $this->feeds_page();
             }
             ?>
         </div>
         <?php
-        $this->delete_settings_errors();
     }
 
     public function calendar_events_page() {
@@ -641,31 +657,63 @@ class RRZE_Calendar {
             <?php $this->events_page(); ?>
         </div>
         <?php
-        $this->delete_settings_errors();
     }
     
     public function calendar_categories_page() {
+        $page = self::get_param('page');
+        $action = self::get_param('action');        
         ?>
         <div class="wrap">
             <h2>
                 <?php echo esc_html(__('Kalender &rsaquo; Kategorien', 'rrze-calendar')); ?>
             </h2>
-            <?php $this->categories_page(); ?>
         </div>
         <?php
-        $this->delete_settings_errors();
+        if ($action == 'edit') {
+            $this->categories_edit();
+        } else {
+            $category_id = self::get_param('category-id');
+            $category = self::get_category_by('id', $category_id);
+            
+            if($category) {
+                switch ($action) {
+                    case 'delete':
+                        self::delete_category($category_id);
+                        break;               
+                }
+            }
+            
+            $this->categories_page();
+        }       
     }
+
     
     public function calendar_tags_page() {
+        $page = self::get_param('page');
+        $action = self::get_param('action');
         ?>
         <div class="wrap">
             <h2>
                 <?php echo esc_html(__('Kalender &rsaquo; Schlagworte', 'rrze-calendar')); ?>
             </h2>
-            <?php $this->tags_page(); ?>
         </div>
         <?php
-        $this->delete_settings_errors();
+        if ($action == 'edit') {
+            $this->tags_edit();
+        } else {
+            $tag_id = self::get_param('tag-id');
+            $tag = self::get_tag_by('id', $tag_id);
+            
+            if($tag) {
+                switch ($action) {
+                    case 'delete':
+                        self::delete_tag($tag_id);
+                        break;               
+                }
+            }
+            
+            $this->tags_page();
+        }       
     }
     
     public function calendar_settings_page() {
@@ -677,7 +725,6 @@ class RRZE_Calendar {
             <?php $this->settings_page(); ?>
         </div>
         <?php
-        $this->delete_settings_errors();
     }
     
     public function feeds_page() {
@@ -696,7 +743,9 @@ class RRZE_Calendar {
                 $tags = array();
                 foreach ($feed_tags as $tag_id) {
                     $tag = self::get_tag_by('id', $tag_id);
-                    $tags[] = array('id' => $tag_id, 'name' => $tag->name, 'slug' => $tag->slug);
+                    if ($tag) {
+                        $tags[] = array('id' => $tag_id, 'name' => $tag->name, 'slug' => $tag->slug);
+                    }
                 }
                 $feeds[$key]['tags'] = $tags;
             } else {
@@ -747,29 +796,21 @@ class RRZE_Calendar {
     
     public function settings_page() {
         $option_page = self::get_param('option_page');
-        $input = (array) self::get_param(self::option_name);
         $nonce = self::get_param('_wpnonce');
         
-        if ($input && $option_page == 'rrze-calendar-settings') {           
-            if (!wp_verify_nonce($nonce, 'rrze-calendar-settings-options')) {
+        if ($nonce) {           
+            if (!wp_verify_nonce($nonce, "$option_page-options")) {
                 wp_die(self::$messages['nonce-failed']);
             }
 
-            $this->validate_settings($input);
+            $this->validate_settings();
             
-            if ($this->settings_errors()) {
-                foreach ($this->settings_errors() as $error) {
-                    if ($error['message']) {
-                        $this->add_admin_notice($error['message']);
-                    }
-                }
-                wp_redirect(self::options_url(array('page' => 'rrze-calendar-settings')));
-                exit();
+            if (!$this->settings_errors()) {
+                $this->add_admin_notice(__('Einstellungen gespeichert.', 'rrze-calendar'));
             }
             
-            $this->add_admin_notice(__('Einstellungen gespeichert.'));
-            wp_redirect(self::options_url(array('page' => 'rrze-calendar-settings')));      
-            exit();
+            wp_redirect(self::options_url(array('page' => 'rrze-calendar-settings')));
+            exit();            
         }        
         ?>
         <form method="post">
@@ -784,28 +825,22 @@ class RRZE_Calendar {
           
     private function feed_new() {
         $option_page = self::get_param('option_page');
-        $input = (array) self::get_param(self::option_name);
         $nonce = self::get_param('_wpnonce');        
         
-        if ($input && $option_page == 'rrze-calendar-feed-new') {           
-            if (!wp_verify_nonce($nonce, 'rrze-calendar-feed-new-options')) {
+        if ($nonce) {           
+            if (!wp_verify_nonce($nonce, "$option_page-options")) {
                 wp_die(self::$messages['nonce-failed']);
             }
             
-            $feed_id = $this->validate_new($input);
-        
+            $feed_id = $this->validate_new_feed();
+            
             if ($this->settings_errors()) {
-                foreach ($this->settings_errors() as $error) {
-                    if ($error['message']) {
-                        $this->add_admin_notice($error['message']);
-                    }
-                }
                 wp_redirect(self::options_url(array('action' => 'new')));
-                exit();
+            } else {
+                $this->add_admin_notice(__('Der Feed wurde hinzugefügt.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
             }
             
-            $this->add_admin_notice(__('Der Feed wurde hinzugefügt.'));
-            wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
             exit();
         }
         ?>
@@ -822,33 +857,34 @@ class RRZE_Calendar {
     
     private function feed_edit() {
         $option_page = self::get_param('option_page');
-        $input = (array) self::get_param(self::option_name);
+        $feed_id = self::get_param('feed-id');
         $nonce = self::get_param('_wpnonce');
-                
-        if ($input && $option_page == 'rrze-calendar-feed-edit') {           
-            if (!wp_verify_nonce($nonce, 'rrze-calendar-feed-edit-options')) {
+
+        $feed = self::get_calendar($feed_id);
+        if (is_null($feed)) {
+            echo '<div class="error"><p>' . __('Der Feed existiert nicht.', 'rrze-calendar') . '</p></div>';
+            return;
+        }
+        
+        if ($nonce) {           
+            if (!wp_verify_nonce($nonce, "$option_page-options")) {
                 wp_die(self::$messages['nonce-failed']);
             }
             
-            $feed_id = $this->validate_edit($input);
-            
+            $this->validate_edit_feed($feed_id, $feed);
+
             if ($this->settings_errors()) {
-                foreach ($this->settings_errors() as $error) {
-                    if ($error['message']) {
-                        $this->add_admin_notice($error['message']);
-                    }
-                }
-                wp_redirect(self::options_url(array('action' => 'edit')));
-                exit();
+                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
+            } else {
+                $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
             }
             
-            $this->add_admin_notice(__('Der Feed wurde aktualisiert.'));
-            wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
-            exit();
+            exit();            
         }        
         ?>
         <h2><?php echo esc_html(__('Feed bearbeiten', 'rrze-calendar')); ?></h2>
-        <form action="<?php echo self::options_url(array('action' => 'edit')) ?>" method="post">
+        <form action="<?php echo self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)) ?>" method="post">
         <?php
         settings_fields('rrze-calendar-feed-edit');
         do_settings_sections('rrze-calendar-feed-edit');
@@ -857,37 +893,15 @@ class RRZE_Calendar {
         </form>
         <?php
     }
-    
-    public function admin_actions() {
-        $page = self::get_param('page', '');
-        $action = self::get_param('action', '');
-        $calendar_feed = self::get_calendar_feed();
-        
-        if($page == 'rrze-calendar' && !is_null($calendar_feed)) {
-            switch ($action) {
-                case 'update':
-                    $this->feed_update($calendar_feed);
-                    break;
-                case 'delete':
-                    $this->feed_delete($calendar_feed);
-                    break;
-                case 'activate':
-                    $this->feed_activate($calendar_feed);
-                    break;
-                case 'deactivate':
-                    $this->feed_activate($calendar_feed, 0);
-                    break;               
-            }
-        }
-    }
-      
+          
     public function feed_update($feed) {    
         if (is_object($feed) && $feed->active) {
             self::flush_feed($feed->id, FALSE);
             $this->parse_ics_feed($feed);
         }
                 
-        $this->add_admin_notice(__('Der Feed wurde aktualisiert.'));
+        $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
+        
         wp_redirect(self::options_url());
         exit();
     }
@@ -923,8 +937,9 @@ class RRZE_Calendar {
                 }                
             }            
         }
-                
-        $this->add_admin_notice(__('Der Feed wurde gelöscht.'));
+
+        $this->add_admin_notice(__('Der Feed wurde gelöscht.', 'rrze-calendar'));
+        
         wp_redirect(self::options_url());
         exit();
     }
@@ -968,6 +983,7 @@ class RRZE_Calendar {
         } else {
             $this->add_admin_notice(__('Der Feed wurde deaktiviert.'));
         }
+        
         wp_redirect(self::options_url());
         exit();
     }
@@ -992,213 +1008,281 @@ class RRZE_Calendar {
         exit();
     }
     
-    public function categories_page() {      
-        $category_id = absint(self::get_param('category-id'));
-        $action = self::get_param('action');
-        
-        if ($category_id && $action == 'edit') :
-            $category = self::get_category_by('id', $category_id);
+    public function categories_page() {
+        $page = self::get_param('page');
+        $nonce = self::get_param('_wpnonce');
 
-            if (!$category) {
-                echo '<div class="error"><p>' . __('Die Kategorie existiert nicht.', 'rrze-calendar') . '</p></div>';
-                return;
+        if ($nonce) {                
+            if (!wp_verify_nonce($nonce, "$page-options")) {
+                wp_die(self::$messages['nonce-failed']);
             }
-            
-            $error_settings = $this->settings_errors();
 
-            $name = isset($_POST['name']) ? stripslashes($_POST['name']) : $category->name;
-            $description = isset($_POST['description']) ? stripslashes($_POST['description']) : $category->description;            
-            $color = get_term_meta($category->term_id, 'color', TRUE);
-            $feeds = self::get_feeds();
-            ?>       
-            <form method="post" action="<?php echo esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit', 'category-id' => $category_id))); ?>">
-                <table class="form-table">
-                    <tbody>
-                        <tr class="form-field form-required term-name-wrap <?php echo isset($error_settings['name']) ? 'form-invalid' : ''; ?>">
-                            <th scope="row"><label for="name"><?php _e('Name', 'rrze-calendar'); ?></label></th>
-                            <td>
-                                <input type="text" aria-required="true" size="40" value="<?php echo esc_attr($name); ?>" id="name" name="name">
-                                <p class="description"><?php _e('Der Name wird verwendet um die Kategorie zu identifizieren.', 'rrze-calendar'); ?></p>
-                            </td>
-                        </tr>
-                        <tr class="form-field term-color-wrap">
-                            <th scope="row"><label for="color"><?php _e('Farbe', 'rrze-calendar'); ?></label></th>
-                            <td><input type="text" name="color" class="color-picker" data-default-color="<?php echo !empty($color) ? esc_attr($color) : ''; ?>" value="<?php echo !empty($color) ? esc_attr($color) : ''; ?>">
-                        </tr>                        
-                        <tr class="form-field term-description-wrap">
-                            <th scope="row"><label for="description">Beschreibung</label></th>
-                            <td>
-                                <textarea class="large-text" cols="50" rows="5" id="description" name="description"><?php echo esc_html($description); ?></textarea>
-                                <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <input type="hidden" name="category_id" value="<?php echo esc_attr($category_id); ?>">
-                <input type="hidden" name="page" value="rrze-calendar-categories">
-                <input type="hidden" name="action" value="edit">
-                <?php wp_nonce_field('edit-category'); ?>                
-                <p class="submit"><?php submit_button(__('Aktualisieren', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
-            </form>
-            <?php
-        else :
-            $wp_list_table = new RRZE_Calendar_Categories_List_Table();
-            $wp_list_table->prepare_items();
-            $error_settings = $this->settings_errors();
-            ?>
-            <div id="col-right">
-                <div class="col-wrap">
-                    <?php $wp_list_table->display(); ?>
-                </div>
+            $category_id = $this->validate_add_category();
+
+            if ($this->settings_errors()) {
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
+            } else {
+                $this->add_admin_notice(__('Die Kategorie wurde hinzugefügt.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+            }
+
+            exit();            
+        }
+        
+        $wp_list_table = new RRZE_Calendar_Categories_List_Table();
+        $wp_list_table->prepare_items();
+        ?>
+        <div id="col-right">
+            <div class="col-wrap">
+                <?php $wp_list_table->display(); ?>
             </div>
-            <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
-                <h2>
-                    <?php _e('Neue Kategorie hinzufügen', 'rrze-calendar'); ?></a>
-                </h2>
-                <form class="add:the-list:" action="<?php echo esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories'))); ?>" method="post" id="addcategory" name="addcategory">
-                    <div class="form-field form-required <?php echo isset($error_settings['name']) ? 'form-invalid' : ''; ?>">
-                        <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
-                        <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php if (!empty($_POST['name'])) echo esc_attr($_POST['name']); ?>">
-                        <p class="description"><?php _e('Der Name wird verwendet um die Kategorie zu identifizieren.', 'rrze-calendar'); ?></p>                            
-                    </div>
-                    <div class="form-field">
-                        <label for="color"><?php _e('Farbe', 'rrze-calendar'); ?></label>
-                        <input type="text" name="color" class="color-picker" data-default-color="" value="">
-                    </div>                    
-                    <div class="form-field">
-                        <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
-                        <textarea cols="40" rows="5" id="description" name="description"><?php if (!empty($_POST['description'])) echo esc_html($_POST['description']) ?></textarea>
-                        <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>
-                    </div>
-                    <input type="hidden" name="page" value="rrze-calendar-categories">
-                    <input type="hidden" name="action" value="add">
-                    <?php wp_nonce_field('add-category'); ?>
-                    <p class="submit"><?php submit_button(__('Neue Kategorie hinzufügen', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
-                </form>
-            </div></div></div>
-            <?php $wp_list_table->inline_edit(); ?>
+        </div>
+        <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
+            <h2>
+                <?php _e('Neue Kategorie hinzufügen', 'rrze-calendar'); ?></a>
+            </h2>
+            <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page))); ?>" method="post" id="addcategory" name="addcategory">
+                <input type="hidden" name="action" value="add">
+                <?php wp_nonce_field("$page-options"); ?>                
+                <div class="form-field form-required">
+                    <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
+                    <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) : ''; ?>" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
+                    <p class="description"><?php _e('Der Name wird verwendet um die Kategorie zu identifizieren.', 'rrze-calendar'); ?></p>                            
+                </div>
+                <div class="form-field">
+                    <label for="color"><?php _e('Farbe', 'rrze-calendar'); ?></label>
+                    <input type="text" name="color" class="color-picker" data-default-color="<?php echo (!empty($this->settings_errors['color']['value'])) ? esc_attr($this->settings_errors['color']['value']) : ''; ?>" value="<?php echo (!empty($this->settings_errors['color']['value'])) ? esc_attr($this->settings_errors['color']['value']) : ''; ?>">
+                </div>                    
+                <div class="form-field">
+                    <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
+                    <textarea cols="40" rows="5" id="description" name="description"><?php echo (!empty($this->settings_errors['description']['value'])) ? esc_attr($this->settings_errors['description']['value']) : ''; ?></textarea>
+                    <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>
+                </div>
+                <p class="submit"><?php submit_button(__('Neue Kategorie hinzufügen', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
+            </form>
+        </div></div></div>
+        <?php $wp_list_table->inline_edit();
+    }
+    
+    public function categories_edit() {
+        $page = self::get_param('page');
+        $category_id = self::get_param('category-id');
+        $nonce = self::get_param('_wpnonce');
+
+        $category = self::get_category_by('id', $category_id);
+        if (!$category) {
+            echo '<div class="error"><p>' . __('Die Kategorie existiert nicht.', 'rrze-calendar') . '</p></div>';
+            return;
+        }
+
+        if ($nonce) {                
+            if (!wp_verify_nonce($nonce, "$page-options")) {
+                wp_die(self::$messages['nonce-failed']);
+            }
+
+            $this->validate_edit_category($category_id, $category);
+
+            if ($this->settings_errors()) {
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+            } else {
+                $this->add_admin_notice(__('Die Kategorie wurde aktualisiert.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+            }
+
+            exit();            
+        }
+
+        $name = $category->name;
+        $description = $category->description;            
+        $color = get_term_meta($category->term_id, 'color', TRUE);
+        $feeds = self::get_feeds();
+        ?>       
+        <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id))); ?>">
+            <input type="hidden" name="action" value="edit">
+            <?php wp_nonce_field("$page-options"); ?>            
+            <table class="form-table">
+                <tbody>
+                    <tr class="form-field form-required term-name-wrap">
+                        <th scope="row"><label for="name"><?php _e('Name', 'rrze-calendar'); ?></label></th>
+                        <td>
+                            <input type="text" aria-required="true" size="40" name="name" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) :  $name; ?>" size="40" maxlength="40" aria-required="true" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
+                            <p class="description"><?php _e('Der Name wird verwendet um die Kategorie zu identifizieren.', 'rrze-calendar'); ?></p>
+                        </td>
+                    </tr>
+                    <tr class="form-field term-color-wrap">
+                        <th scope="row"><label for="color"><?php _e('Farbe', 'rrze-calendar'); ?></label></th>
+                        <td><input type="text" name="color" class="color-picker" data-default-color="<?php echo (!empty($this->settings_errors['color']['value'])) ? esc_attr($this->settings_errors['color']['value']) :  $color; ?>" value="<?php echo (!empty($this->settings_errors['color']['value'])) ? esc_attr($this->settings_errors['color']['value']) :  $color; ?>">
+                    </tr>                        
+                    <tr class="form-field term-description-wrap">
+                        <th scope="row"><label for="description">Beschreibung</label></th>
+                        <td>
+                            <textarea class="large-text" cols="50" rows="5" id="description" name="description"><?php echo (!empty($this->settings_errors['description']['value'])) ? esc_attr($this->settings_errors['description']['value']) :  $description; ?></textarea>
+                            <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="submit"><?php submit_button(__('Aktualisieren', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
+        </form>
         <?php
-        endif;
     }
     
     public function tags_page() {
-        $tag_id = absint(self::get_param('tag-id'));
-        $action = self::get_param('action');
-        
-        if ($tag_id && $action == 'edit') :
-            $tag = self::get_tag_by('id', $tag_id);
+        $page = self::get_param('page');
+        $nonce = self::get_param('_wpnonce');
 
-            if (!$tag) {
-                echo '<div class="error"><p>' . __('Das Schlagwort existiert nicht.', 'rrze-calendar') . '</p></div>';
-                return;
+        if ($nonce) {                
+            if (!wp_verify_nonce($nonce, "$page-options")) {
+                wp_die(self::$messages['nonce-failed']);
             }
 
-            $error_settings = $this->settings_errors();
-            
-            $name = isset($_POST['name']) ? stripslashes($_POST['name']) : $tag->name;
-            $description = isset($_POST['description']) ? stripslashes($_POST['description']) : $tag->description;            
-            $color = get_term_meta($tag->term_id, 'color', TRUE);
-            $feeds = self::get_feeds();
-            ?>
-            <form method="post" action="<?php echo esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag_id))); ?>">
-                <div id="col-right">
-                    <div class="col-wrap">
-                        <div id="rrze-calendar-taxonomy-feeds" class="wrap">
-                            <h4><?php _e('Feeds', 'rrze-calendar'); ?></h4>
-                            <?php $this->select_form($feeds, $tag->feed_ids, 'id', 'title', 'url'); ?>
-                        </div>
-                    </div>
-                </div>
-                <div id="col-left"><div class="col-wrap"><div class="form-wrap">
-                    <div class="form-field form-required <?php echo isset($error_settings['name']) ? 'form-invalid' : ''; ?>">
-                        <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
-                        <input name="name" id="name" type="text" value="<?php echo esc_attr($name); ?>" size="40" maxlength="40" aria-required="true">
-                    </div>
-                    <div class="form-field">
-                        <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
-                        <textarea name="description" id="description" rows="5" cols="40"><?php echo esc_html($description); ?></textarea>
-                    </div>
-                    <input type="hidden" name="tag_id" value="<?php echo esc_attr($tag_id); ?>">
-                    <input type="hidden" name="page" value="rrze-calendar-tags">
-                    <input type="hidden" name="action" value="edit">
-                    <?php wp_nonce_field('edit-tag'); ?>                    
-                    <p class="submit"><?php submit_button(__('Aktualisieren', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
-                </div></div></div>
-            </form>
-            <?php
-        else :
-            $wp_list_table = new RRZE_Calendar_Tags_List_Table();
-            $wp_list_table->prepare_items();
-            
-            $error_settings = $this->settings_errors();
-            ?>
-            <div id="col-right">
-                <div class="col-wrap">
-                    <?php $wp_list_table->display(); ?>
-                </div>
+            $tag_id = $this->validate_add_tag();
+
+            if ($this->settings_errors()) {
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
+            } else {
+                $this->add_admin_notice(__('Das Schlagwort wurde hinzugefügt.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+            }
+
+            exit();            
+        }
+        
+        $wp_list_table = new RRZE_Calendar_Tags_List_Table();
+        $wp_list_table->prepare_items();
+        ?>
+        <div id="col-right">
+            <div class="col-wrap">
+                <?php $wp_list_table->display(); ?>
             </div>
-            <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
-                <h2>
-                    <?php _e('Neues Schlagwort erstellen', 'rrze-calendar'); ?></a>
-                </h2>
-                <form class="add:the-list:" action="<?php echo esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags'))); ?>" method="post" id="addtag" name="addtag">
-                    <div class="form-field form-required <?php echo isset($error_settings['name']) ? 'form-invalid' : ''; ?>">
-                        <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
-                        <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php if (!empty($_POST['name'])) echo esc_attr($_POST['name']); ?>">
-                        <p class="description"><?php _e('Der Name wird verwendet um das Schlagwort zu identifizieren.', 'rrze-calendar'); ?></p>                    
-                    </div>                   
-                    <div class="form-field">
-                        <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
-                        <textarea cols="40" rows="5" id="description" name="description"><?php if (!empty($_POST['description'])) echo esc_html($_POST['description']) ?></textarea>
-                        <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>                            
-                    </div>
-                    <input type="hidden" name="page" value="rrze-calendar-tags">
-                    <input type="hidden" name="action" value="add">
-                    <?php wp_nonce_field('add-tag'); ?>
-                    <p class="submit"><?php submit_button(__('Neues Schlagwort erstellen', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
-                </form>
-            </div></div></div>
-            <?php $wp_list_table->inline_edit(); ?>
-        <?php
-        endif;
+        </div>
+        <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
+            <h2>
+                <?php _e('Neues Schlagwort erstellen', 'rrze-calendar'); ?></a>
+            </h2>
+            <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page))); ?>" method="post" id="addtag" name="addtag">
+                <input type="hidden" name="page" value="rrze-calendar-tags">
+                <input type="hidden" name="action" value="add">
+                <?php wp_nonce_field("$page-options"); ?>
+                <div class="form-field form-required">
+                    <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
+                    <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) : ''; ?>" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
+                    <p class="description"><?php _e('Der Name wird verwendet um das Schlagwort zu identifizieren.', 'rrze-calendar'); ?></p>                    
+                </div>                   
+                <div class="form-field">
+                    <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
+                    <textarea cols="40" rows="5" id="description" name="description"><?php echo (!empty($this->settings_errors['description']['value'])) ? esc_attr($this->settings_errors['description']['value']) : ''; ?></textarea>
+                    <p class="description"><?php _e('Die Beschreibung ist für administrative Zwecke vorhanden.', 'rrze-calendar'); ?></p>                            
+                </div>
+                <p class="submit"><?php submit_button(__('Neues Schlagwort erstellen', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
+            </form>
+        </div></div></div>
+        <?php $wp_list_table->inline_edit();
     }
     
-    public function validate_settings($input) {        
-        if (empty(trim($input['endpoint_slug']))) {
-            $this->add_settings_error('endpoint_slug');
-        }        
-                
+    private function tags_edit() {
+        $page = self::get_param('page');
+        $tag_id = self::get_param('tag-id');
+        $nonce = self::get_param('_wpnonce');
+
+        $tag = self::get_tag_by('id', $tag_id);
+        if (!$tag) {
+            echo '<div class="error"><p>' . __('Das Schlagwort existiert nicht.', 'rrze-calendar') . '</p></div>';
+            return;
+        }
+
+        if ($nonce) {                
+            if (!wp_verify_nonce($nonce, "$page-options")) {
+                wp_die(self::$messages['nonce-failed']);
+            }
+            
+            $this->validate_edit_tag($tag_id, $tag);
+
+            if ($this->settings_errors()) {
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+            } else {
+                $this->add_admin_notice(__('Das Schlagwort wurde aktualisiert.', 'rrze-calendar'));
+                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+            }
+
+            exit();            
+        }
+
+        $name = $tag->name;
+        $description = $tag->description;            
+        $color = get_term_meta($tag->term_id, 'color', TRUE);
+        $feeds = self::get_feeds();
+        ?>
+        <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id))); ?>">
+            <input type="hidden" name="action" value="edit">
+            <?php wp_nonce_field("$page-options"); ?>                
+            <div id="col-right">
+                <div class="col-wrap">
+                    <div id="rrze-calendar-taxonomy-feeds" class="wrap">
+                        <h4><?php _e('Feeds', 'rrze-calendar'); ?></h4>
+                        <?php $this->select_form($feeds, $tag->feed_ids, 'id', 'title', 'url'); ?>
+                    </div>
+                </div>
+            </div>
+            <div id="col-left"><div class="col-wrap"><div class="form-wrap">
+                <div class="form-field form-required">
+                    <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
+                    <input name="name" id="name" type="text" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) :  $name; ?>" size="40" maxlength="40" aria-required="true" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
+                </div>
+                <div class="form-field">
+                    <label for="description"><?php _e('Beschreibung', 'rrze-calendar'); ?></label>
+                    <textarea name="description" id="description" rows="5" cols="40"><?php echo (!empty($this->settings_errors['description']['value'])) ? esc_attr($this->settings_errors['description']['value']) :  $description; ?></textarea>
+                </div>
+                <p class="submit"><?php submit_button(__('Aktualisieren', 'rrze-calendar'), 'primary', 'submit', FALSE); ?></p>
+            </div></div></div>
+        </form>
+        <?php
+    }
+        
+    public function validate_settings() {
+        $input = (array) self::get_param(self::option_name);
+        
         $endpoint_slug = preg_replace("/[^a-zA-Z0-9]+/", "", trim($input['endpoint_slug']));
         if (empty($endpoint_slug)) {
             $this->add_settings_error('endpoint_slug');
+        } else {
+            $this->add_settings_error('endpoint_slug', $endpoint_slug, '', '');
         }        
         
-        if (empty(trim($input['endpoint_name']))) {
+        $endpoint_name = trim($input['endpoint_name']);
+        if (empty($endpoint_name)) {
             $this->add_settings_error('endpoint_name');
+        } else {
+            $this->add_settings_error('endpoint_name', $endpoint_name, '', '');
         }
         
-        if (empty(trim($input['schedule_event'])) || !array_key_exists(trim($input['schedule_event']), self::$schedule_event_recurrance)) {
+        $schedule_event = trim($input['schedule_event']);
+        if (empty($schedule_event) || !array_key_exists($schedule_event, self::$schedule_event_recurrance)) {
             $this->add_settings_error('schedule_event');
+        } else {
+            $this->add_settings_error('schedule_event', $schedule_event, '', '');
         }
         
+        $this->set_settings_error();
         if($this->settings_errors()) {
-            return;
+            return FALSE;
         }        
         
         self::$options['endpoint_slug'] = $endpoint_slug;
         self::add_endpoint();
         flush_rewrite_rules();
         
-        self::$options['endpoint_name'] = trim(self::$options['endpoint_name']);               
-        self::$options['schedule_event'] = $input['schedule_event'];      
+        self::$options['endpoint_name'] = $endpoint_name;               
+        self::$options['schedule_event'] = $schedule_event;
+        update_option(self::option_name, self::$options);
     }
     
-    private function validate_new($input) {
+    private function validate_new_feed() {
         global $wpdb;
-
-        $input = (array) $input;
         
-        $url = !empty(trim($input['url'])) ? strtolower(trim(urldecode($input['url']), '/\\')) : '';
+        $input = (array) self::get_param(self::option_name);
+
+        $url = isset($input['url']) ? strtolower(trim(urldecode($input['url']), '/\\')) : '';
         
         $url = filter_var($url, FILTER_SANITIZE_URL);
         
@@ -1210,15 +1294,26 @@ class RRZE_Calendar {
             $this->add_settings_error('url', $url, __('Der URL ist ungültig.', 'rrze-calendar'));
         } elseif ($url && !is_null($feed_url)) {
             $this->add_settings_error('url', $url, __('URL existiert bereits.', 'rrze-calendar'));
+        } else {
+            $this->add_settings_error('url', $url, '', '');
         }
         
-        $title = !empty(trim($input['title'])) ? trim($input['title']) : '';
+        $title = isset($input['title']) ? trim($input['title']) : '';
         
         if (!$title) {
             $this->add_settings_error('title');
+        } else {
+            $this->add_settings_error('title', $title, '', '');
         }
-        
+
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
         }        
                 
@@ -1260,22 +1355,28 @@ class RRZE_Calendar {
         return FALSE;
     }
     
-    private function validate_edit($input) {
-        $feed_id = isset($input['feed_id']) ? absint($input['feed_id']) : 0;
+    private function validate_edit_feed($feed_id, $feed) {
+        $input = (array) self::get_param(self::option_name);
+                
+        $url = $feed->url; 
+        $this->add_settings_error('url', $url, '', '');
         
-        $feed = self::get_calendar($feed_id);
-        
-        if (is_null($feed)) {
-            return;
-        }
-        
-        $title = !empty(trim($input['title'])) ? trim($input['title']) : '';        
+        $title = isset($input['title']) ? trim($input['title']) : '';        
         
         if (!$title) {
             $this->add_settings_error('title');
+        } else {
+            $this->add_settings_error('title', $title, '', '');
         }
         
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
         }        
         
@@ -1312,50 +1413,38 @@ class RRZE_Calendar {
                 }
             }
             
-            return $feed_id;
         }
         
-        return FALSE;
+        return $feed_id;
     }
     
     public function validate_add_category() {
-        $submit = self::get_param('submit');
-        $page = self::get_param('page');
-        $action = self::get_param('action');
-        $nonce = self::get_param('_wpnonce');
-        
-        $name = self::get_param('name');
-        $description = self::get_param('description');
-        $color = self::get_param('color');
-
-        if (!$submit || $page != 'rrze-calendar-categories' || $action != 'add') {
-            return;
-        }
-
-        if (!wp_verify_nonce($nonce, 'add-category')) {
-            wp_die(self::$messages['nonce-failed']);
-        }
-
-        if (!current_user_can('manage_categories')) {
-            wp_die(self::$messages['invalid-permissions']);
-        }
-
-        $name = $name ? strip_tags(trim($name)) : '';
-        $description = $description ? strip_tags(trim($description)) : '';
-        
-        $color = $color && self::sanitize_hex_color($color) ? $color : '';
+        $name = strip_tags(trim(self::get_param('name')));
+        $color = self::sanitize_hex_color(self::get_param('color'));       
+        $description = strip_tags(trim(self::get_param('description')));
 
         if (empty($name)) {
             $this->add_settings_error('name');
-        }
-
-        if (self::get_category_by('name', $name)) {
+        } elseif (self::get_tag_by('name', $name)) {
             $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
+        } else {
+            $this->add_settings_error('name', $name, '', '');
         }
 
+        $this->add_settings_error('color', $color, '', '');
+        
+        $this->add_settings_error('description', $description, '', '');
+        
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
-        }
+        }        
         
         $args = array(
             'name' => $name,
@@ -1369,53 +1458,33 @@ class RRZE_Calendar {
 
         add_term_meta($category->term_id, 'color', $color, TRUE);
         
-        $args = array(
-            'page' => 'rrze-calendar-categories',
-            'action' => 'edit',
-            'category-id' => $category->term_id
-        );
-        
-        $this->add_admin_notice(__('Die Kategorie wurde hinzugefügt.', 'rrze-calendar'));
-        $redirect_url = self::options_url($args);
-        wp_redirect($redirect_url);
-        exit();
+        return $category->term_id;
     }
 
     public function validate_add_tag() {
-        $submit = self::get_param('submit');
-        $page = self::get_param('page');
-        $action = self::get_param('action');
-        $nonce = self::get_param('_wpnonce');
-
-        $name = self::get_param('name');
-        $description = self::get_param('description');
-
-        if (!$submit || $page != 'rrze-calendar-tags' || $action != 'add') {
-            return;
-        }
-
-        if (!wp_verify_nonce($nonce, 'add-tag')) {
-            wp_die(self::$messages['nonce-failed']);
-        }
-
-        if (!current_user_can('manage_categories')) {
-            wp_die(self::$messages['invalid-permissions']);
-        }
-
-        $name = $name ? strip_tags(trim($name)) : '';
-        $description = $description ? strip_tags(trim($description)) : '';
+        $name = strip_tags(trim(self::get_param('name')));
+        $description = strip_tags(trim(self::get_param('description')));
 
         if (empty($name)) {
             $this->add_settings_error('name');
-        }
-
-        if (self::get_tag_by('name', $name)) {
+        } elseif (self::get_tag_by('name', $name)) {
             $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
+        } else {
+            $this->add_settings_error('name', $name, '', '');
         }
-
+        
+        $this->add_settings_error('description', $description, '', '');
+        
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
-        }
+        }        
 
         $args = array(
             'name' => $name,
@@ -1427,155 +1496,95 @@ class RRZE_Calendar {
             wp_die(self::$messages['error-ocurred']);
         }
 
-        $args = array(
-            'page' => 'rrze-calendar-tags',
-            'action' => 'edit',
-            'tag-id' => $tag->term_id
-        );
-        
-        $this->add_admin_notice(__('Das Schlagwort wurde hinzugefügt.', 'rrze-calendar'));
-        $redirect_url = self::options_url($args);
-        wp_redirect($redirect_url);
-        exit();
+        return $tag->term_id;
     }
     
-    public function validate_edit_category() {
-        $submit = self::get_param('submit');
-        $page = self::get_param('page');
-        $action = self::get_param('action');
-        $nonce = self::get_param('_wpnonce');
+    public function validate_edit_category($category_id, $category) {
+        $name = strip_tags(trim(self::get_param('name')));
+        $color = self::sanitize_hex_color(self::get_param('color'));
+        $description = strip_tags(trim(self::get_param('description')));
         
-        $category_id = self::get_param('category_id');
-        $name = self::get_param('name');
-        $description = self::get_param('description');
-        $color = self::get_param('color');
-
-        if (!$submit || $page != 'rrze-calendar-categories' || $action != 'edit') {
-            return;
-        }
-
-        if (!wp_verify_nonce($nonce, 'edit-category')) {
-            wp_die(self::$messages['nonce-failed']);
-        }
-
-        if (!current_user_can('manage_categories')) {
-            wp_die(self::$messages['invalid-permissions']);
-        }
-
-        $category_id = $category_id ? absint($_POST['category_id']) : 0;
-        if (!$category_id || !$existing_category = self::get_category_by('id', $category_id)) {
-            wp_die(self::$messages['error-ocurred']);
-        }
-
-        $name = $name ? strip_tags(trim($name)) : '';
-        $description = $description ? strip_tags(trim($description)) : '';
-        
-        $color = $color && self::sanitize_hex_color($color) ? $color : '';
-
         if (empty($name)) {
             $this->add_settings_error('name');
+        } else {
+            $search_term = self::get_category_by('name', $name);
+            if (is_object($search_term) && $search_term->term_id != $category->term_id) {
+                $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
+            }            
         }
 
-        $search_term = self::get_category_by('name', $name);
-        if (is_object($search_term) && $search_term->term_id != $existing_category->term_id) {
-            $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
-        }
-
+        $this->add_settings_error('color', $color, '', '');
+        
+        $this->add_settings_error('description', $description, '', '');
+        
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
-        }
+        }        
 
         $args = array(
             'name' => $name,
             'description' => $description,
         );
 
-        $feeds = isset($_POST['rrze_calendar_selected']) ? (array) $_POST['rrze_calendar_selected'] : array();
+        $feeds = (array) self::get_param('rrze_calendar_selected', array());
         $feeds = array_map('intval', $feeds);
-
-        $category = self::update_category($existing_category->term_id, $args, $feeds);
+        $category = self::update_category($category->term_id, $args, $feeds);
 
         if (is_wp_error($category)) {
             wp_die(self::$messages['error-ocurred']);
         }
         
-        update_term_meta($existing_category->term_id, 'color', $color);
-
-        $args = array(
-            'page' => 'rrze-calendar-categories'
-        );
-        
-        $this->add_admin_notice(__('Die Kategorie wurde aktualisiert.', 'rrze-calendar'));
-        $redirect_url = self::options_url($args);
-        wp_redirect($redirect_url);
-        exit();
+        update_term_meta($category->term_id, 'color', $color);
     }
 
-    public function validate_edit_tag() {
-        $submit = self::get_param('submit');
-        $page = self::get_param('page');
-        $action = self::get_param('action');
-        $nonce = self::get_param('_wpnonce');
-        
-        $tag_id = self::get_param('tag_id');
-        $name = self::get_param('name');
-        $description = self::get_param('description');
-
-        if (!$submit || $page != 'rrze-calendar-tags' || $action != 'edit') {
-            return;
-        }
-
-        if (!wp_verify_nonce($nonce, 'edit-tag')) {
-            wp_die(self::$messages['nonce-failed']);
-        }
-
-        if (!current_user_can('manage_categories')) {
-            wp_die(self::$messages['invalid-permissions']);
-        }
-
-        $tag_id = isset($_POST['tag_id']) ? absint($_POST['tag_id']) : 0;
-        if (!$tag_id || !$existing_tag = self::get_tag_by('id', $tag_id)) {
-            wp_die(self::$messages['error-ocurred']);
-        }
-
-        $name = isset($_POST['name']) ? strip_tags(trim($_POST['name'])) : '';
-        $description = isset($_POST['description']) ? strip_tags(trim($_POST['description'])) : '';
+    private function validate_edit_tag($tag_id, $tag) {
+        $name = strip_tags(trim(self::get_param('name')));
+        $color = self::get_param('color');
+        $color = $color && self::sanitize_hex_color($color) ? $color : '';        
+        $description = strip_tags(trim(self::get_param('description')));
 
         if (empty($name)) {
             $this->add_settings_error('name');
+        } else {
+            $search_term = self::get_tag_by('name', $name);
+            if (is_object($search_term) && $search_term->term_id != $tag->term_id) {
+                $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
+            }            
         }
 
-        $search_term = self::get_tag_by('name', $name);
-        if (is_object($search_term) && $search_term->term_id != $existing_tag->term_id) {
-            $this->add_settings_error('name', $name, __('Der Name wird bereits verwendet. Bitte wählen Sie einen anderen.', 'rrze-calendar'));
-        }
-
+        $this->add_settings_error('description', $description, '', '');
+        
+        $this->set_settings_error();
         if ($this->settings_errors()) {
+            foreach ($this->settings_errors() as $error) {
+                if ($error['message']) {
+                    $this->add_admin_notice($error['message']);
+                }
+            }
+            
             return FALSE;
-        }
+        }        
 
         $args = array(
             'name' => $name,
             'description' => $description,
         );
 
-        $feeds = isset($_POST['rrze_calendar_selected']) ? (array) $_POST['rrze_calendar_selected'] : array();
+        $feeds = (array) self::get_param('rrze_calendar_selected', array());
         $feeds = array_map('intval', $feeds);
 
-        $tag = self::update_tag($existing_tag->term_id, $args, $feeds);
+        $tag = self::update_tag($tag->term_id, $args, $feeds);
 
         if (is_wp_error($tag)) {
             wp_die(self::$messages['error-ocurred']);
         }
-        
-        $args = array(
-            'page' => 'rrze-calendar-tags'
-        );
-        
-        $this->add_admin_notice(__('Das Schlagwort wurde aktualisiert.', 'rrze-calendar'));
-        $redirect_url = self::options_url($args);
-        wp_redirect($redirect_url);
-        exit();
     }
     
     public function validate_delete_category() {
@@ -1596,20 +1605,24 @@ class RRZE_Calendar {
             wp_die(self::$messages['invalid-permissions']);
         }
 
-        if (!$category_id || !$existing_category = self::get_category_by('id', $category_id)) {
+        if (!$category_id || !$category = self::get_category_by('id', $category_id)) {
             wp_die(self::$messages['error-ocurred']);
         }
         
-        $result = self::delete_category($existing_category->term_id);
+        $result = self::delete_category($category->term_id);
         if (!$result || is_wp_error($result)) {
             wp_die(self::$messages['error-ocurred']);
         }
         
-        delete_term_meta($existing_category->term_id, 'color');
+        delete_term_meta($category->term_id, 'color');
         
+        $args = array(
+            'page' => 'rrze-calendar-categories'
+        );
+
         $this->add_admin_notice(__('Die Kategorie wurde gelöscht.', 'rrze-calendar'));
-        $redirect_url = self::options_url(array('page' => 'rrze-calendar-categories'));
-        wp_redirect($redirect_url);
+        
+        wp_redirect(self::options_url($args));
         exit();
     }
         
@@ -1631,20 +1644,24 @@ class RRZE_Calendar {
             wp_die(self::$messages['invalid-permissions']);
         }
 
-        if (!$tag_id || !$existing_tag = self::get_tag_by('id', $tag_id)) {
+        if (!$tag_id || !$tag = self::get_tag_by('id', $tag_id)) {
             wp_die(self::$messages['error-ocurred']);
         }
         
-        $result = self::delete_tag($existing_tag->term_id);
+        $result = self::delete_tag($tag->term_id);
         if (!$result || is_wp_error($result)) {
             wp_die(self::$messages['error-ocurred']);
         }
         
-        delete_term_meta($existing_tag->term_id, 'color');
+        delete_term_meta($tag->term_id, 'color');
         
+        $args = array(
+            'page' => 'rrze-calendar-tags'
+        );
+
         $this->add_admin_notice(__('Das Schlagwort wurde gelöscht.', 'rrze-calendar'));
-        $redirect_url = self::options_url(array('page' => 'rrze-calendar-tags'));
-        wp_redirect($redirect_url);
+        
+        wp_redirect(self::options_url($args));
         exit();
     }
     
@@ -1774,7 +1791,9 @@ class RRZE_Calendar {
 
         $categories = array();
         foreach ($category_terms as $category_term) {
-            $categories[] = self::get_category_by('id', $category_term->term_id);
+            if ($category = self::get_category_by('id', $category_term->term_id)) {
+                $categories[] = $category;
+            }
         }
 
         return $categories;
@@ -1793,7 +1812,9 @@ class RRZE_Calendar {
 
         $tags = array();
         foreach ($tag_terms as $tag_term) {
-            $tags[] = self::get_tag_by('id', $tag_term->term_id);
+            if ($tag = self::get_tag_by('id', $tag_term->term_id)) {
+                $tags[] = $tag;
+            }
         }
 
         return $tags;
@@ -1804,7 +1825,7 @@ class RRZE_Calendar {
         $category = get_term_by($field, $value, self::taxonomy_cat_key);
 
         if (is_wp_error($category) || empty($category)) {
-            return $category;
+            return NULL;
         }
 
         $category->feed_ids = array();
@@ -1823,7 +1844,7 @@ class RRZE_Calendar {
         $tag = get_term_by($field, $value, self::taxonomy_tag_key);
 
         if (is_wp_error($tag) || empty($tag)) {
-            return $tag;
+            return NULL;
         }
 
         $tag->feed_ids = array();
@@ -1895,17 +1916,16 @@ class RRZE_Calendar {
         return self::get_tag_by('id', $tag['term_id']);
     }
     
-    public static function update_category($id, $args = array(), $feeds = NULL) {
-        $existing_category = self::get_category_by('id', $id);
-        if (is_wp_error($existing_category)) {
+    public static function update_category($id, $args = NULL, $feeds = NULL) {
+        $category = self::get_category_by('id', $id);
+        if (!$category) {
             return new WP_Error('invalid', __('Die Kategorie existiert nicht.', 'rrze-calendar'));
         }
 
         $args_to_encode = array();
-        $args_to_encode['feed_ids'] = (!empty($feeds) && is_array($feeds)) ? $feeds : $existing_category->feed_ids;
-        $args_to_encode['feed_ids'] = array_unique($args_to_encode['feed_ids']);
-        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $existing_category->description;
-
+        $args_to_encode['feed_ids'] = !empty($feeds) && is_array($feeds) ? array_unique($feeds) : array();
+        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $category->description;
+        
         $encoded_description = self::get_encoded_description($args_to_encode);
         $args['description'] = $encoded_description;
 
@@ -1917,16 +1937,15 @@ class RRZE_Calendar {
         return self::get_category_by('id', $category['term_id']);
     }
 
-    public static function update_tag($id, $args = array(), $feeds = NULL) {
-        $existing_tag = self::get_tag_by('id', $id);
-        if (is_wp_error($existing_tag)) {
+    public static function update_tag($id, $args = NULL, $feeds = NULL) {
+        $tag = self::get_tag_by('id', $id);
+        if (!$tag) {
             return new WP_Error('invalid', __('Das Schlagwort existiert nicht.', 'rrze-calendar'));
         }
 
         $args_to_encode = array();
-        $args_to_encode['feed_ids'] = (!empty($feeds) && is_array($feeds)) ? $feeds : $existing_tag->feed_ids;
-        $args_to_encode['feed_ids'] = array_unique($args_to_encode['feed_ids']);        
-        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $existing_tag->description;
+        $args_to_encode['feed_ids'] = !empty($feeds) && is_array($feeds) ? array_unique($feeds) : array();
+        $args_to_encode['description'] = isset($args['description']) ? $args['description'] : $tag->description;
         
         $encoded_description = self::get_encoded_description($args_to_encode);
         $args['description'] = $encoded_description;
@@ -1939,9 +1958,9 @@ class RRZE_Calendar {
         return self::get_tag_by('id', $tag['term_id']);
     }
     
-    public static function delete_category($id) {
-        $existing_category = self::get_category_by('id', $id);
-        if (!empty($existing_category->feed_ids)) {
+    private static function delete_category($id) {
+        $category = self::get_category_by('id', $id);
+        if (!empty($category->feed_ids)) {
             return FALSE;
         }
                 
@@ -1949,9 +1968,9 @@ class RRZE_Calendar {
         return $retval;
     }
     
-    public static function delete_tag($id) {
-        $existing_tag = self::get_tag_by('id', $id);
-        if (!empty($existing_category->feed_ids)) {
+    private static function delete_tag($id) {
+        $tag = self::get_tag_by('id', $id);
+        if (!empty($tag->feed_ids)) {
             return FALSE;
         }
                 
@@ -1960,9 +1979,13 @@ class RRZE_Calendar {
     }
     
     public static function add_feed_to_category($feed_id, $term_id) {
-        $existing_category = self::get_category_by('id', $term_id);
-        $existing_category->feed_ids[] = $feed_id;
-        $retval = self::update_category($term_id, NULL, $existing_category->feed_ids);
+        $category = self::get_category_by('id', $term_id);
+        if (!$category) {
+            return FALSE;
+        }
+        
+        $category->feed_ids[] = $feed_id;
+        $retval = self::update_category($term_id, NULL, $category->feed_ids);
         
         if (is_wp_error($retval)) {
             return $retval;
@@ -1972,9 +1995,13 @@ class RRZE_Calendar {
     }
 
     public static function add_feed_to_tag($feed_id, $term_id) {
-        $existing_tag = self::get_tag_by('id', $term_id);
-        $existing_tag->feed_ids[] = $feed_id;
-        $retval = self::update_tag($term_id, NULL, $existing_tag->feed_ids);
+        $tag = self::get_tag_by('id', $term_id);
+        if (!$tag) {
+            return FALSE;
+        }
+        
+        $tag->feed_ids[] = $feed_id;
+        $retval = self::update_tag($term_id, NULL, $tag->feed_ids);
         
         if (is_wp_error($retval)) {
             return $retval;
@@ -1984,15 +2011,18 @@ class RRZE_Calendar {
     }
     
     public static function remove_feed_from_category($feed_id, $term_id) {
-        $existing_category = self::get_category_by('id', $term_id);
-        
-        foreach ($existing_category->feed_ids as $key => $v) {
+        $category = self::get_category_by('id', $term_id);
+        if (!$category) {
+            return FALSE;
+        }
+                
+        foreach ($category->feed_ids as $key => $v) {
             if ($v == $feed_id) {
-                unset($existing_category->feed_ids[$key]);
+                unset($category->feed_ids[$key]);
             }
         }
         
-        $retval = self::update_category($term_id, NULL, $existing_category->feed_ids);
+        $retval = self::update_category($term_id, NULL, $category->feed_ids);
         
         if (is_wp_error($retval)) {
             return $retval;
@@ -2002,15 +2032,18 @@ class RRZE_Calendar {
     }
     
     public static function remove_feed_from_tag($feed_id, $term_id) {
-        $existing_tag = self::get_tag_by('id', $term_id);
+        $tag = self::get_tag_by('id', $term_id);
+        if (!$tag) {
+            return FALSE;
+        }
         
-        foreach ($existing_tag->feed_ids as $key => $v) {
+        foreach ($tag->feed_ids as $key => $v) {
             if ($v == $feed_id) {
-                unset($existing_tag->feed_ids[$key]);
+                unset($tag->feed_ids[$key]);
             }
         }
         
-        $retval = self::update_tag($term_id, NULL, $existing_tag->feed_ids);
+        $retval = self::update_tag($term_id, NULL, $tag->feed_ids);
         
         if (is_wp_error($retval)) {
             return $retval;
@@ -2072,12 +2105,10 @@ class RRZE_Calendar {
     }
     
     public static function sanitize_hex_color($color) {
-        if ('' === $color) {
-            return '';
-        }
-
         if (preg_match('|^#([A-Fa-f0-9]{3}){1,2}$|', $color)) {
             return $color;
+        } else {
+            return '';
         }
     }
 
@@ -2155,7 +2186,7 @@ class RRZE_Calendar {
         global $wpdb;
         
         if (!defined('ICALCREATOR_VERSION')) {
-            require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/icalcreator.php');
+            require_once(plugin_dir_path(self::$plugin_file) . 'includes/icalcreator.php');
         }
         
         $count = 0;
@@ -2629,7 +2660,7 @@ class RRZE_Calendar {
 
         if ($plugin == 'rrze-calendar' && $action == 'export') {
             if (!defined('ICALCREATOR_VERSION')) {
-                require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/icalcreator.php');
+                require_once(plugin_dir_path(self::$plugin_file) . 'includes/icalcreator.php');
             }            
             require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-export.php');            
             $event_explorer = RRZE_Calendar_Export::instance();
@@ -2675,32 +2706,105 @@ class RRZE_Calendar {
         delete_transient($transient);
 
     }
+        
+    public function add_settings_error($field, $value = '', $message = '', $error = 'error') {
+        $this->settings_errors[$field] = array('value' => $value, 'message' => $message, 'error' => $error);
+    }
     
-    public function add_settings_error($field, $value = '', $message = '') {
+    public function set_settings_error() {
         $transient = self::settings_error_transient . get_current_user_id();
-        $transient_value = get_transient($transient);
-        $errors = maybe_unserialize($transient_value ? $transient_value : array());
-        $errors[$field] = array('value' => $value, 'message' => $message);
-
-        set_transient($transient, $errors, self::settings_error_transient_expiration);
+        set_transient($transient, $this->settings_errors, self::settings_error_transient_expiration);
     }
     
     public function settings_errors() {
         $transient = self::settings_error_transient . get_current_user_id();
         $transient_value = get_transient($transient);
-        $errors = maybe_unserialize($transient_value ? $transient_value : '');
+        $this->settings_errors = maybe_unserialize($transient_value ? $transient_value : []);
         
-        if (is_array($errors)) {
-            return $errors;
+        if ($this->settings_errors) {
+            foreach ($this->settings_errors as $error) {
+                if ($error['error']) {
+                    return $this->settings_errors;
+                }
+            }
         }
         
         return FALSE;
     }
     
-    public function delete_settings_errors() {     
+    public function delete_settings_errors() {
         delete_transient(self::settings_error_transient . get_current_user_id());
     }
   
+    private static function fau_events_import() {
+        if (get_option(self::fau_events_import_option_name) === FALSE) {
+            global $wpdb;
+            $fau_events_table_name = $wpdb->prefix . 'event_feeds';
+            $fau_events_feeds = $wpdb->get_results("SELECT * FROM {$fau_events_table_name}");
+            foreach ($fau_events_feeds as $fau_events_feed) {
+                $sql = "SELECT * FROM " . self::$db_feeds_table . " WHERE url = %s";
+                $feed = $wpdb->get_row($wpdb->prepare($sql, $fau_events_feed->feed_url));
+                if (!$feed) {
+                    
+                }
+
+            }
+        }
+    }
+    
+    private function fau_events_add_feed($data) {
+        global $wpdb;
+
+        $data = (array) $data;
+              
+        $url = filter_var(strtolower(trim(urldecode($data['url']), '/\\')), FILTER_SANITIZE_URL);
+        
+        $feed_url =  $wpdb->get_row($wpdb->prepare("SELECT * FROM " . self::$db_feeds_table . " WHERE url = %s", $url));
+
+        if (!filter_var($url, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) {
+            return FALSE;
+        } elseif (!is_null($feed_url)) {
+            return FALSE;
+        }
+        
+        $title = !empty(trim($data['title'])) ? trim($data['title']) : '';      
+                
+        $current_time = current_time('mysql');
+        
+        $new_input = array(
+            'url' => $url,
+            'title' => $title,
+            'active' => 1,            
+            'created' => $current_time,
+            'modified' => $current_time
+        );
+
+        $rows_affected = $wpdb->insert(self::$db_feeds_table, $new_input, array('%s', '%s', '%d', '%s', '%s'));
+        
+        if ($rows_affected !== FALSE) {
+            $feed_id = $wpdb->insert_id;
+            $category_term_id = isset($data['category']) ? absint($data['category']) : '';
+            $all_categories = self::get_categories();
+            foreach ($all_categories as $category) {
+                if ($category_term_id == $category->term_id) {
+                    self::add_feed_to_category($feed_id, $category->term_id);
+                }
+            }
+
+            $tags = isset($_POST['rrze_calendar_selected']) ? array_map('intval', (array) $_POST['rrze_calendar_selected']) : array();
+            $all_tags = self::get_tags();
+            foreach ($all_tags as $tag) {
+                if (in_array($tag->term_id, $tags)) {
+                    self::add_feed_to_tag($feed_id, $tag->term_id);
+                }
+            }
+            
+            return $feed_id;
+        }
+        
+        return FALSE;
+    }
+    
 }
 
 class Event_Not_Found extends Exception {
