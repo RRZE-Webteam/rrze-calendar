@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.3.7
+  Version: 1.3.8
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.3.7';
+    const version = '1.3.8';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -2257,22 +2257,26 @@ class RRZE_Calendar {
 
                 $rrule = $e->createRrule();
                 if ($rrule) {
-                    $rrule = trim(end(explode(':', $rrule)));
+                    $rrule = explode(':', $rrule);
+                    $rrule = trim(end($rrule));
                 }
                 
                 $exrule = $e->createExrule();
                 if ($exrule) {
-                    $exrule = trim(end(explode(':', $exrule)));
+                    $exrule = explode(':', $exrule);
+                    $exrule = trim(end($exrule));
                 }
                 
                 $rdate = $e->createRdate();
                 if ($rdate) {
-                    $rdate = trim(end(explode(':', $rdate)));
+                    $rdate = explode(':', $rdate);
+                    $rdate = trim(end($rdate));
                 }
                 
                 $exdate = $e->createExdate();
                 if ($exdate) {
-                    $exdate = trim(end(explode(':', $exdate)));
+                    $exdate = explode(':', $exdate);
+                    $exdate = trim(end($exdate));
                 }
 
                 $data = array(
