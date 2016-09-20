@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.3.4
+  Version: 1.3.5
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.3.4';
+    const version = '1.3.5';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -574,9 +574,13 @@ class RRZE_Calendar {
     
     public function tags_field() {
         $calendar_feed = self::get_calendar_feed();
-        $tags = self::get_tags();
+        $all_tags = self::get_tags();
         $selected_tags = !is_null($calendar_feed) ? self::get_tags_for_feed($calendar_feed->id) : NULL;
-        $this->select_form($tags, $selected_tags, 'term_id', 'name', 'slug');      
+        if (!empty($all_tags)) {
+            $this->select_form($all_tags, $selected_tags, 'term_id', 'name', 'slug');
+        } else {
+            echo '<p>' . __('Keine Elemente gefunden.', 'rrze-calendar') . '</p>';
+        }
     }
     
     public function endpoint_slug_field() {
@@ -1394,7 +1398,6 @@ class RRZE_Calendar {
         if ($rows_affected !== FALSE) {
             $category_term_id = isset($input['category']) ? absint($input['category']) : '';
             $all_categories = self::get_categories();
-
             foreach ($all_categories as $category) {
                 if ($category_term_id == $category->term_id) {
                     self::add_feed_to_category($feed_id, $category->term_id);
@@ -1786,7 +1789,7 @@ class RRZE_Calendar {
 
         $category_terms = get_terms(self::taxonomy_cat_key, $args);
         if (is_wp_error($category_terms) || empty($category_terms)) {
-            return FALSE;
+            return array();
         }
 
         $categories = array();
@@ -1807,7 +1810,7 @@ class RRZE_Calendar {
 
         $tag_terms = get_terms(self::taxonomy_tag_key, $args);
         if (is_wp_error($tag_terms) || empty($tag_terms)) {
-            return FALSE;
+            return array();
         }
 
         $tags = array();
@@ -2783,6 +2786,7 @@ class RRZE_Calendar {
         
         if ($rows_affected !== FALSE) {
             $feed_id = $wpdb->insert_id;
+            
             $category_term_id = isset($data['category']) ? absint($data['category']) : '';
             $all_categories = self::get_categories();
             foreach ($all_categories as $category) {
