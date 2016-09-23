@@ -2721,7 +2721,7 @@ class RRZE_Calendar {
             AND start = FROM_UNIXTIME(%d) " .
             ($has_recurrence ? "AND NOT " : "AND ") .
             "(recurrence_rules IS NULL OR recurrence_rules = '')";
-        $args = array($ical_feed_url, $uid, $start);
+        $args = array($ical_feed_url, $ical_uid, $start);
         if (!is_null($exclude_event_id)) {
             $query .= " AND id <> %d";
             $args[] = $exclude_event_id;
