@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.3.10
+  Version: 1.3.11
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
     
-    const version = '1.3.10';
+    const version = '1.3.11';
     
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -2713,16 +2713,21 @@ class RRZE_Calendar {
         }
     }
     
-    public function get_matching_event_id($ical_uid, $ical_feed_url, $start, $has_recurrence = FALSE) {
+    public function get_matching_event_id($ical_uid, $ical_feed_url, $start, $has_recurrence = FALSE, $exclude_event_id = NULL) {
         global $wpdb;
 
         $query = "SELECT id FROM " . self::$db_events_table . " WHERE ical_feed_url = %s
             AND ical_uid = %s
-            AND start = FROM_UNIXTIME(%d)";
-        $query .= $has_recurrence ? " AND NOT " : " AND ";
-        $query .= "(recurrence_rules IS NULL OR recurrence_rules = '')";
+            AND start = FROM_UNIXTIME(%d) " .
+            ($has_recurrence ? "AND NOT " : "AND ") .
+            "(recurrence_rules IS NULL OR recurrence_rules = '')";
+        $args = array($ical_feed_url, $uid, $start);
+        if (!is_null($exclude_event_id)) {
+            $query .= " AND id <> %d";
+            $args[] = $exclude_event_id;
+        }
 
-        return $wpdb->get_var($wpdb->prepare($query, array($ical_feed_url, $ical_uid, $start)));
+        return $wpdb->get_var($wpdb->prepare($query, $args));
     }
     
     private function insert_event_in_cache($event) {
