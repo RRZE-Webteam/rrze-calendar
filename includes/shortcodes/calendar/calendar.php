@@ -3,6 +3,8 @@
 add_shortcode('rrze-calendar', array('RRZE_Calendar_Shortcode', 'shortcode'));
 add_shortcode('rrze-kalender', array('RRZE_Calendar_Shortcode', 'shortcode'));
 
+add_shortcode('kalender', array('RRZE_Calendar_Shortcode', 'shortcode'));
+
 class RRZE_Calendar_Shortcode {
 
     public static function shortcode($atts, $content = "") {

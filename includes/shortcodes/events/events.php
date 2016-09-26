@@ -3,6 +3,9 @@
 add_shortcode('rrze-events', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
 add_shortcode('rrze-termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
 
+add_shortcode('events', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
+add_shortcode('termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
+
 class RRZE_Calendar_Events_Shortcode {
     
     public static function shortcode($atts, $content = "") {
