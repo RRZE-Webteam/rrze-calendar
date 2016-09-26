@@ -7,7 +7,6 @@ class RRZE_Calendar_Tags_List_Table extends WP_List_Table {
     public function __construct() {
 
         parent::__construct(array(
-            'screen' => 'edit-tag',
             'singular' => 'tag',            
             'plural' => 'tags',
             'ajax' => true
