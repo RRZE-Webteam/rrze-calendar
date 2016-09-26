@@ -138,7 +138,16 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
                 case 'deactivate':
                     $this->feed_bulk_activate($feed_ids, 0);
                     break;
+                default:
+                    return;
+                    break;
             }
+            
+            if (!headers_sent() && (!defined('DOING_AJAX') || !DOING_AJAX)) {
+                wp_redirect(esc_url(RRZE_Calendar::options_url()));
+                exit();
+            }                    
+            
         }
     }
 
