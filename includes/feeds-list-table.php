@@ -27,7 +27,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
             case 'category':
                 if (!empty($item[$column_name]) && is_array($item[$column_name])) {
                     
-                    $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit-category', 'category-id' => $item[$column_name]['id']));
+                    $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit', 'category-id' => $item[$column_name]['id']));
                     $category = sprintf('<a href="%1$s" title="%2$s">%2$s</a><br>%3$s', $edit_link, $item[$column_name]['name'], $item[$column_name]['slug']);                    
                     $item[$column_name] = $category;
                 } else {
@@ -38,7 +38,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
                 if (!empty($item[$column_name]) && is_array($item[$column_name])) {
                     $tags = array();
                     foreach ($item[$column_name] as $tag) {
-                        $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit-tag', 'tag-id' => $tag['id']));
+                        $edit_link = RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag['id']));
                         $tags[] = sprintf('<a href="%1$s" title="%2$s">%3$s</a>', $edit_link, $tag['slug'], $tag['name']);
                     }
                     $item[$column_name] = implode(', ', $tags);
