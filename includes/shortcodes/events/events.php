@@ -87,7 +87,7 @@ class RRZE_Calendar_Events_Shortcode {
         }
         
         ob_start();
-        require_once($template);
+        include $template;
         return ob_get_clean();        
     }
     
