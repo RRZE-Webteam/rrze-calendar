@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.4.5
+  Version: 1.4.6
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.4.5';
+    const version = '1.4.6';
 
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -52,11 +52,11 @@ class RRZE_Calendar {
     const taxonomy_cat_key = 'rrze-calendar-category';
     const taxonomy_tag_key = 'rrze-calendar-tag';
 
-    const settings_error_transient = 'rrze-calendar-settings-error-';
-    const settings_error_transient_expiration = 30;
+    const settings_errors_transient = 'rrze-calendar-settings-errors-';
+    const settings_errors_transient_expiration = 30;
 
-    const notice_transient = 'rrze-calendar-notice-';
-    const notice_transient_expiration = 30;
+    const admin_notices_transient = 'rrze-calendar-admin-notices-';
+    const admin_notices_transient_expiration = 30;
 
     public $settings_errors = [];
     public $admin_notices = [];
@@ -112,6 +112,9 @@ class RRZE_Calendar {
             require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
         }
 
+        $this->settings_errors();
+        $this->admin_notices();
+
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-functions.php');
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-event.php');
 
@@ -136,7 +139,7 @@ class RRZE_Calendar {
 
         add_action('admin_init', array($this, 'admin_settings'));
         add_action('admin_init', array($this, 'admin_validate'));
-        add_action('admin_notices', array($this, 'admin_notices'));
+        add_action('admin_notices', array($this, 'get_admin_notices'));
 
         add_filter('set-screen-option', array($this, 'list_table_set_option'), 10, 3);
 
@@ -459,8 +462,6 @@ class RRZE_Calendar {
     }
 
     public function calendar_menu() {
-        $this->settings_errors();
-
         $calendar_page = add_menu_page(__('Kalender', 'rrze-calendar'), __('Kalender', 'rrze-calendar'), 'manage_options', 'rrze-calendar', array($this, 'calendar_feeds_page'), 'dashicons-calendar-alt');
         add_submenu_page('rrze-calendar', __('Feeds', 'rrze-calendar'), __('Feeds', 'rrze-calendar'), 'manage_options', 'rrze-calendar', array($this, 'calendar_feeds_page'));
         add_action("load-{$calendar_page}", array($this, 'load_calendar_page'));
@@ -473,8 +474,6 @@ class RRZE_Calendar {
         add_submenu_page('rrze-calendar', __('Kategorien', 'rrze-calendar'), __('Kategorien', 'rrze-calendar'), 'manage_options', 'rrze-calendar-categories', array($this, 'calendar_categories_page'));
         add_submenu_page('rrze-calendar', __('Schlagworte', 'rrze-calendar'), __('Schlagworte', 'rrze-calendar'), 'manage_options', 'rrze-calendar-tags', array($this, 'calendar_tags_page'));
         add_submenu_page('rrze-calendar', __('Einstellungen', 'rrze-calendar'), __('Einstellungen', 'rrze-calendar'), 'manage_options', 'rrze-calendar-settings', array($this, 'calendar_settings_page'));
-
-        $this->delete_settings_errors();
     }
 
     public function load_calendar_page() {
@@ -539,7 +538,7 @@ class RRZE_Calendar {
         $url = !is_null($calendar_feed) ? $calendar_feed->url : '';
         $readonly = !empty($url) ? ' readonly="readonly"' : '';
         ?>
-        <input class="regular-text <?php echo (!empty($this->settings_errors['url']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (!empty($this->settings_errors['url']['error'])) ? $this->settings_errors['url']['value'] : $url; ?>" name="<?php printf('%s[url]', self::option_name); ?>"<?php echo $readonly; ?>>
+        <input class="regular-text <?php echo (!empty($this->settings_errors['url']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (isset($this->settings_errors['url']['value'])) ? $this->settings_errors['url']['value'] : $url; ?>" name="<?php printf('%s[url]', self::option_name); ?>"<?php echo $readonly; ?>>
         <?php
     }
 
@@ -547,7 +546,7 @@ class RRZE_Calendar {
         $calendar_feed = self::get_calendar_feed();
         $title = !is_null($calendar_feed) ? $calendar_feed->title : '';
         ?>
-        <input class="regular-text <?php echo (!empty($this->settings_errors['title']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (!empty($this->settings_errors['title']['error'])) ? $this->settings_errors['title']['value'] : $title; ?>" name="<?php printf('%s[title]', self::option_name); ?>">
+        <input class="regular-text <?php echo (!empty($this->settings_errors['title']['error'])) ? 'field-invalid' : ''; ?>" type="text" value="<?php echo (isset($this->settings_errors['title']['value'])) ? $this->settings_errors['title']['value'] : $title; ?>" name="<?php printf('%s[title]', self::option_name); ?>">
         <?php
     }
 
@@ -582,22 +581,22 @@ class RRZE_Calendar {
     }
 
     public function endpoint_slug_field() {
-        $endpoint_slug = !empty($this->settings_errors['endpoint_slug']['error']) ? $this->settings_errors['endpoint_slug']['value'] : self::$options['endpoint_slug'];
+        $endpoint_slug = isset($this->settings_errors['endpoint_slug']['value']) ? $this->settings_errors['endpoint_slug']['value'] : self::$options['endpoint_slug'];
         ?>
         <code><?php echo site_url(); ?>/</code>
-        <input <?php echo (!empty($this->settings_errors['endpoint_slug']['error'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_slug; ?>" name="<?php printf('%s[endpoint_slug]', self::option_name); ?>">
+        <input <?php echo (isset($this->settings_errors['endpoint_slug']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_slug; ?>" name="<?php printf('%s[endpoint_slug]', self::option_name); ?>">
         <?php
     }
 
     public function endpoint_name_field() {
-        $endpoint_name = !empty($this->settings_errors['endpoint_name']['error']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
+        $endpoint_name = isset($this->settings_errors['endpoint_name']['value']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
         ?>
-        <input <?php echo (!empty($this->settings_errors['endpoint_name']['error'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
+        <input <?php echo (isset($this->settings_errors['endpoint_name']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
         <?php
     }
 
     public function schedule_event_field() {
-        $schedule_event = !empty($settings_error['schedule_event']['error']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
+        $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
         ?>
         <select name="<?php printf('%s[schedule_event]', self::option_name); ?>">
             <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
@@ -628,9 +627,7 @@ class RRZE_Calendar {
                                 wp_die(self::$messages['invalid-permissions']);
                             }
 
-                            $feed_id = $this->validate_new_feed();
-
-                            if ($this->settings_errors()) {
+                            if (!$feed_id = $this->validate_new_feed()) {
                                 wp_redirect(self::options_url(array('action' => 'new')));
                             } else {
                                 $this->add_admin_notice(__('Der Feed wurde hinzugefügt.', 'rrze-calendar'));
@@ -655,9 +652,7 @@ class RRZE_Calendar {
                                 wp_die(__('Der Feed existiert nicht.', 'rrze-calendar'));
                             }
 
-                            $this->validate_edit_feed($feed_id, $feed);
-
-                            if ($this->settings_errors()) {
+                            if (!$this->validate_edit_feed($feed_id, $feed)) {
                                 wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
                             } else {
                                 $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
@@ -704,9 +699,7 @@ class RRZE_Calendar {
                                 wp_die(self::$messages['invalid-permissions']);
                             }
 
-                            $category_id = $this->validate_add_category();
-
-                            if ($this->settings_errors()) {
+                            if (!$category_id = $this->validate_add_category()) {
                                 wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
                             } else {
                                 $this->add_admin_notice(__('Die Kategorie wurde hinzugefügt.', 'rrze-calendar'));
@@ -731,9 +724,7 @@ class RRZE_Calendar {
                                 wp_die(__('Die Kategorie existiert nicht.', 'rrze-calendar'));
                             }
 
-                            $this->validate_edit_category($category_id, $category);
-
-                            if ($this->settings_errors()) {
+                            if (!$this->validate_edit_category($category_id, $category)) {
                                 wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
                             } else {
                                 $this->add_admin_notice(__('Die Kategorie wurde aktualisiert.', 'rrze-calendar'));
@@ -771,9 +762,7 @@ class RRZE_Calendar {
                                 wp_die(self::$messages['invalid-permissions']);
                             }
 
-                            $tag_id = $this->validate_add_tag();
-
-                            if ($this->settings_errors()) {
+                            if (!$tag_id = $this->validate_add_tag()) {
                                 wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
                             } else {
                                 $this->add_admin_notice(__('Das Schlagwort wurde hinzugefügt.', 'rrze-calendar'));
@@ -798,9 +787,7 @@ class RRZE_Calendar {
                                 wp_die(__('Das Schlagwort existiert nicht.', 'rrze-calendar'));
                             }
 
-                            $this->validate_edit_tag($tag_id, $tag);
-
-                            if ($this->settings_errors()) {
+                            if (!$this->validate_edit_tag($tag_id, $tag)) {
                                 wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
                             } else {
                                 $this->add_admin_notice(__('Das Schlagwort wurde aktualisiert.', 'rrze-calendar'));
@@ -834,9 +821,7 @@ class RRZE_Calendar {
                         wp_die(self::$messages['invalid-permissions']);
                     }
 
-                    $this->validate_settings();
-
-                    if (!$this->settings_errors()) {
+                    if ($this->validate_settings()) {
                         $this->add_admin_notice(__('Einstellungen gespeichert.', 'rrze-calendar'));
                     }
 
@@ -1352,8 +1337,7 @@ class RRZE_Calendar {
             $this->add_settings_error('schedule_event', $schedule_event, '', '');
         }
 
-        $this->set_settings_error();
-        if($this->settings_errors()) {
+        if($this->has_errors()) {
             return FALSE;
         }
 
@@ -1363,7 +1347,10 @@ class RRZE_Calendar {
 
         self::$options['endpoint_name'] = $endpoint_name;
         self::$options['schedule_event'] = $schedule_event;
+        
         update_option(self::option_name, self::$options);
+        
+        return TRUE;
     }
 
     private function validate_new_feed() {
@@ -1395,14 +1382,7 @@ class RRZE_Calendar {
             $this->add_settings_error('title', $title, '', '');
         }
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1458,14 +1438,7 @@ class RRZE_Calendar {
             $this->add_settings_error('title', $title, '', '');
         }
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1500,10 +1473,10 @@ class RRZE_Calendar {
                     self::remove_feed_from_tag($feed_id, $tag->term_id);
                 }
             }
-
+            return TRUE;
         }
 
-        return $feed_id;
+        return FALSE;
     }
 
     public function validate_add_category() {
@@ -1523,14 +1496,7 @@ class RRZE_Calendar {
 
         $this->add_settings_error('description', $description, '', '');
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1563,14 +1529,7 @@ class RRZE_Calendar {
 
         $this->add_settings_error('description', $description, '', '');
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1605,14 +1564,7 @@ class RRZE_Calendar {
 
         $this->add_settings_error('description', $description, '', '');
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1630,6 +1582,8 @@ class RRZE_Calendar {
         }
 
         update_term_meta($category->term_id, 'color', $color);
+        
+        return TRUE;
     }
 
     private function validate_edit_tag($tag_id, $tag) {
@@ -1649,14 +1603,7 @@ class RRZE_Calendar {
 
         $this->add_settings_error('description', $description, '', '');
 
-        $this->set_settings_error();
-        if ($this->settings_errors()) {
-            foreach ($this->settings_errors() as $error) {
-                if ($error['message']) {
-                    $this->add_admin_notice($error['message']);
-                }
-            }
-
+        if ($this->has_errors()) {
             return FALSE;
         }
 
@@ -1673,6 +1620,8 @@ class RRZE_Calendar {
         if (is_wp_error($tag)) {
             wp_die(self::$messages['error-ocurred']);
         }
+        
+        return TRUE;
     }
 
     public function validate_delete_category() {
@@ -2808,31 +2757,30 @@ class RRZE_Calendar {
         }
     }
 
-    public function admin_notices() {
-        $this->display_admin_notices();
-    }
-
     public function add_admin_notice($message, $class = 'updated') {
         $allowed_classes = array('error', 'updated');
         if (!in_array($class, $allowed_classes)) {
             $class = 'updated';
         }
 
-        $transient = self::notice_transient . get_current_user_id();
+        $transient = self::admin_notices_transient . get_current_user_id();
         $transient_value = get_transient($transient);
-        $notices = maybe_unserialize($transient_value ? $transient_value : array());
+        $notices = is_array($transient_value) && !empty($transient_value) ? $transient_value : array();
         $notices[$class][] = $message;
 
-        set_transient($transient, $notices, self::notice_transient_expiration);
+        set_transient($transient, $notices, self::admin_notices_transient_expiration);
     }
 
-    public function display_admin_notices() {
-        $transient = self::notice_transient . get_current_user_id();
-        $transient_value = get_transient($transient);
-        $notices = maybe_unserialize($transient_value ? $transient_value : '');
+    public function admin_notices() {
+        $transient = self::admin_notices_transient . get_current_user_id();
+        $this->admin_notices = get_transient($transient);
 
-        if (is_array($notices)) {
-            foreach ($notices as $class => $messages) {
+        delete_transient($transient);
+    }
+
+    public function get_admin_notices() {
+        if (!empty($this->admin_notices)) {
+            foreach ($this->admin_notices as $class => $messages) {
                 foreach ($messages as $message) :
                     ?>
                     <div class="<?php echo $class; ?>">
@@ -2842,40 +2790,45 @@ class RRZE_Calendar {
                 endforeach;
             }
         }
-
-        delete_transient($transient);
-
     }
-
+    
     public function add_settings_error($field, $value = '', $message = '', $error = 'error') {
         $this->settings_errors[$field] = array('value' => $value, 'message' => $message, 'error' => $error);
     }
 
     public function set_settings_error() {
-        $transient = self::settings_error_transient . get_current_user_id();
-        set_transient($transient, $this->settings_errors, self::settings_error_transient_expiration);
+        $transient = self::settings_errors_transient . get_current_user_id();
+        set_transient($transient, $this->settings_errors, self::settings_errors_transient_expiration);
     }
 
     public function settings_errors() {
-        $transient = self::settings_error_transient . get_current_user_id();
+        $transient = self::settings_errors_transient . get_current_user_id();
         $transient_value = get_transient($transient);
-        $this->settings_errors = maybe_unserialize($transient_value ? $transient_value : []);
+        $this->settings_errors = is_array($transient_value) && !empty($transient_value) ? $transient_value : array();
+        
+        delete_transient($transient);
+    }
 
-        if ($this->settings_errors) {
-            foreach ($this->settings_errors as $error) {
-                if ($error['error']) {
-                    return $this->settings_errors;
+    public function has_errors() {
+        $error = FALSE;
+        if (!empty($this->settings_errors)) {
+            foreach ($this->settings_errors as $val) {
+                if ($val['error']) {
+                    $error = TRUE;
+                }
+                if ($val['message']) {
+                    $this->add_admin_notice($val['message']);
                 }
             }
         }
-
-        return FALSE;
+        
+        if ($error) {
+            $this->set_settings_error();            
+        }
+        
+        return $error;    
     }
-
-    public function delete_settings_errors() {
-        delete_transient(self::settings_error_transient . get_current_user_id());
-    }
-
+    
     public static function fau_events_import() {
         if (is_plugin_active('fau-events/fau-events.php')) {
             global $wpdb;
