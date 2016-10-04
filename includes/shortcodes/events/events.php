@@ -26,15 +26,15 @@ class RRZE_Calendar_Events_Shortcode {
             $anzahl = 10;
         }
 
-        $taxonomy_not_found = FALSE;
+        $taxonomy_empty = FALSE;
         $feed_ids = array();
         
         $terms = $atts['kategorien'] ? array_map('trim', explode(',', $atts['kategorien'])) : array();
 
         foreach ($terms as $value) {
             $term = RRZE_Calendar::get_category_by('slug', $value);
-            if (empty($term)) {
-                $taxonomy_not_found = TRUE;
+            if (empty($term) || empty($term->feed_ids)) {
+                $taxonomy_empty = TRUE;
                 continue;
             }
             foreach ($term->feed_ids as $feed_id) {
@@ -42,12 +42,12 @@ class RRZE_Calendar_Events_Shortcode {
             }
         }
 
-        $terms = $atts['kategorien'] ? array_map('trim', explode(',', $atts['schlagworte'])) : array();
+        $terms = $atts['schlagworte'] ? array_map('trim', explode(',', $atts['schlagworte'])) : array();
 
         foreach ($terms as $value) {
             $term = RRZE_Calendar::get_tag_by('slug', $value);
-            if (empty($term)) {
-                $taxonomy_not_found = TRUE;
+            if (empty($term) || empty($term->feed_ids)) {
+                $taxonomy_empty = TRUE;
                 continue;
             }
             foreach ($term->feed_ids as $feed_id) {
@@ -69,10 +69,10 @@ class RRZE_Calendar_Events_Shortcode {
         $filter = array(
             'feed_ids' => $feed_ids
         );
-        
+
         $rrze_calendar_data = array();
         
-        if ($feed_ids OR (!$feed_ids && !$taxonomy_not_found)) {
+        if ($feed_ids OR (!$feed_ids && !$taxonomy_empty)) {
             $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
             $events_result = RRZE_Calendar::get_events_relative_to($timestamp, $anzahl, 0, $filter);
 
