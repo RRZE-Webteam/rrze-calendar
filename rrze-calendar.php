@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.5.0
+  Version: 1.5.1
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.5.0';
+    const version = '1.5.1';
 
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -313,6 +313,13 @@ class RRZE_Calendar {
         }
     }
 
+    public static function flush_cache() {
+        // rrze-cache plugin
+        if (has_action('rrzecache_flush_cache')) {
+            do_action('rrzecache_flush_cache');
+        }        
+    }
+    
     private function get_feeds_data($output_type = OBJECT) {
         global $wpdb;
 
@@ -1038,10 +1045,8 @@ class RRZE_Calendar {
         if (is_object($feed) && $feed->active) {
             self::flush_feed($feed->id, FALSE);
             $this->parse_ics_feed($feed);
-            // rrze-cache plugin
-            if (has_action('rrzecache_flush_cache')) {
-                do_action('rrzecache_flush_cache');
-            }            
+            
+            self::flush_cache();
         }
 
         $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
@@ -1059,10 +1064,8 @@ class RRZE_Calendar {
                     $this->parse_ics_feed($feed);
                 }
             }
-            // rrze-cache plugin
-            if (has_action('rrzecache_flush_cache')) {
-                do_action('rrzecache_flush_cache');
-            }            
+            
+            self::flush_cache();
         }
     }
 
@@ -1134,10 +1137,8 @@ class RRZE_Calendar {
             if ($activate) {
                 $this->parse_ics_feed($feed);
             }
-            // rrze-cache plugin
-            if (has_action('rrzecache_flush_cache')) {
-                do_action('rrzecache_flush_cache');
-            }            
+            
+            self::flush_cache();
         }
 
         if ($activate) {
@@ -1164,10 +1165,8 @@ class RRZE_Calendar {
                     }
                 }
             }
-            // rrze-cache plugin
-            if (has_action('rrzecache_flush_cache')) {
-                do_action('rrzecache_flush_cache');
-            }            
+            
+            self::flush_cache();
         }
     }
 
@@ -2236,10 +2235,7 @@ class RRZE_Calendar {
             $this->parse_ics_feed($feed);
         }
         
-        // rrze-cache plugin
-        if (has_action('rrzecache_flush_cache')) {
-            do_action('rrzecache_flush_cache');
-        }        
+        self::flush_cache();      
     }
 
     public static function flush_feed($feed_id = NULL, $ajax = TRUE) {
