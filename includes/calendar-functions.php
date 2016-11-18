@@ -244,6 +244,13 @@ class RRZE_Calendar_Functions {
         return date_i18n('j. M', $timestamp, TRUE);
     }
 
+    public static function get_year_date($timestamp, $convert_from_gmt = TRUE) {
+        if ($convert_from_gmt) {
+            $timestamp = self::gmt_to_local($timestamp);
+        }
+        return date_i18n('Y', $timestamp, TRUE);
+    }
+    
     public static function get_month_date($timestamp, $convert_from_gmt = TRUE) {
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);

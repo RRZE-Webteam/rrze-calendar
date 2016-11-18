@@ -96,9 +96,15 @@ class RRZE_Calendar_Event {
             case 'long_end_date':
                 return RRZE_Calendar_Functions::get_long_date($this->end - 1);
 
+            case 'start_year':
+            case 'start_year_html':
+                return RRZE_Calendar_Functions::get_year_date($this->start);
+                
+            case 'start_month':
             case 'start_month_html':
                 return RRZE_Calendar_Functions::get_month_date($this->start);
 
+            case 'start_day':
             case 'start_day_html':
                 return RRZE_Calendar_Functions::get_day_date($this->start);
 
