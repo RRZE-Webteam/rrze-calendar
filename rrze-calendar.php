@@ -3,7 +3,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.6.0
+  Version: 1.6.1
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -35,7 +35,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.6.0';
+    const version = '1.6.1';
 
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
@@ -781,7 +781,7 @@ class RRZE_Calendar {
                         break;
                     case 'rrze-calendar-tags-edit':
                         if ($nonce) {
-                            if (!wp_verify_nonce($nonce, "$page-options")) {
+                            if (!wp_verify_nonce($nonce, "$option_page-options")) {
                                 wp_die(self::$messages['nonce-failed']);
                             }
 
@@ -1603,8 +1603,6 @@ class RRZE_Calendar {
 
     private function validate_edit_tag($tag_id, $tag) {
         $name = strip_tags(trim(self::get_param('name')));
-        $color = self::get_param('color');
-        $color = $color && self::sanitize_hex_color($color) ? $color : '';
         $description = strip_tags(trim(self::get_param('description')));
 
         if (empty($name)) {
