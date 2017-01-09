@@ -24,7 +24,7 @@
     </div>
 
     <div class="inhalt">
-        <div class="wochenansicht">
+        <div class="wochenansicht" style="height: <?php echo get_option('rrze_calendar')['calendar_height'];?>px">
 
             <div class="kopfzeile clear-fix">
                 <?php foreach ($daten['tage'] as $tag): ?>
@@ -52,12 +52,12 @@
             <div class="ganztagige <?php echo !empty($ganztagig) ? '' : 'clear-fix'; ?>">
                 <span><?php _e('Ganztägig', 'rrze-calendar'); ?></span>            
                 <?php if (!empty($ganztagig)): ?>
-                <?php foreach ($ganztagig as $termin): ?>
+                <?php  $i=1; foreach ($ganztagig as $termin): ?>
                 <?php 
                 $margin_left = ($termin['start'] - 1) * 12.88 + 10;
                 $width = ($termin['ende'] - $termin['start'] + 1) * 12.88;
                 ?>
-                <div style="margin-left: <?php echo $margin_left; ?>%; width: <?php echo $width; ?>%; background: <?php echo $termin['farbe']; ?>">
+                <div style="margin-left: <?php echo $margin_left; ?>%;width: <?php echo $width; ?>%; background: <?php echo $termin['farbe']; ?>">
                     <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin ganztagig">
                         <span class="titel"><?php echo $termin['summary']; ?></span>
                     </a>
@@ -75,7 +75,9 @@
                     <?php endforeach; ?>
                 </div>
                 <?php $t = 1; ?>
+                <?php $i = -1 ?>
                 <?php foreach ($daten['tage'] as $tag): ?>
+                <?php $i++; ?>
                 <?php switch ($t) {
                         case 1:
                             $titip = 'titip-right';
@@ -86,9 +88,9 @@
                         default:
                             $titip = 'titip-bottom';
                 } $t++; ?>                
-                <div style="height: <?php echo $tag['tag_laenge']; ?>px;" class="tag <?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?><?php if (!empty($$tag['heute'])): ?>heute<?php endif; ?>" data-anfang="<?php echo $tag['tag_anfang']; ?>">
-                    <?php foreach ($tag['termine'] as $termin): ?>
-                    <?php if (!empty($termin['time_start']) && !in_array($t, array(2, 8)) && in_array(explode(':', $termin['time_start'])[0], array($daten['stunden'][0]['stunde'], $daten['stunden'][1]['stunde']))):
+                <div style="left:<?php echo (($i*13)+10); ?>%;height: <?php echo $tag['tag_laenge']; ?>px;" class="tag <?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?><?php if (!empty($$tag['heute'])): ?>heute<?php endif; ?>" data-anfang="<?php echo $tag['tag_anfang']; ?>">
+                    <?php  ; foreach ($tag['termine'] as $termin): ?>
+                    <?php   if (!empty($termin['time_start']) && !in_array($t, array(2, 8)) && in_array(explode(':', $termin['time_start'])[0], array($daten['stunden'][0]['stunde'], $daten['stunden'][1]['stunde']))):
                         $titip = 'titip-bottom';
                     endif;?>
                     <?php if (!empty($termin['nicht_ganztagig'])): ?>

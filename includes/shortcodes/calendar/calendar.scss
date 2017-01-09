@@ -375,6 +375,8 @@ body {
 
         .wochenansicht {
             position: relative;
+            overflow-y:scroll;
+            overflow-x:hidden;
             * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
 
             .ganztagige {
@@ -466,11 +468,12 @@ body {
 
             .tage {
                 width: 100%;
+                z-index: 10;
                 margin-top: 0px!important;
                 border-top: solid 1px #EEE;
 
                 >.tag {
-                    position: relative;
+                    position: absolute;
                     width: (90%/7);
                     float: left;
 
@@ -548,15 +551,17 @@ body {
                 .stunden {
 
                     float: left;
-                    width: (100%/10);
+                    width: (100%);
+                    z-index:1;
 
                     .stunde {
                         position: relative;
                         color: #999;
+                        border-bottom: 1px dotted black;
                         line-height: 14px;
                         margin-top: 46px;
                         margin-right: 10px;
-                        text-align: right;
+                       
                     }
 
 
