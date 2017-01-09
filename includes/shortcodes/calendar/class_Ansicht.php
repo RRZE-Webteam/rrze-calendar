@@ -32,19 +32,26 @@ abstract class Ansicht {
     }
         
     public function suche_events($tag = NULL) {
+        
+            
         if (empty($tag)) {
             // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
             $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], 0, $this->optionen["filter"]);
+         
+            
             $events = RRZE_Calendar_Functions::get_calendar_dates($events['events']);
+            
+            
         } else {
             $start_time = strtotime($tag . '-00:00');
-            $end_time = strtotime($tag . '-00:00 + 1 day');
+            $end_time = strtotime($tag . '-01:00 + 1 day');
             $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
             $events = RRZE_Calendar_Functions::get_calendar_dates($events);
+            
         }
         
-        foreach ($events as $e) {
-            foreach ($e as $event) {      
+        /*foreach ($events as $e) {
+           foreach ($e as $event) {      
                 if (!$event->allday) {
                     if (is_null($this->tag_start) || strtotime($event->start_time) < $this->tag_start) {
                         $this->tag_start = strtotime($event->start_time);
@@ -65,14 +72,22 @@ abstract class Ansicht {
         if (is_null($this->tag_ende) || strtotime($this->optionen["tagesende"]) > $this->tag_ende) {
             $this->tag_ende = strtotime($this->optionen["tagesende"]);
         }
+        */
         
+          $this->tag_start = $start_time;
+                    $this->tag_ende =$end_time;  
         $events_data = array();
+      //  var_dump($events);die;
         foreach ($events as $e) {
-            foreach ($e as $event) {      
+            
+            foreach ($e as $event) {   
+                
+                
                 $events_data[] = $this->event($event);
             }
         }
         
+            
         $ts = strtotime($tag);
         $datum = date("j", $ts);
 
@@ -110,6 +125,8 @@ abstract class Ansicht {
         $event_data["slug"] = $event->slug;
         $event_data["summary"] = $event->summary;
         $event_data["location"] = $event->location;
+        if(isset($event->multi_day_event))
+        $event_data["multi_day_event"]=$event->multi_day_event;
         
         $event_data["datum_start"] = date(__('d.m.Y', 'rrze-calendar'), $event->start);
         $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $event->end);
