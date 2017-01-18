@@ -2,7 +2,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.7.4
+  Version: 1.7.5
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -34,7 +34,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.7.4';
+    const version = '1.7.5';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -2422,8 +2422,8 @@ class RRZE_Calendar {
 
 
         $args = array($start_time, $end_time);
-
         $args1 = array($start_time, $start_time, $start_time);
+        
         self::get_filter_sql($filter);
 
         $query = $wpdb->prepare(
@@ -2453,29 +2453,19 @@ class RRZE_Calendar {
                 "e.ical_feed_id, e.ical_feed_url, e.ical_source_url, e.ical_uid " .
                 "FROM " . self::$db_events_table . " e " .
                 "INNER JOIN " . self::$db_events_cache_table . " i ON e.id = i.event_id " .
-                "WHERE (i.end >= FROM_UNIXTIME(%d) AND i.start < FROM_UNIXTIME(%d ) ) and (date(i.end)<>date(i.start))" .
+                "WHERE (i.end >= FROM_UNIXTIME(%d) AND i.start < FROM_UNIXTIME(%d)) AND (date(i.end)<>date(i.start))" .
+                $filter['filter_where'] .
                 "ORDER BY allday DESC, i.start ASC, summary ASC", $args1);
-
-
-
 
         $eventsAllDAy = $wpdb->get_results($query_multievent, ARRAY_A);
         $multiDayEvent[] = array();
 
         foreach ($eventsAllDAy as $eventItem) {
-
-
-
-
             $eventItem['multi_day_event'] = true;
             $eventItem['start'] = $start_time;
-
-
+            
             $multiDayEvent[] = $eventItem;
         }
-
-
-
 
         $events = (array_merge($events, $multiDayEvent));
 
@@ -2488,8 +2478,6 @@ class RRZE_Calendar {
             }
         }
 
-
-
         foreach ($final_events as &$event) {
             $event['category'] = self::get_category_for_feed($event['ical_feed_id']);
             $event['tags'] = self::get_tags_for_feed($event['ical_feed_id'], 'objects');
@@ -2497,8 +2485,6 @@ class RRZE_Calendar {
 
             $event = new RRZE_Calendar_Event($event);
         }
-
-
 
         return $final_events;
     }
