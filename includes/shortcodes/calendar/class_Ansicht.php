@@ -30,19 +30,23 @@ abstract class Ansicht {
     }
 
     public function suche_events($tag = NULL) {
+        $this->tag_start = 0;
+        $this->tag_ende = 0;
         if (empty($tag)) {
             // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
             $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], 0, $this->optionen["filter"]);
             $events = RRZE_Calendar_Functions::get_calendar_dates($events['events']);
         } else {
+            
             $start_time = strtotime($tag . '-00:00');
             $end_time = strtotime($tag . '-01:00 + 1 day');
             $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
             $events = RRZE_Calendar_Functions::get_calendar_dates($events);
+            $this->tag_start = $start_time;
+            $this->tag_ende = $end_time; 
         }
 
-        $this->tag_start = $start_time;
-        $this->tag_ende = $end_time;
+            
         $events_data = array();
 
         foreach ($events as $e) {
@@ -61,7 +65,9 @@ abstract class Ansicht {
         unset($wochentag[0]);
         $wochentag_ende = implode("", $wochentag);
 
-        // Tageslaenge in Minuten        
+        // Tageslaenge in Minuten    
+
+
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
         $tag_anfang = date('H:i', $this->tag_start);
 
@@ -94,7 +100,7 @@ abstract class Ansicht {
         $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $event->end);
 
         if ($event->allday) {
-            $start = strtotime('today 00:00:00', $event->start);
+            $start = RRZE_Calendar_Functions::gmt_to_local($event->start);
             $ende = strtotime('tomorrow 00:00:00', $event->start);
         } else {
             $start = RRZE_Calendar_Functions::gmt_to_local($event->start);
@@ -108,13 +114,13 @@ abstract class Ansicht {
         // Dauer in Minuten
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
         $duration = floor(($ende - $start) / 60);
-            
+
         $event_data["start"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + date('i', $start) - date('i', $this->tag_ende);
 
         $event_data["duration"] = $duration < $tag_laenge - $event_data["start"] ? $duration : $tag_laenge - $event_data["start"];
 
         // Ende (Pro Minute ein Pixel hoehe)
-         $event_data["ende"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + $event_data["duration"];
+        $event_data["ende"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + $event_data["duration"];
 
         // Zeitanzeige am Termin
         $event_data["time_start"] = $event->start_time;
@@ -147,6 +153,7 @@ abstract class Ansicht {
 
         // Ganztagige Events rausfiltern
         if ($event->allday) {
+
             $event_data["ganztagig"] = true;
             $datum = array(date("d.m.Y", $start));
             if (abs($ende - $start) / (24 * 60 * 60) > 1) {

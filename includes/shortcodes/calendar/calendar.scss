@@ -775,6 +775,8 @@ body {
             font-size: 12px;
             line-height: 18px;
             background-image: none;
+            border-bottom: 1px solid #eee;
+          
         }
     }
 }
@@ -867,6 +869,7 @@ body {
 
         li {
             @include no-list;
+            margin-bottom: 3px;
         }
     }
 }

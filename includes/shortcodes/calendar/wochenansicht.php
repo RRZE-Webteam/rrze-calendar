@@ -184,7 +184,7 @@
                 <?php if ($is_hetue) {
                     ?>
 
-                    <div class="stunde-now" style="top:<?php echo 78 + (current_time('H') * 60) + (current_time('H') + current_time('i') ); ?>px" >
+                    <div class="stunde-now" style="margin-top:<?php echo 25 + (current_time('H') * 60) + (current_time('H') + current_time('i') ); ?>px" >
 
 
                     </div>
