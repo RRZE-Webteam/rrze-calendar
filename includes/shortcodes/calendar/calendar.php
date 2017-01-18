@@ -13,8 +13,6 @@ class RRZE_Calendar_Shortcode {
                 'kategorien' => '',         // Mehrere Kategorien (Titelform) werden durch Komma getrennt.
                 'schlagworte' => '',        // Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
                 'anzahl' => 10,             // Anzahl der Termine in der Listenansicht. Standardwert: 10.
-                'tagesanfang' => '7:00',    // Format: "SS:MM". Standardwert: "07:00".
-                'tagesende' => '21:00',     // Format: "SS:MM". Standardwert: "21:00".
                 'ansicht' => 'monat',       // "tag", "woche", "monat" oder "liste". Standardwert: "monat".
                 'hoehe' => 650,             // Höhe des Kalenders in Pixel
                 'abonnement_link' => ''     // Abonnement-Link anzeigen (1 oder 0).

@@ -32,7 +32,7 @@
                     <span class="tag"><?php echo $daten['tag']['wochentag_anfang']; ?><span class="lang"><?php echo $daten['tag']['wochentag_ende']; ?>, </span></span> <span class="datum"><?php echo $daten['tag']['datum_kurz']; ?>. <?php echo $daten['tag']['monat']; ?></span>
                 </div>
             </div>
-
+ 
             <div class="ganztagige clear-fix">
                 <span class='header'><?php _e('Ganztägig', 'rrze-calendar'); ?></span>             
                 <?php foreach ($daten['tag']['termine'] as $termin): ?>
@@ -74,7 +74,7 @@
 
                 if ($current->getTimestamp() == $test->getTimestamp()) {
                     ?>
-                    <div class="stunde-now" style="top:<?php echo 78 + (current_time('H') * 60) + (current_time('H') + current_time('i') ); ?>px" >
+                    <div class="stunde-now" style="margin-top:<?php echo 25 + (current_time('H') * 60) + (current_time('H') + current_time('i') ); ?>px" >
 
 
                     </div>
