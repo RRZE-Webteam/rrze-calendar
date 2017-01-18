@@ -42,8 +42,6 @@ Attribute:
 kategorien          Mehrere Kategorien (Titelform) werden durch Komma getrennt.
 schlagworte         Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
 anzahl              Anzahl der Termine in der Listenansicht. Standardwert: 10.
-tagesanfang         Format: "SS:MM". Standardwert: "07:00".
-tagesende           Format: "SS:MM". Standardwert: "21:00".
 ansicht             "tag", "woche", "monat" oder "liste". Standardwert: "monat".
 abonnement_link     Abonnement-Link anzeigen (1 oder 0).
 </pre>
@@ -53,7 +51,7 @@ Beispiele:
 [rrze-kalender kategorien="titelform1"]
 [rrze-kalender kategorien="titelform1, titelform2"]
 [rrze-kalender kategorien="titelform1, titelform2" schlagworte="titelform3, titelform4"]
-[rrze-kalender kategorien="titelform1" tagesanfang="08:00" tagesende="18:00" abonnement_link=1 ansicht="liste"]
+[rrze-kalender kategorien="titelform1" abonnement_link="1" ansicht="liste"]
 </pre>
 
 Zu achten ist auf die Schreibweise, Inhalte der Attribute in Anführungszeichen eingeschlossen. Mehrere Inhalte, bspw. Kategorien werden durch Komma getrennt.
