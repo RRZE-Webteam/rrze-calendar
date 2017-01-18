@@ -25,7 +25,7 @@
     </div>
 
     <div class="inhalt">
-        <div class="tagesansicht" style="height: <?php echo get_option('rrze_calendar')['calendar_height']; ?>px">
+        <div class="tagesansicht" style="height: <?php echo $daten['hoehe']; ?>px">
 
             <div class="kopfzeile clear-fix">
                 <div class="<?php if (!empty($daten['tag']['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($daten['tag']['sonntag'])): ?>sonntag <?php endif; ?>">

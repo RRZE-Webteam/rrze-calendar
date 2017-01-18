@@ -25,7 +25,7 @@
     </div>
 
     <div class="inhalt">
-        <div class="wochenansicht" style="height: <?php echo get_option('rrze_calendar')['calendar_height']; ?>px">
+        <div class="wochenansicht" style="height: <?php echo $daten['hoehe']; ?>px">
 
             <div class="kopfzeile clear-fix">
                 <?php foreach ($daten['tage'] as $tag): ?>

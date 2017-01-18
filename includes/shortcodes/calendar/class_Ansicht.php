@@ -30,13 +30,9 @@ abstract class Ansicht {
     }
 
     public function suche_events($tag = NULL) {
-
-
         if (empty($tag)) {
             // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
             $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], 0, $this->optionen["filter"]);
-
-
             $events = RRZE_Calendar_Functions::get_calendar_dates($events['events']);
         } else {
             $start_time = strtotime($tag . '-00:00');
@@ -50,14 +46,10 @@ abstract class Ansicht {
         $events_data = array();
 
         foreach ($events as $e) {
-
             foreach ($e as $event) {
-
-
                 $events_data[] = $this->event($event);
             }
         }
-
 
         $ts = strtotime($tag);
         $datum = date("j", $ts);

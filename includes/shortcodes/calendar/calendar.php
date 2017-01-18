@@ -16,6 +16,7 @@ class RRZE_Calendar_Shortcode {
                 'tagesanfang' => '7:00',    // Format: "SS:MM". Standardwert: "07:00".
                 'tagesende' => '21:00',     // Format: "SS:MM". Standardwert: "21:00".
                 'ansicht' => 'monat',       // "tag", "woche", "monat" oder "liste". Standardwert: "monat".
+                'hoehe' => 650,             // Höhe des Kalenders in Pixel
                 'abonnement_link' => ''     // Abonnement-Link anzeigen (1 oder 0).
             ), $atts
         );
@@ -25,6 +26,14 @@ class RRZE_Calendar_Shortcode {
             $anzahl = 10;
         }
         $atts['anzahl'] = $anzahl;
+        
+        $hoehe = intval($atts['hoehe']);
+        if ($hoehe < 500) {
+            $hoehe = 500;
+        } elseif ($hoehe > 800) {
+            $hoehe = 800;
+        }
+        $atts['hoehe'] = $hoehe;
         
         $feed_ids = array();
         

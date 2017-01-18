@@ -61,7 +61,8 @@ class Wochenansicht extends Ansicht {
             "monat" => $monat,
             "tage" => $tage,
             "stunden" => $stunden,
-            "abonnement_url" => $abonnement_url
+            "abonnement_url" => $abonnement_url,
+            "hoehe" => $this->optionen["hoehe"]
         );
         return $this->rendere_template($ansicht_daten);
     }

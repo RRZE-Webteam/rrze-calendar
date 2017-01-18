@@ -49,7 +49,8 @@ class Tagesansicht extends Ansicht {
             "tag" => $tag[0],
             "monat" => date_i18n(__('F Y', 'rrze-calendar'), $ts),
             "stunden" => $stunden,
-            "abonnement_url" => $abonnement_url
+            "abonnement_url" => $abonnement_url,
+            "hoehe" => $this->optionen["hoehe"]
         );
 
         return $this->rendere_template($ansicht_daten);

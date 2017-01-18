@@ -2,7 +2,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.7.2
+  Version: 1.7.3
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -34,7 +34,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.7.2';
+    const version = '1.7.3';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -326,8 +326,7 @@ class RRZE_Calendar {
         $options = [
             'endpoint_slug' => 'events',
             'endpoint_name' => 'Events',
-            'schedule_event' => 'hourly',
-            'calendar_height' => '500'
+            'schedule_event' => 'hourly'
         ];
 
         return $options;
@@ -524,7 +523,6 @@ class RRZE_Calendar {
         add_settings_field('endpoint_slug', __('Endpoint-Titelform', 'rrze-calendar'), array($this, 'endpoint_slug_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
         add_settings_field('endpoint_name', __('Endpoint-Name', 'rrze-calendar'), array($this, 'endpoint_name_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
         add_settings_field('schedule_event', __('Überprüfen auf neue Termine', 'rrze-calendar'), array($this, 'schedule_event_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
-        add_settings_field('calendar_height', __('Height of Calnder', 'rrze-calendar'), array($this, 'calendar_height_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
     }
 
     public function url_field() {
@@ -586,27 +584,17 @@ class RRZE_Calendar {
         $endpoint_name = isset($this->settings_errors['endpoint_name']['value']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
         ?>
         <input <?php echo (isset($this->settings_errors['endpoint_name']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
-            <?php
-        }
+        <?php
+    }
 
-        public function schedule_event_field() {
-            $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
-            ?>
+    public function schedule_event_field() {
+        $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
+        ?>
         <select name="<?php printf('%s[schedule_event]', self::option_name); ?>">
         <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
                 <option value="<?php echo $key; ?>" <?php selected($key, $schedule_event); ?>><?php echo $value; ?></option>
         <?php endforeach; ?>
         </select>
-        <?php
-    }
-
-    public function calendar_height_field() {
-
-
-
-        $calendar_height = isset($settings_error['calendar_height']['value']) ? $settings_error['calendar_height']['value'] : self::$options['calendar_height'];
-        ?>
-        <input <?php echo (isset($this->settings_errors['calendar_height']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $calendar_height; ?>" name="<?php printf('%s[calendar_height]', self::option_name); ?>">
         <?php
     }
     
@@ -1353,16 +1341,12 @@ class RRZE_Calendar {
             return FALSE;
         }
 
-        $calendar_height = trim($input['calendar_height']);
-
         self::$options['endpoint_slug'] = $endpoint_slug;
         self::add_endpoint();
         flush_rewrite_rules();
 
         self::$options['endpoint_name'] = $endpoint_name;
         self::$options['schedule_event'] = $schedule_event;
-        self::$options['calendar_height'] = $calendar_height;
-
 
         update_option(self::option_name, self::$options);
 
