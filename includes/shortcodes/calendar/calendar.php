@@ -60,14 +60,6 @@ class RRZE_Calendar_Shortcode {
                 $feed_ids[$feed_id] = $feed_id;
             }
         }
-        
-        if (!self::validate_time($atts['tagesanfang'])) {
-            $atts['tagesanfang'] = '7:00';
-        }
-
-        if (!self::validate_time($atts['tagesende'])) {
-            $atts['tagesende'] = '21:00';
-        }
 
         if (!empty($atts['abonnement_link'])) {
             $subscribe_url = RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : ''));
@@ -127,20 +119,6 @@ class RRZE_Calendar_Shortcode {
         
         return $ansicht->rendere_daten($events);
 
-    }
-
-    private static function validate_time($time) {
-        $e = explode(':', $time);
-        if (count($e) < 2 || count($e) > 2) {
-            return false;
-        }
-        $h = absint($e[0]);
-        $m = absint($e[1]);
-        if ($h > 24 || $m > 59 || ($h == 24 && $m > 0)) {
-            return false;
-        }
-        
-        return true;
     }
 
 }
