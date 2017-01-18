@@ -3,7 +3,6 @@
 abstract class Ansicht {
 
     protected $optionen = NULL;
-    
     private $tag_start = NULL;
     private $tag_ende = NULL;
 
@@ -28,66 +27,38 @@ abstract class Ansicht {
         } else {
             return;
         }
-
     }
-        
+
     public function suche_events($tag = NULL) {
-        
-            
+
+
         if (empty($tag)) {
             // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
             $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], 0, $this->optionen["filter"]);
-         
-            
+
+
             $events = RRZE_Calendar_Functions::get_calendar_dates($events['events']);
-            
-            
         } else {
             $start_time = strtotime($tag . '-00:00');
             $end_time = strtotime($tag . '-01:00 + 1 day');
             $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
             $events = RRZE_Calendar_Functions::get_calendar_dates($events);
-            
         }
-        
-        /*foreach ($events as $e) {
-           foreach ($e as $event) {      
-                if (!$event->allday) {
-                    if (is_null($this->tag_start) || strtotime($event->start_time) < $this->tag_start) {
-                        $this->tag_start = strtotime($event->start_time);
-                    }
 
-                    if (is_null($this->tag_ende) || strtotime($event->end_time) > $this->tag_ende) {
-                        $this->tag_ende = strtotime($event->end_time);
-                    }
-
-                }
-            }
-        }
-                
-        if (is_null($this->tag_start) || strtotime($this->optionen["tagesanfang"]) < $this->tag_start) {
-            $this->tag_start = strtotime($this->optionen["tagesanfang"]);
-        }
-        
-        if (is_null($this->tag_ende) || strtotime($this->optionen["tagesende"]) > $this->tag_ende) {
-            $this->tag_ende = strtotime($this->optionen["tagesende"]);
-        }
-        */
-        
-          $this->tag_start = $start_time;
-                    $this->tag_ende =$end_time;  
+        $this->tag_start = $start_time;
+        $this->tag_ende = $end_time;
         $events_data = array();
-      //  var_dump($events);die;
+
         foreach ($events as $e) {
-            
-            foreach ($e as $event) {   
-                
-                
+
+            foreach ($e as $event) {
+
+
                 $events_data[] = $this->event($event);
             }
         }
-        
-            
+
+
         $ts = strtotime($tag);
         $datum = date("j", $ts);
 
@@ -101,7 +72,7 @@ abstract class Ansicht {
         // Tageslaenge in Minuten        
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
         $tag_anfang = date('H:i', $this->tag_start);
-        
+
         return array(
             "termine" => $events_data,
             "datum" => $tag,
@@ -113,21 +84,20 @@ abstract class Ansicht {
             "wochenende" => $this->ist_wochenende($tag),
             "sonntag" => $this->ist_sonntag($tag),
             "tag_laenge" => $tag_laenge,
-            "tag_anfang" => $tag_anfang
-        );        
-        
+            "tag_anfang" => $tag_anfang,
+        );
     }
-    
+
     private function event($event) {
         $event_data = array();
-       
+
         $event_data["id"] = $event->id;
         $event_data["slug"] = $event->slug;
         $event_data["summary"] = $event->summary;
         $event_data["location"] = $event->location;
-        if(isset($event->multi_day_event))
-        $event_data["multi_day_event"]=$event->multi_day_event;
-        
+        if (isset($event->multi_day_event))
+            $event_data["multi_day_event"] = $event->multi_day_event;
+
         $event_data["datum_start"] = date(__('d.m.Y', 'rrze-calendar'), $event->start);
         $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $event->end);
 
@@ -138,26 +108,22 @@ abstract class Ansicht {
             $start = RRZE_Calendar_Functions::gmt_to_local($event->start);
             $ende = RRZE_Calendar_Functions::gmt_to_local($event->end);
         }
-                
+
         if ($ende > strtotime('tomorrow 00:00:00', $start)) {
-            $ende = strtotime('tomorrow 00:00:00', $start);                    
+            $ende = strtotime('tomorrow 00:00:00', $start);
         }
-        
+
         // Dauer in Minuten
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
-        $duration = floor(($ende - $start) / 60);        
-        //$event_data["duration"] = $duration;        
-
-        // Start (Pro Minute ein Pixel hoehe)
-        //$event_data["start"] = date("G", $start) * 60 + date("i", $start);
-        $event_data["start"] = (date('G', $start) -  date('G', $this->tag_start)) * 60 + date('i', $start) -  date('i', $this->tag_ende);
+        $duration = floor(($ende - $start) / 60);
+            
+        $event_data["start"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + date('i', $start) - date('i', $this->tag_ende);
 
         $event_data["duration"] = $duration < $tag_laenge - $event_data["start"] ? $duration : $tag_laenge - $event_data["start"];
-        
+
         // Ende (Pro Minute ein Pixel hoehe)
-        //$event_data["ende"] = date("G", $start) * 60 + $duration;
-        $event_data["ende"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + $event_data["duration"];
-        
+         $event_data["ende"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + $event_data["duration"];
+
         // Zeitanzeige am Termin
         $event_data["time_start"] = $event->start_time;
         $event_data["time_ende"] = $event->end_time;
@@ -201,11 +167,10 @@ abstract class Ansicht {
 
         // Farbmarkierung
         $event_data["farbe"] = isset($event->category->color) ? $event->category->color : 'grey';
-            
+
         return $event_data;
-        
     }
-    
+
     protected function ist_heute($datum = '') {
         if ($datum == "")
             return false;
@@ -243,11 +208,11 @@ abstract class Ansicht {
         return date("Y-m-d", strtotime($datum));
     }
 
-    protected function rendere_template($daten) {        
+    protected function rendere_template($daten) {
         wp_enqueue_style('rrze-calendar-shortcode');
         wp_enqueue_style('rrze-calendar-hint');
         wp_enqueue_script('rrze-calendar-' . $this->template_name());
-                
+
         // Aktuellen Dateinamen fuer korrekte Verlinkungen mit in Template Daten einfuegen
         $daten["dateiname"] = '';
 
@@ -255,8 +220,8 @@ abstract class Ansicht {
         include plugin_dir_path(__FILE__) . $this->template_name() . '.php';
         $template = ob_get_contents();
         @ob_end_clean();
-        
-        $template = preg_replace('/([\r\n\t])/',' ', $template);
+
+        $template = preg_replace('/([\r\n\t])/', ' ', $template);
         $template = trim(preg_replace('/\s+/', ' ', $template));
 
         return $template;

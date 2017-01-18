@@ -198,7 +198,7 @@ body {
 
             .ganztagige {
                 float:left
-                div:first-child {
+                    div:first-child {
                     margin-left: 10%;
                 }
 
@@ -206,7 +206,7 @@ body {
 
             .ganztagige {
                 >span {
-                   
+
                     float: left;
                     width: 10%;
                     text-align: center;
@@ -214,35 +214,35 @@ body {
                 }
             }
 
-            
-            
+
+
             .ganztagige {
-                
+
                 .tag {
                     position: relative;
                     width: 85%;
                     margin:0 0 5px 10%;
-                    
+
                     min-height: 1px;
                     overflow: hidden;
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     text-align: left;
-                   
-                      background: repeating-linear-gradient(
-                            -55deg,
-                            #EAEAEA,
-                            #EAEAEA 5px,
-                            #FAFAFA 4px,
-                            #FAFAFA 8px
-                            );
+
+                    background: repeating-linear-gradient(
+                        -55deg,
+                        #EAEAEA,
+                        #EAEAEA 5px,
+                        #FAFAFA 4px,
+                        #FAFAFA 8px
+                        );
                     .termin {
 
                         width: 98%;
                         margin: 4px auto;
                         padding: 5px;
 
-                         color:gray;
+                        color:gray;
 
 
 
@@ -269,7 +269,7 @@ body {
                 border-top: 1px solid #eee;
                 float:left;
                 width:100%;
-                    
+
 
                 .tag {
 
@@ -283,6 +283,7 @@ body {
 
 
                     .termin { 
+
 
                         position: absolute;
                         left: 5%;
@@ -353,7 +354,13 @@ body {
                     float: left;
                     width: 100%;  
 
+
                     .stunde {
+
+                        &:first-child{
+                            margin-top: 11px; 
+
+                        }
                         position: relative;
                         color: #999;
                         line-height: 14px;
@@ -361,13 +368,36 @@ body {
 
                         text-align: left;
                         padding-left: 7%;
-                        border-bottom:1px dotted  #999;
+                        // border-bottom:1px dotted  #999;
                         z-index: 1;
 
                     }
 
 
+                    .stunde-line {
+                        position: relative;
+                        color: #999;
+                        line-height: 14px;
 
+
+                        text-align: left;
+
+                        border-bottom:1px dotted  #999;
+                        z-index: 12;
+
+                    }
+
+
+                } 
+
+                .stunde-now{
+
+                    float: left;
+                    width: 100%;  
+                    z-index: 100;
+                    position: absolute;
+                    height:1px;
+                    background: red;
                 }
             }
 
@@ -380,6 +410,7 @@ body {
             * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
 
             .ganztagige {
+
                 >span {
                     position: relative;
                     float: left;
@@ -390,7 +421,11 @@ body {
             }
 
             .ganztagige {
-                >div {
+
+
+                >div { 
+
+
                     position: relative;
                     overflow: hidden;
                     white-space: nowrap;
@@ -398,13 +433,16 @@ body {
                     margin: 2px 0;
                     border-left: 1px solid #f6f6f6;
 
+
                     .termin {
 
                         width: 98%;
                         margin: 4px auto;
                         padding: 5px;
 
-                        color: white;
+                        background:repeating-linear-gradient(-55deg, #EAEAEA, #EAEAEA 5px, #FAFAFA 4px, #FAFAFA 8px);
+
+                        color: gray;
                         overflow: hidden;
 
                         font-size: 0.9em;
@@ -552,20 +590,52 @@ body {
 
                     float: left;
                     width: (100%);
-                    z-index:1;
+
+                    position: absolute;
 
                     .stunde {
+
+                        &:first-child{
+                            margin-top: 11px; 
+
+                        }
                         position: relative;
                         color: #999;
-                        border-bottom: 1px dotted black;
                         line-height: 14px;
                         margin-top: 46px;
                         margin-right: 10px;
-                       
+                        padding-left: 6%;
+
                     }
 
 
+
+
+                    .stunde-line {
+                        position: relative;
+                        color: #999;
+                        line-height: 14px;
+
+
+                        text-align: left;
+
+                        border-bottom:1px dotted  #999;
+                        z-index: 12;
+
+                    }
+
                 }
+
+
+                .stunde-now{
+
+                    float: left;
+                    width: 100%;  
+                    z-index: 100;
+                    position: absolute;
+                    height:1px;
+                    background: red;
+                } 
             }
         }
 
@@ -907,8 +977,8 @@ body {
 @include max-screen(1020)  {
     // Kleine Navbar verwenden
     .kalender .menue {
-        
-        
+
+
         .intervall {
             z-index: 1;
             .buttons {
@@ -946,22 +1016,22 @@ body {
     }
 
     .tagesansicht {
-        
+
         .ganztagige {
-                       .header{
-                          display:none;
-                       }
-                       
-                       .tag{
-                       
-                       width:96%!important;
-                       margin-left:2%!important;
-                       margin-right: 2%!important;
-                   }
-                   
-                   }
-                   
-                   
+            .header{
+                display:none;
+            }
+
+            .tag{
+
+                width:96%!important;
+                margin-left:2%!important;
+                margin-right: 2%!important;
+            }
+
+        }
+
+
     }
 }
 

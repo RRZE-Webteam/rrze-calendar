@@ -2,7 +2,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.7.1
+  Version: 1.7.2
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -327,7 +327,7 @@ class RRZE_Calendar {
             'endpoint_slug' => 'events',
             'endpoint_name' => 'Events',
             'schedule_event' => 'hourly',
-           'calendar_height'=>'500'
+            'calendar_height' => '500'
         ];
 
         return $options;
@@ -339,11 +339,11 @@ class RRZE_Calendar {
      */
     private static function get_options() {
         $defaults = self::default_options();
-     
-        $options = (array) get_option(self::option_name);       
+
+        $options = (array) get_option(self::option_name);
         $options = wp_parse_args($options, $defaults);
         $options = array_intersect_key($options, $defaults);
-         return $options;
+        return $options;
     }
 
     public static function add_endpoint() {
@@ -371,7 +371,7 @@ class RRZE_Calendar {
             if ($template = locate_template('404.php')) {
                 load_template($template);
             } else {
-            wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
+                wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
             }
         } else {
             if ($template = locate_template('rrze-calendar-single-event.php')) {
@@ -524,7 +524,7 @@ class RRZE_Calendar {
         add_settings_field('endpoint_slug', __('Endpoint-Titelform', 'rrze-calendar'), array($this, 'endpoint_slug_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
         add_settings_field('endpoint_name', __('Endpoint-Name', 'rrze-calendar'), array($this, 'endpoint_name_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
         add_settings_field('schedule_event', __('Überprüfen auf neue Termine', 'rrze-calendar'), array($this, 'schedule_event_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
-        add_settings_field('calendar_height', __('Height of Calnder', 'rrze-calendar'), array($this, 'calendar_height_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');       
+        add_settings_field('calendar_height', __('Height of Calnder', 'rrze-calendar'), array($this, 'calendar_height_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
     }
 
     public function url_field() {
@@ -553,9 +553,9 @@ class RRZE_Calendar {
         <?php if (!empty($all_categories)) : ?>
             <select name="<?php printf('%s[category]', self::option_name); ?>">
                 <option value="0"><?php _e('&mdash; Auswählen &mdash;', 'rrze-calendar'); ?></option>
-                <?php foreach ($all_categories as $value) : ?>
+            <?php foreach ($all_categories as $value) : ?>
                     <option value="<?php echo $value->term_id; ?>" <?php $category ? selected($value->term_id, $category->term_id) : ''; ?>><?php echo $value->name; ?></option>
-                <?php endforeach; ?>
+            <?php endforeach; ?>
             </select>
         <?php else: ?>
             <p><?php _e('Keine Elemente gefunden.', 'rrze-calendar'); ?></p>
@@ -586,33 +586,30 @@ class RRZE_Calendar {
         $endpoint_name = isset($this->settings_errors['endpoint_name']['value']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
         ?>
         <input <?php echo (isset($this->settings_errors['endpoint_name']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
-        <?php
-    }
+            <?php
+        }
 
-    public function schedule_event_field() {
-        $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
-        ?>
+        public function schedule_event_field() {
+            $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
+            ?>
         <select name="<?php printf('%s[schedule_event]', self::option_name); ?>">
-            <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
+        <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
                 <option value="<?php echo $key; ?>" <?php selected($key, $schedule_event); ?>><?php echo $value; ?></option>
-            <?php endforeach; ?>
+        <?php endforeach; ?>
         </select>
         <?php
     }
 
-    public function calendar_height_field(){
-        
-             
-        
+    public function calendar_height_field() {
+
+
+
         $calendar_height = isset($settings_error['calendar_height']['value']) ? $settings_error['calendar_height']['value'] : self::$options['calendar_height'];
-        
-        
-            
-  ?>
-        <input <?php  echo (isset($this->settings_errors['calendar_height']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $calendar_height; ?>" name="<?php printf('%s[calendar_height]', self::option_name); ?>">
+        ?>
+        <input <?php echo (isset($this->settings_errors['calendar_height']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $calendar_height; ?>" name="<?php printf('%s[calendar_height]', self::option_name); ?>">
         <?php
-        
     }
+    
     public function admin_validate() {
         $page = self::get_param('page');
 
@@ -847,9 +844,9 @@ class RRZE_Calendar {
         <div class="wrap">
             <h2>
                 <?php echo esc_html(__('Kalender &rsaquo; Feeds', 'rrze-calendar')); ?>
-                <?php if (empty($action)): ?>
+            <?php if (empty($action)): ?>
                     <a href="<?php echo self::options_url(array('action' => 'new')); ?>" class="add-new-h2"><?php _e('Neuer Feed hinzufügen', 'rrze-calendar'); ?></a>
-                <?php endif; ?>
+            <?php endif; ?>
             </h2>
             <?php
             if ($action == 'new') {
@@ -868,9 +865,9 @@ class RRZE_Calendar {
         ?>
         <div class="wrap">
             <h2>
-                <?php echo esc_html(__('Kalender &rsaquo; Termine', 'rrze-calendar')); ?>
+        <?php echo esc_html(__('Kalender &rsaquo; Termine', 'rrze-calendar')); ?>
             </h2>
-            <?php $this->events_page(); ?>
+        <?php $this->events_page(); ?>
         </div>
         <?php
     }
@@ -881,7 +878,7 @@ class RRZE_Calendar {
         ?>
         <div class="wrap">
             <h2>
-                <?php echo esc_html(__('Kalender &rsaquo; Kategorien', 'rrze-calendar')); ?>
+        <?php echo esc_html(__('Kalender &rsaquo; Kategorien', 'rrze-calendar')); ?>
             </h2>
         </div>
         <?php
@@ -898,7 +895,7 @@ class RRZE_Calendar {
         ?>
         <div class="wrap">
             <h2>
-                <?php echo esc_html(__('Kalender &rsaquo; Schlagworte', 'rrze-calendar')); ?>
+        <?php echo esc_html(__('Kalender &rsaquo; Schlagworte', 'rrze-calendar')); ?>
             </h2>
         </div>
         <?php
@@ -913,9 +910,9 @@ class RRZE_Calendar {
         ?>
         <div class="wrap">
             <h2>
-                <?php echo esc_html(__('Kalender &rsaquo; Einstellungen', 'rrze-calendar')); ?>
+        <?php echo esc_html(__('Kalender &rsaquo; Einstellungen', 'rrze-calendar')); ?>
             </h2>
-            <?php $this->settings_page(); ?>
+        <?php $this->settings_page(); ?>
         </div>
         <?php
     }
@@ -953,9 +950,9 @@ class RRZE_Calendar {
         ?>
         <form method="get">
             <input type="hidden" name="page" value="rrze-calendar">
-            <?php
-            $list_table->search_box(__('Suche', 'rrze-calendar'), 'search_id');
-            ?>
+        <?php
+        $list_table->search_box(__('Suche', 'rrze-calendar'), 'search_id');
+        ?>
         </form>
         <form method="post">
             <?php
@@ -974,9 +971,9 @@ class RRZE_Calendar {
         ?>
         <form method="get">
             <input type="hidden" name="page" value="rrze-calendar-events">
-            <?php
-            $list_table->search_box(__('Suche', 'rrze-calendar'), 'search_id');
-            ?>
+        <?php
+        $list_table->search_box(__('Suche', 'rrze-calendar'), 'search_id');
+        ?>
         </form>
         <form method="post">
             <?php
@@ -1176,7 +1173,7 @@ class RRZE_Calendar {
         ?>
         <div id="col-right">
             <div class="col-wrap">
-                <?php $wp_list_table->display(); ?>
+        <?php $wp_list_table->display(); ?>
             </div>
         </div>
         <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
@@ -1185,7 +1182,7 @@ class RRZE_Calendar {
                     </h2>
                     <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addcategory" name="addcategory">
                         <input type="hidden" name="option_page" value="rrze-calendar-categories-add">
-                        <?php wp_nonce_field('rrze-calendar-categories-add-options'); ?>
+        <?php wp_nonce_field('rrze-calendar-categories-add-options'); ?>
                         <div class="form-field form-required">
                             <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
                             <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) : ''; ?>" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
@@ -1224,7 +1221,7 @@ class RRZE_Calendar {
         ?>
         <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id))); ?>">
             <input type="hidden" name="option_page" value="rrze-calendar-categories-edit">
-            <?php wp_nonce_field('rrze-calendar-categories-edit-options'); ?>
+        <?php wp_nonce_field('rrze-calendar-categories-edit-options'); ?>
             <table class="form-table">
                 <tbody>
                     <tr class="form-field form-required term-name-wrap">
@@ -1260,7 +1257,7 @@ class RRZE_Calendar {
         ?>
         <div id="col-right">
             <div class="col-wrap">
-                <?php $wp_list_table->display(); ?>
+        <?php $wp_list_table->display(); ?>
             </div>
         </div>
         <div id="col-left"><div class="col-wrap"><div class="form-wrap categories-wrap">
@@ -1269,7 +1266,7 @@ class RRZE_Calendar {
                     </h2>
                     <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addtag" name="addtag">
                         <input type="hidden" name="option_page" value="rrze-calendar-tags-add">
-                        <?php wp_nonce_field('rrze-calendar-tags-add-options'); ?>
+        <?php wp_nonce_field('rrze-calendar-tags-add-options'); ?>
                         <div class="form-field form-required">
                             <label for="name"><?php _e('Name', 'rrze-calendar'); ?></label>
                             <input type="text" aria-required="true" id="name" name="name" maxlength="40" value="<?php echo (!empty($this->settings_errors['name']['error'])) ? esc_attr($this->settings_errors['name']['value']) : ''; ?>" <?php echo (!empty($this->settings_errors['name']['error'])) ? 'class="field-invalid"' : ''; ?>>
@@ -1304,12 +1301,12 @@ class RRZE_Calendar {
         ?>
         <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id))); ?>">
             <input type="hidden" name="option_page" value="rrze-calendar-tags-edit">
-            <?php wp_nonce_field('rrze-calendar-tags-edit-options'); ?>
+        <?php wp_nonce_field('rrze-calendar-tags-edit-options'); ?>
             <div id="col-right">
                 <div class="col-wrap">
                     <div id="rrze-calendar-taxonomy-feeds" class="wrap">
                         <h4><?php _e('Feeds', 'rrze-calendar'); ?></h4>
-                        <?php $this->select_form($feeds, $tag->feed_ids, 'id', 'title', 'url'); ?>
+        <?php $this->select_form($feeds, $tag->feed_ids, 'id', 'title', 'url'); ?>
                     </div>
                 </div>
             </div>
@@ -1355,21 +1352,21 @@ class RRZE_Calendar {
         if ($this->has_errors()) {
             return FALSE;
         }
-        
-        $calendar_height=trim($input['calendar_height']);
-                                
+
+        $calendar_height = trim($input['calendar_height']);
+
         self::$options['endpoint_slug'] = $endpoint_slug;
         self::add_endpoint();
         flush_rewrite_rules();
 
         self::$options['endpoint_name'] = $endpoint_name;
         self::$options['schedule_event'] = $schedule_event;
-        self::$options['calendar_height']=$calendar_height;  
-        
-                         
+        self::$options['calendar_height'] = $calendar_height;
+
+
         update_option(self::option_name, self::$options);
 
-                                
+
         return TRUE;
     }
 
@@ -2207,10 +2204,10 @@ class RRZE_Calendar {
             $selected = array();
         }
         ?>
-        <?php if (is_array($list) && count($list)) : ?>
+            <?php if (is_array($list) && count($list)) : ?>
             <ul class="rrze-calendar-select-list">
-                <?php foreach ($list as $v) : ?>
-                    <?php $checked = in_array($v->$id, $selected) ? ' checked="checked"' : ''; ?>
+            <?php foreach ($list as $v) : ?>
+                <?php $checked = in_array($v->$id, $selected) ? ' checked="checked"' : ''; ?>
                     <li>
                         <label for="rrze-calendar-selected">
                             <input type="checkbox" id="<?php echo esc_attr('rrze-calendar-selected-' . $v->$id) ?>" name="rrze_calendar_selected[]" value="<?php echo esc_attr($v->$id); ?>"<?php echo $checked; ?>>
@@ -2218,7 +2215,7 @@ class RRZE_Calendar {
                             <span class="rrze-calendar-selected-subtitle"><?php echo esc_html($v->$subtitle); ?></span>
                         </label>
                     </li>
-                <?php endforeach; ?>
+            <?php endforeach; ?>
             </ul>
         <?php else: ?>
             <p><?php _e('Keine Elemente gefunden.', 'rrze-calendar'); ?></p>
@@ -2487,29 +2484,27 @@ class RRZE_Calendar {
 
 
             $eventItem['multi_day_event'] = true;
-           $eventItem['start']=$start_time;
-             
+            $eventItem['start'] = $start_time;
+
 
             $multiDayEvent[] = $eventItem;
         }
 
 
 
-                
-     $events=(array_merge($events, $multiDayEvent));
 
-     $final_events=array();
-     foreach ($events as $event){
-         
-         if(sizeof($event)>0){
-             
-           $final_events[]=$event;  
-             
-         }
-                
-     }
-                
-                
+        $events = (array_merge($events, $multiDayEvent));
+
+        $final_events = array();
+        foreach ($events as $event) {
+
+            if (sizeof($event) > 0) {
+
+                $final_events[] = $event;
+            }
+        }
+
+
 
         foreach ($final_events as &$event) {
             $event['category'] = self::get_category_for_feed($event['ical_feed_id']);
@@ -2519,8 +2514,8 @@ class RRZE_Calendar {
             $event = new RRZE_Calendar_Event($event);
         }
 
-                
-                
+
+
         return $final_events;
     }
 
