@@ -119,9 +119,8 @@
                         $is_hetue = true;
                     }
                     ?>
-                    <div style="<?php echo $background; ?>left:<?php echo (($i * 13) + 10); ?>%;height: 1490px" class="tag <?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?><?php if (!empty($$tag['heute'])): ?>heute<?php endif; ?>" data-anfang="<?php echo $tag['tag_anfang']; ?>">
+                    <div style="<?php echo $background; ?>left:<?php echo (($i * 13) + 10); ?>%;height: 1490px" class="tag <?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?><?php if (!empty($tag['heute'])): ?>heute<?php endif; ?>" data-anfang="<?php echo $tag['tag_anfang']; ?>">
                         <?php
-                        ;
                         foreach ($tag['termine'] as $termin):
                             ?>
 
