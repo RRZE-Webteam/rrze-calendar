@@ -2,7 +2,7 @@
 /*
   Plugin Name: RRZE Calendar
   Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.7.6
+  Version: 1.7.7
   Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
   Author: RRZE-Webteam
   Author URI: http://blogs.fau.de/webworking/
@@ -34,7 +34,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.7.6';
+    const version = '1.7.7';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -42,7 +42,7 @@ class RRZE_Calendar {
     const option_name = 'rrze_calendar';
     const version_option_name = 'rrze_calendar_version';
     const php_version = '5.5'; // Minimal erforderliche PHP-Version
-    const wp_version = '4.6'; // Minimal erforderliche WordPress-Version
+    const wp_version = '4.7'; // Minimal erforderliche WordPress-Version
     const taxonomy_cat_key = 'rrze-calendar-category';
     const taxonomy_tag_key = 'rrze-calendar-tag';
     const settings_errors_transient = 'rrze-calendar-settings-errors-';
@@ -2260,7 +2260,7 @@ class RRZE_Calendar {
         global $wpdb;
 
         if (!defined('ICALCREATOR_VERSION')) {
-            require_once(plugin_dir_path(self::$plugin_file) . 'includes/icalcreator.php');
+            require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
         }
 
         $count = 0;
@@ -2787,7 +2787,7 @@ class RRZE_Calendar {
 
         if ($plugin == 'rrze-calendar' && $action == 'export') {
             if (!defined('ICALCREATOR_VERSION')) {
-                require_once(plugin_dir_path(self::$plugin_file) . 'includes/icalcreator.php');
+                require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
             }
             require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-export.php');
             $event_explorer = RRZE_Calendar_Export::instance();
