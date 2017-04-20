@@ -158,7 +158,7 @@ class RRZE_Calendar_Functions {
     
     public static function gmt_to_local($timestamp) {
         $offset = get_option('gmt_offset');
-        $tz = get_option('timezone_string', 'Europe/Berlin');
+        $tz = get_option('timezone_string');
 
         $offset = self::get_timezone_offset('UTC', $tz, $timestamp);
 

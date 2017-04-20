@@ -74,9 +74,8 @@ class RRZE_Calendar_Events_Shortcode {
         
         if ($feed_ids OR (!$feed_ids && !$taxonomy_empty)) {
             $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
-            $events_result = RRZE_Calendar::get_events_relative_to($timestamp, $anzahl, 0, $filter);
-
-            $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result['events']);
+            $events_result = RRZE_Calendar::get_events_relative_to($timestamp, $anzahl, $filter);
+            $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
         }
         
         $rrze_calendar_page_url = $page_url;

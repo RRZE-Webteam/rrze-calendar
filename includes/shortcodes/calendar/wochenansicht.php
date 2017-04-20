@@ -60,7 +60,7 @@
                     foreach ($ganztagig as $termin):
                         ?>
                         <?php
-                        $margin_left = ($termin['start'] - 1) * 12.88 + 10;
+                        $margin_left = $termin['start'] * 12.88 + 10;
                         $width = ($termin['ende'] - $termin['start'] + 1) * 14;
                         ?>
                         <div class="tag" style="margin-left: <?php echo $margin_left; ?>%;width: <?php echo $width; ?>%;border-left:4px solid <?php echo $termin['farbe']; ?>">

@@ -19,13 +19,13 @@ class RRZE_Calendar_Shortcode {
             ), $atts
         );
 
-        $anzahl = intval($atts['anzahl']);
+        $anzahl = absint($atts['anzahl']);
         if ($anzahl < 1) {
             $anzahl = 10;
         }
         $atts['anzahl'] = $anzahl;
         
-        $hoehe = intval($atts['hoehe']);
+        $hoehe = absint($atts['hoehe']);
         if ($hoehe < 500) {
             $hoehe = 500;
         } elseif ($hoehe > 800) {

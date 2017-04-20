@@ -21,7 +21,6 @@ class RRZE_Calendar_Event {
     public $category;
     public $tags;
     public $feed;
-    public $multi_day_event;
     public function __construct($data = NULL) {
         if ($data == NULL) {
             return;

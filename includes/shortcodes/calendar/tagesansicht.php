@@ -83,71 +83,49 @@
                 <div class="tag" style="height:100%;z-index: 10" data-anfang="<?php echo $daten['tag']['tag_anfang']; ?>">
                     <?php foreach ($daten['tag']['termine'] as $termin): ?>
                         <?php if (!empty($termin['nicht_ganztagig'])): ?>
+                            <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin clear-fix" style="border-left-color: <?php echo $termin['farbe']; ?>; height:<?php echo $termin['duration'] + ($termin['duration'] / 60); ?>px; top: <?php echo (($termin['start']) + 25 + ($termin['start'] / 60)); ?>px; left: <?php echo $termin['left']; ?>%; width: <?php echo $termin['width']; ?>%;" data-start="<?php echo $termin['start']; ?>" data-dauer="<?php echo $termin['duration']; ?>" data-ende="<?php echo $termin['ende']; ?>" data-farbe="<?php echo $termin['farbe']; ?>">
 
-                            <?php
-                            ?>
-                        <!--     <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin clear-fix" style="color:<?php echo RRZE_Calendar::calculateTextColor($termin['farbe']); ?>;background:<?php echo $termin['farbe']; ?>;border-left-color: <?php echo RRZE_Calendar::darken_color($termin['farbe'], 2); ?>; height:<?php echo $termin['duration'] + ($termin['duration'] % 59); ?>px; top: <?php echo (($termin['start']) + 60 + ($termin['start'] % 59)); ?>px; left: <?php echo $termin['left']; ?>%; width: <?php echo $termin['width']; ?>%;" data-start="<?php echo $termin['start']; ?>" data-dauer="<?php echo $termin['duration']; ?>" data-ende="<?php echo $termin['ende']; ?>" data-farbe="<?php echo $termin['farbe']; ?>">
-                            -->   
+                                <span class="permalink titip-default titip-top">
 
-                            <?php
-                            if (isset($termin['multi_day_event'])) {
-                                ?>
+                                    <span class="titel">
+                                        <?php if ($termin['duration'] > 24) { ?>       
+                                            <?php echo $termin['summary']; ?>
 
-                                <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin clear-fix" style="border-left-color: <?php echo $termin['farbe']; ?>; height:<?php echo ($termin['duration'] + ($termin['duration'] / 60)) + (($termin['start']) + ($termin['start'] / 60)); ?>px; top:25px; left: <?php echo $termin['left']; ?>%; width: <?php echo $termin['width']; ?>%;" data-start="<?php echo $termin['start']; ?>" data-dauer="<?php echo $termin['duration']; ?>" data-ende="<?php echo $termin['ende']; ?>" data-farbe="<?php echo $termin['farbe']; ?>">
+                                        <?php
+                                        } else {
 
-                                    <?php
-                                } else {
-                                    ?>
-                                    <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin clear-fix" style="border-left-color: <?php echo $termin['farbe']; ?>; height:<?php echo $termin['duration'] + ($termin['duration'] / 60); ?>px; top: <?php echo (($termin['start']) + 25 + ($termin['start'] / 60)); ?>px; left: <?php echo $termin['left']; ?>%; width: <?php echo $termin['width']; ?>%;" data-start="<?php echo $termin['start']; ?>" data-dauer="<?php echo $termin['duration']; ?>" data-ende="<?php echo $termin['ende']; ?>" data-farbe="<?php echo $termin['farbe']; ?>">
+                                            echo '...';
+                                        }
+                                        ?>
+                                    </span>
+                                    <?php if ($termin['duration'] > 71) { ?>          
+                                        <span class="raum"><?php echo $termin['location']; ?></span>    
 
                                     <?php } ?>
 
+                                    <?php if ($termin['duration'] > 50) { ?> 
+                                        <?php if (!empty($termin['ganztagig'])): ?>
+                                            <span class="zeit"><?php printf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['datum_start'], $termin['datum_ende']); ?></span>
+                                        <?php else: ?>
+                                            <span class="zeit"><?php echo $termin['time']; ?></span>
+                                        <?php endif; ?>
+                                    <?php } ?>
 
-                                    <span class="permalink titip-default titip-top">
-
-                                        <span class="titel">
-                                            <?php if ($termin['duration'] > 24) { ?>       
-                                                <?php echo $termin['summary']; ?>
-
-                                            <?php
-                                            } else {
-
-                                                echo '...';
-                                            }
-                                            ?>
-                                        </span>
-                                        <?php if ($termin['duration'] > 71) { ?>          
-                                            <span class="raum"><?php echo $termin['location']; ?></span>    
-
-                                        <?php } ?>
-
-                                        <?php if ($termin['duration'] > 50) { ?> 
-                                            <?php if (!empty($termin['ganztagig'])): ?>
-                                                <span class="zeit"><?php printf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['datum_start'], $termin['datum_ende']); ?></span>
-                                            <?php else: ?>
-                                                <span class="zeit"><?php echo $termin['time']; ?></span>
-                                            <?php endif; ?>
-                                        <?php } ?>
-
-                                        <span class="titip-liste titip-content thick-border">
-                                            <strong><?php echo wordwrap($termin['summary'], 50, "<br>\n"); ?></strong>
-                                            <?php if (!empty($termin['location'])): ?>
-                                                <br><span><?php echo $termin['location']; ?></span>
-                                            <?php endif; ?>
-                                            <?php if (!empty($termin['time'])): ?>
-                                                <br> <?php if (!empty($termin['datum'])): ?><?php echo $termin['datum']; ?>, <?php endif; ?><?php printf(__("%s Uhr", 'rrze-calendar'), $termin['time']); ?>
-                                            <?php endif; ?>
-                                        </span>    
-
+                                    <span class="titip-liste titip-content thick-border">
+                                        <strong><?php echo wordwrap($termin['summary'], 50, "<br>\n"); ?></strong>
+                                        <?php if (!empty($termin['location'])): ?>
+                                            <br><span><?php echo $termin['location']; ?></span>
+                                        <?php endif; ?>
+                                        <?php if (!empty($termin['time'])): ?>
+                                            <br> <?php if (!empty($termin['datum'])): ?><?php echo $termin['datum']; ?>, <?php endif; ?><?php printf(__("%s Uhr", 'rrze-calendar'), $termin['time']); ?>
+                                        <?php endif; ?>
                                     </span>
 
-                                </a>
+                                </span>
 
-                            <?php endif; ?>
-                        <?php endforeach; ?></div>
+                            </a>
 
-
-
-
+                        <?php endif; ?>
+                    <?php endforeach; ?></div>
 
             </div></div></div></div>

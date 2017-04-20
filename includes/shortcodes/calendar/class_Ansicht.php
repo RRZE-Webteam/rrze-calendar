@@ -34,12 +34,11 @@ abstract class Ansicht {
         $this->tag_ende = 0;
         if (empty($tag)) {
             // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
-            $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], 0, $this->optionen["filter"]);
-            $events = RRZE_Calendar_Functions::get_calendar_dates($events['events']);
+            $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], $this->optionen["filter"]);
+            $events = RRZE_Calendar_Functions::get_calendar_dates($events);
         } else {
-            
             $start_time = strtotime($tag . '-00:00');
-            $end_time = strtotime($tag . '-01:00 + 1 day');
+            $end_time = strtotime($tag . '-00:00 + 1 day');
             $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
             $events = RRZE_Calendar_Functions::get_calendar_dates($events);
             $this->tag_start = $start_time;
@@ -65,9 +64,7 @@ abstract class Ansicht {
         unset($wochentag[0]);
         $wochentag_ende = implode("", $wochentag);
 
-        // Tageslaenge in Minuten    
-
-
+        // Tageslaenge in Minuten
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
         $tag_anfang = date('H:i', $this->tag_start);
 
@@ -93,9 +90,6 @@ abstract class Ansicht {
         $event_data["slug"] = $event->slug;
         $event_data["summary"] = $event->summary;
         $event_data["location"] = $event->location;
-        if (isset($event->multi_day_event))
-            $event_data["multi_day_event"] = $event->multi_day_event;
-
         $event_data["datum_start"] = date(__('d.m.Y', 'rrze-calendar'), $event->start);
         $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $event->end);
 
@@ -153,13 +147,8 @@ abstract class Ansicht {
 
         // Ganztagige Events rausfiltern
         if ($event->allday) {
-
             $event_data["ganztagig"] = true;
-            $datum = array(date("d.m.Y", $start));
-            if (abs($ende - $start) / (24 * 60 * 60) > 1) {
-                $datum[] = date(__('d.m.Y', 'rrze-calendar'), abs($ende - $start) - 1);
-            }
-            $event_data["datum"] = implode(" - ", $datum);
+            $event_data["datum"] = date(__('d.m.Y', 'rrze-calendar'), $start);
         } else {
             $event_data["nicht_ganztagig"] = true;
         }
