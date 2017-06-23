@@ -30,8 +30,10 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
                 $item[$column_name] = !empty($item[$column_name]) ? '<span class="dashicons dashicons-yes"></span>' : '';
                 break;
             case 'start':
-            case 'end':
                 $item[$column_name] = RRZE_Calendar_Functions::get_long_time($item[$column_name]);
+                break;                
+            case 'end':
+                $item[$column_name] = empty($item['recurrence_rules']) ? RRZE_Calendar_Functions::get_long_time($item[$column_name]) : '<span class="dashicons dashicons-minus"></span>';
                 break;
             default:
                 $item[$column_name] = !empty($item[$column_name]) ? $item[$column_name] : '';
