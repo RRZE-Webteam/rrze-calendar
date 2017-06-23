@@ -1,15 +1,15 @@
 <div class="kalender">
     <div class="menue">
-        <span class="zeit buttons">
+        <div class="zeit buttons">
             <a href="<?php echo $daten['monat_datum_zurueck']; ?>" class="vergangenheit">&#9664;</a>
             <a href="<?php echo $daten['monat_datum_aktuell']; ?>" class="heute"><?php _e('Heute', 'rrze-calendar'); ?></a>
             <a href="<?php echo $daten['monat_datum_vor']; ?>" class="zukunft">&#9654;</a>
-        </span>
+        </div>
 
-        <span class="titel"><?php echo $daten['monat']; ?></span>
+        <div class="titel"><?php echo $daten['monat']; ?></div>
 
-        <span class="intervall">
-            <a class="aktion" href="#">&#9776;</a>
+        <div class="intervall">
+            <div><a class="aktion" href="#">&#9776;</a></div>
             <div class="buttons">
                 <a href="<?php echo $daten['tag_datum']; ?>" class="tag"><?php _e('Tag', 'rrze-calendar'); ?></a>
                 <a href="<?php echo $daten['woche_datum']; ?>" class="woche"><?php _e('Woche', 'rrze-calendar'); ?></a>
@@ -19,7 +19,7 @@
                 <a href="<?php echo $daten['abonnement_url']; ?>" class="tag"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
                 <?php endif; ?>
             </div>
-        </span>
+        </div>
 
     </div>
 
@@ -50,7 +50,7 @@
                             $titip = 'titip-top';
                 } $t++; ?>
                 <div class="<?php if (!empty($tag['heute'])): ?>heute <?php endif; ?><?php if (!empty($tag['nicht_im_monat'])): ?>nicht-aktuell <?php endif; ?><?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?>">
-                    <span class="datum"><?php echo $tag['datum_kurz']; ?>.</span>
+                    <div class="datum"><?php echo $tag['datum_kurz']; ?>.</div>
                     <div class="termine">
                         <div class="center">
                             <?php $k = 1; ?>

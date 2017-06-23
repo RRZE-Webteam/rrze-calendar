@@ -3,6 +3,7 @@
 add_shortcode('rrze-calendar', array('RRZE_Calendar_Shortcode', 'shortcode'));
 add_shortcode('rrze-kalender', array('RRZE_Calendar_Shortcode', 'shortcode'));
 
+add_shortcode('calendar', array('RRZE_Calendar_Shortcode', 'shortcode'));
 add_shortcode('kalender', array('RRZE_Calendar_Shortcode', 'shortcode'));
 
 class RRZE_Calendar_Shortcode {
@@ -12,7 +13,7 @@ class RRZE_Calendar_Shortcode {
             array(
                 'kategorien' => '',         // Mehrere Kategorien (Titelform) werden durch Komma getrennt.
                 'schlagworte' => '',        // Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
-                'anzahl' => 10,             // Anzahl der Termine in der Listenansicht. Standardwert: 10.
+                'anzahl' => 100,             // Anzahl der Termine in der Listenansicht. Standardwert: 10.
                 'ansicht' => 'monat',       // "tag", "woche", "monat" oder "liste". Standardwert: "monat".
                 'hoehe' => 650,             // Höhe des Kalenders in Pixel
                 'abonnement_link' => ''     // Abonnement-Link anzeigen (1 oder 0).
@@ -21,7 +22,7 @@ class RRZE_Calendar_Shortcode {
 
         $anzahl = absint($atts['anzahl']);
         if ($anzahl < 1) {
-            $anzahl = 10;
+            $anzahl = 100;
         }
         $atts['anzahl'] = $anzahl;
         

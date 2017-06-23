@@ -1,16 +1,16 @@
 <div class="kalender">
     <?php $is_hetue = false; ?>
     <div class="menue">
-        <span class="zeit buttons">
+        <div class="zeit buttons">
             <a href="<?php echo $daten['woche_datum_zurueck']; ?>" class="vergangenheit">&#9664;</a>
             <a href="<?php echo $daten['woche_datum_aktuell']; ?>" class="heute"><?php _e('Heute', 'rrze-calendar'); ?></a>
             <a href="<?php echo $daten['woche_datum_vor']; ?>" class="zukunft">&#9654;</a>
-        </span>
+        </div>
 
-        <span class="titel"><?php echo $daten['monat']; ?></span>
+        <div class="titel"><?php echo $daten['monat']; ?></div>
 
-        <span class="intervall">
-            <a class="aktion" href="#">&#9776;</a>
+        <div class="intervall">
+            <div><a class="aktion" href="#">&#9776;</a></div>
             <div class="buttons">
                 <a href="<?php echo $daten['tag_datum']; ?>" class="tag"><?php _e('Tag', 'rrze-calendar'); ?></a>
                 <span class="woche aktiv"><?php _e('Woche', 'rrze-calendar'); ?></span>
@@ -20,8 +20,7 @@
                     <a href="<?php echo $daten['abonnement_url']; ?>" class="tag"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
                 <?php endif; ?>                
             </div>
-        </span>
-
+        </div>
     </div>
 
     <div class="inhalt">
@@ -61,7 +60,7 @@
                         ?>
                         <?php
                         $margin_left = $termin['start'] * 12.88 + 10;
-                        $width = ($termin['ende'] - $termin['start'] + 1) * 14;
+                        $width = ($termin['ende'] - $termin['start'] + 1) * 12.88;
                         ?>
                         <div class="tag" style="margin-left: <?php echo $margin_left; ?>%;width: <?php echo $width; ?>%;border-left:4px solid <?php echo $termin['farbe']; ?>">
                             <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin ganztagig">
