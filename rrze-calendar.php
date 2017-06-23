@@ -1,28 +1,30 @@
 <?php
-/*
-  Plugin Name: RRZE Calendar
-  Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
-  Version: 1.7.9
-  Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-  Author: RRZE-Webteam
-  Author URI: http://blogs.fau.de/webworking/
- */
 
 /*
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 2
-  of the License, or (at your option) any later version.
+Plugin Name: RRZE Calendar
+Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar.git
+Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
+Version: 1.8.0
+Author: RRZE-Webteam
+Author URI: https://blogs.fau.de/webworking/
+Contact Name: RRZE Webmaster
+Contact Email: webmaster@rrze.fau.de
+License: GNU GPLv2
+License URI: https://gnu.org/licenses/gpl.html
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+{Plugin Name} is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+any later version.
+ 
+{Plugin Name} is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+ 
+You should have received a copy of the GNU General Public License
+along with {Plugin Name}. If not, see {License URI}.
+*/
 
 add_action('plugins_loaded', array('RRZE_Calendar', 'instance'));
 
@@ -34,7 +36,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.7.9';
+    const version = '1.8.0';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -52,6 +54,17 @@ class RRZE_Calendar {
 
     public $settings_errors = [];
     public $admin_notices = [];
+    public static $fau_stylesheets = [
+        'FAU-Einrichtungen',
+        'FAU-Medfak',
+        'FAU-RWFak',
+        'FAU-Philfak',
+        'FAU-Techfak',
+        'FAU-Natfak'
+    ];
+    public static $rrze_stylesheets = [
+        'rrze-2015'
+    ];    
     public static $fau_colors = [
         '#003366' => 'default',
         '#A36B0D' => 'phil',
@@ -59,7 +72,7 @@ class RRZE_Calendar {
         '#0381A2' => 'med',
         '#048767' => 'nat',
         '#6E7881' => 'tf'
-    ];
+    ];    
     public static $plugin_file;
     public static $db_feeds_table;
     public static $db_events_table;
@@ -81,8 +94,6 @@ class RRZE_Calendar {
     }
 
     private function __construct() {
-        global $wpdb;
-
         self::$plugin_file = __FILE__;
 
         // Enthaltene Optionen.
@@ -357,48 +368,46 @@ class RRZE_Calendar {
         }
 
         $slug = $wp_query->query_vars[self::$options['endpoint_slug']];
-        $event = !empty($slug) ? $this->get_event_by_slug($slug) : NULL;
 
         if (empty($slug)) {
-            if ($template = locate_template('rrze-calendar-events.php')) {
-                $this->load_template($template);
-            } else {
-                wp_enqueue_style('rrze-calendar');
-                $this->load_template(dirname(__FILE__) . '/includes/templates/events.php');
-            }
-        } elseif (is_null($event)) {
+            $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
+            $events_result = self::get_events_relative_to($timestamp);
+            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);            
+        } else {            
+            $events_data = $this->get_event_by_slug($slug);
+        }
+
+        if (empty($events_data)) {
             if ($template = locate_template('404.php')) {
                 load_template($template);
             } else {
                 wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
             }
-        } else {
-            if ($template = locate_template('rrze-calendar-single-event.php')) {
-                $this->load_template($template, $event);
+        }
+        
+        $calendar_endpoint_url = self::endpoint_url();
+        $endpoint_name = self::endpoint_name();
+        $calendar_endpoint_name = mb_strtoupper(mb_substr($endpoint_name, 0, 1)) . mb_substr($endpoint_name, 1);
+        
+        $current_theme = wp_get_theme();
+        
+        if (empty($slug)) {
+            if (in_array($current_theme->stylesheet, self::$fau_stylesheets)) {
+                include dirname(__FILE__) . '/includes/templates/themes/fau/events.php';
+            } elseif (in_array($current_theme->stylesheet, self::$rrze_stylesheets)) {
+                include dirname(__FILE__) . '/includes/templates/themes/rrze/events.php';                
             } else {
-                wp_enqueue_style('rrze-calendar');
-                $this->load_template(dirname(__FILE__) . '/includes/templates/single-event.php', $event);
+                include dirname(__FILE__) . '/includes/templates/events.php';
+            }
+        } else {
+            if (in_array($current_theme->stylesheet, self::$fau_stylesheets)) {
+                include dirname(__FILE__) . '/includes/templates/themes/fau/single-event.php';
+            } elseif (in_array($current_theme->stylesheet, self::$rrze_stylesheets)) {
+                include dirname(__FILE__) . '/includes/templates/themes/rrze/single-event.php';                
+            } else {
+                include dirname(__FILE__) . '/includes/templates/single-event.php';
             }
         }
-    }
-
-    private function load_template($template, $event = NULL) {
-        global $rrze_calendar_data, $rrze_calendar_endpoint_url, $rrze_calendar_endpoint_name;
-
-        if (is_null($event)) {
-            $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
-            $events_result = self::get_events_relative_to($timestamp);
-            $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
-        } else {
-            $rrze_calendar_data = $event;
-        }
-
-        $rrze_calendar_endpoint_url = self::endpoint_url();
-        $endpoint_name = self::endpoint_name();
-        $rrze_calendar_endpoint_name = mb_strtoupper(mb_substr($endpoint_name, 0, 1)) . mb_substr($endpoint_name, 1);
-
-        require_once($template);
-        exit();
     }
 
     public static function is_endpoint() {
@@ -430,11 +439,13 @@ class RRZE_Calendar {
         }
     }
 
-    public function wp_enqueue_scripts() {
-        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));
+    public function wp_enqueue_scripts() {        
+        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));        
 
-        wp_register_style('rrze-calendar-shortcode', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
-        wp_register_style('rrze-calendar-hint', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
+        wp_register_style('rrze-calendar-shortcode-events', plugins_url('includes/shortcodes/events/events.css', __FILE__));
+        
+        wp_register_style('rrze-calendar-shortcode-calendar', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
+        wp_register_style('rrze-calendar-shortcode-calendar-titip', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
 
         wp_register_script('rrze-calendar-listenansicht', plugins_url('includes/shortcodes/calendar/listenansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
         wp_register_script('rrze-calendar-monatsansicht', plugins_url('includes/shortcodes/calendar/monatsansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
@@ -1725,10 +1736,18 @@ class RRZE_Calendar {
 
         $sql = "SELECT *, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end FROM " . self::$db_events_table . " WHERE slug = %s";
         $data = $wpdb->get_row($wpdb->prepare($sql, $slug), ARRAY_A);
+        
         if (is_null($data)) {
             return NULL;
         }
-
+        
+        $data['e_start'] = $data['start'];
+        $data['e_end'] = $data['end'];
+        
+        if (!empty($data['recurrence_rules'])) {
+            $data['rrules_human_readable'] = self::rrules_human_readable($data['recurrence_rules']);
+        }
+        
         $data['category'] = self::get_category_for_feed($data['ical_feed_id']);
         $data['tags'] = self::get_tags_for_feed($data['ical_feed_id'], 'objects');
         $data['feed'] = self::get_feed($data['ical_feed_id'], 'ARRAY_A');
@@ -1754,9 +1773,9 @@ class RRZE_Calendar {
 
     public static function options_url($atts = array()) {
         $atts = array_merge(
-                array(
-            'page' => 'rrze-calendar'
-                ), $atts
+            array(
+                'page' => 'rrze-calendar'
+            ), $atts
         );
 
         if (isset($atts['action'])) {
@@ -1787,13 +1806,13 @@ class RRZE_Calendar {
 
     public static function webcal_url($atts = array()) {
         $atts = array_merge(
-                array(
-            'plugin' => 'rrze-calendar',
-            'action' => 'export',
-            'feed-ids' => '',
-            'event-ids' => '',
-            'cb' => rand()
-                ), $atts
+            array(
+                'plugin' => 'rrze-calendar',
+                'action' => 'export',
+                'feed-ids' => '',
+                'event-ids' => '',
+                'cb' => rand()
+            ), $atts
         );
         return add_query_arg($atts, site_url('/'));
     }
@@ -2426,6 +2445,8 @@ class RRZE_Calendar {
 
         $query = $wpdb->prepare(
             "SELECT e.*, " .
+            "UNIX_TIMESTAMP(e.start) AS e_start, " .
+            "UNIX_TIMESTAMP(e.end) AS e_end, " .                
             "UNIX_TIMESTAMP(i.start) AS start, " .
             "UNIX_TIMESTAMP(i.end) AS end, " .
             "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
@@ -2461,8 +2482,10 @@ class RRZE_Calendar {
 
         $query = $wpdb->prepare(
                 "SELECT e.*, " .
+                "UNIX_TIMESTAMP(e.start) AS e_start, " .
+                "UNIX_TIMESTAMP(e.end) AS e_end, " .
                 "UNIX_TIMESTAMP(i.start) AS start, " .
-                "UNIX_TIMESTAMP(i.end) AS end, " .
+                "UNIX_TIMESTAMP(i.end) AS end, " .                
                 "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
                 "e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates, " .
                 "e.summary, e.description, e.location, e.slug, " .
@@ -2549,6 +2572,7 @@ class RRZE_Calendar {
         );
         
         $duration = $event->get_duration();
+        $tif = time() + 315569260;
         
         $start_date = new DateTime();
         $start_date->setTimestamp($event->start);
@@ -2559,16 +2583,14 @@ class RRZE_Calendar {
         $end_date->setTime(0, 0, 0);
         
         $diff = $start_date->diff($end_date);
-        $diff_days = (integer)$diff->format("%R%a");
+        $diff_days = $diff->days == 1 && $event->allday ? 0 : $diff->days;
 
-        $tif = time() + 315569260;
-
-        if ($diff_days > 0 && !$event->allday && !$event->recurrence_rules) {
+        if ($diff_days > 0 && !$event->recurrence_rules) {
             for ($i = 0; $i <= $diff_days; $i++) {
                 switch($i) {
                     case 0:
                         $e['start'] = $event->start;
-                        $e['end'] = strtotime(date('Y-m-d', $start_date->getTimestamp()) . '-00:00 + 1 day');
+                        $e['end'] = strtotime(date('Y-m-d', $start_date->getTimestamp())) + DAY_IN_SECONDS;
                         break;
                     case $diff_days:
                         $e['start'] = $start_date->getTimestamp() + $i * DAY_IN_SECONDS;
@@ -2581,11 +2603,7 @@ class RRZE_Calendar {
                 
                 $evs[] = $e;
             }
-        } else {
-            $evs[] = $e;
-        }
-
-        if ($event->recurrence_rules) {
+        } elseif ($event->recurrence_rules) {
             $count = 0;
             $start = $event->start;
             $exrule = array();
@@ -2616,6 +2634,8 @@ class RRZE_Calendar {
                     $evs[] = $e;
                 }
             }
+        } else {
+            $evs[] = $e;
         }
 
         $evs_unique = array();
@@ -2646,9 +2666,11 @@ class RRZE_Calendar {
         $query = "SELECT id FROM " . self::$db_events_table . " WHERE ical_feed_url = %s
             AND ical_uid = %s
             AND start = FROM_UNIXTIME(%d) " .
-                ($has_recurrence ? "AND NOT " : "AND ") .
-                "(recurrence_rules IS NULL OR recurrence_rules = '')";
+            ($has_recurrence ? "AND NOT " : "AND ") .
+            "(recurrence_rules IS NULL OR recurrence_rules = '')";
+        
         $args = array($ical_feed_url, $ical_uid, $start);
+        
         if (!is_null($exclude_event_id)) {
             $query .= " AND id <> %d";
             $args[] = $exclude_event_id;
@@ -2691,15 +2713,17 @@ class RRZE_Calendar {
 
         self::get_filter_sql($filter);
 
-        $query = "SELECT e.*, UNIX_TIMESTAMP(e.start) as start, UNIX_TIMESTAMP(e.end) as end, e.allday,
+        $query = "SELECT e.*, 
+            UNIX_TIMESTAMP(e.start) AS e_start, UNIX_TIMESTAMP(e.end) AS e_end, 
+            UNIX_TIMESTAMP(e.start) as start, UNIX_TIMESTAMP(e.end) as end, e.allday,
             e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates,
             e.summary, e.description, e.location, e.slug,
             e.ical_feed_id, e.ical_feed_url, e.ical_source_url, e.ical_uid " .
-                "FROM " . self::$db_events_table . " e " .
-                "WHERE 1 = 1 " .
-                $filter['filter_where'] .
-                $start_where_sql .
-                $end_where_sql;
+            "FROM " . self::$db_events_table . " e " .
+            "WHERE 1 = 1 " .
+            $filter['filter_where'] .
+            $start_where_sql .
+            $end_where_sql;
 
         $query = !empty($args) ? $wpdb->prepare($query, $args) : $query;
         $events = $wpdb->get_results($query, ARRAY_A);
@@ -2907,8 +2931,9 @@ class RRZE_Calendar {
 
         $hash = (strpos($rgb, '#') !== false) ? '#' : '';
         $rgb = (strlen($rgb) == 7) ? str_replace('#', '', $rgb) : ((strlen($rgb) == 6) ? $rgb : false);
-        if (strlen($rgb) != 6)
+        if (strlen($rgb) != 6) {
             return $hash . '000000';
+        }
         $darker = ($darker > 1) ? $darker : 1;
 
         list($R16, $G16, $B16) = str_split($rgb, 2);
@@ -2930,6 +2955,22 @@ class RRZE_Calendar {
         } else {
             return '#000';
         }
+    }
+    
+    public static function rrules_human_readable($recurrence_rules) {
+        require_once(plugin_dir_path(self::$plugin_file) . 'includes/RRule/autoload.php');
+
+        $default_opt = array(
+                'use_intl' => true,
+                'locale' => get_locale(),
+                'date_formatter' => function($date) {return $date->format(__('d.m.Y', 'rrze-calendar'));},
+                'fallback' => 'en_US',
+                'explicit_infinite' => true,
+                'include_start' => true
+        );
+       
+        $rrule = new RRule\RRule($recurrence_rules);       
+        return $rrule->humanReadable($default_opt);
     }
 
 }
