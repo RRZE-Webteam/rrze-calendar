@@ -156,6 +156,17 @@ abstract class Ansicht {
         // Farbmarkierung
         $event_data["farbe"] = isset($event->category->color) ? $event->category->color : 'grey';
 
+        $event_data["allday"] = $event->allday;
+        $event_data["multiday"] = $event->multiday;
+        $event_data["long_e_start_date"] = $event->long_e_start_date;
+        $event_data["long_e_end_date"] = $event->long_e_end_date;
+        $event_data["short_e_start_time"] = $event->short_e_start_time;
+        $event_data["short_e_end_time"] = $event->short_e_end_time;
+        $event_data["short_start_time"] = $event->short_start_time;
+        $event_data["short_end_time"] = $event->short_end_time;
+        $event_data["long_start_date"] = $event->long_start_date;
+        $event_data["long_end_date"] = $event->long_end_date;
+        
         return $event_data;
     }
 
@@ -197,8 +208,8 @@ abstract class Ansicht {
     }
 
     protected function rendere_template($daten) {
-        wp_enqueue_style('rrze-calendar-shortcode');
-        wp_enqueue_style('rrze-calendar-hint');
+        wp_enqueue_style('rrze-calendar-shortcode-calendar');
+        wp_enqueue_style('rrze-calendar-shortcode-calendar-titip');
         wp_enqueue_script('rrze-calendar-' . $this->template_name());
 
         // Aktuellen Dateinamen fuer korrekte Verlinkungen mit in Template Daten einfuegen

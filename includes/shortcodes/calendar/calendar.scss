@@ -804,13 +804,19 @@ body {
 }
 
 .event-info {
-    margin-left: 60px;
+    margin-left: 0px;
     margin-bottom: 10px;
+    padding-left: 5px;
     padding-bottom: 5px;
+    border-left: 7px solid grey;
 }
 
 .event-title {
-    font-weight: bold;
+
+}
+
+.event-title-date {
+    line-height: 1.4em;
 }
 
 .event-time {

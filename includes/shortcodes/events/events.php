@@ -9,19 +9,23 @@ add_shortcode('termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
 class RRZE_Calendar_Events_Shortcode {
     
     public static function shortcode($atts, $content = "") {
-        global $rrze_calendar_data, $rrze_calendar_page_url, $rrze_calendar_subscribe_url;
-        
         $atts = shortcode_atts(
             array(
-                'kategorien' => '',     // Mehrere Kategorien (Titelform) werden durch Komma getrennt.
-                'schlagworte' => '',    // Mehrere Schlagworte (Titelform) werden durch Komma getrennt.
+                'kategorien' => '',     // mehrere Kategorien (Titelform) werden durch Komma getrennt.
+                'schlagworte' => '',    // mehrere Schlagworte (Titelform) werden durch Komma getrennt.
                 'anzahl' => 10,         // Anzahl der Termineausgabe. Standardwert: 10.
                 'page_link' => 0,       // ID einer Zielseite um z.B. weitere Termine anzuzeigen.
-                'abonnement_link' => 0  // Abonnement-Link anzeigen (1 oder 0).
+                'abonnement_link' => 0, // Abonnement-Link anzeigen (1 oder 0).
+                'location' => 0,        // Der Ort des Termins anzeigen  (1 oder 0).
+                'description' => 0      // Die Beschreibung des Termins anzeigen (1 oder 0).
             ), $atts
         );
 
-        $anzahl = intval($atts['anzahl']);
+        $abonnement_link = empty($atts['abonnement_link']) ? 0 : 1;
+        $location = empty($atts['anzahl']) ? 0 : 1;
+        $description = empty($atts['description']) ? 0 : 1;
+        
+        $anzahl = absint($atts['anzahl']);
         if ($anzahl < 1) {
             $anzahl = 10;
         }
@@ -64,26 +68,30 @@ class RRZE_Calendar_Events_Shortcode {
             }
         }
         
-        $subscribe_url = $atts['abonnement_link'] ? RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : '')) : '';
+        $subscribe_url = $abonnement_link ? RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : '')) : '';
         
         $filter = array(
             'feed_ids' => $feed_ids
         );
 
-        $rrze_calendar_data = array();
+        $events_data = array();
         
         if ($feed_ids OR (!$feed_ids && !$taxonomy_empty)) {
             $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
             $events_result = RRZE_Calendar::get_events_relative_to($timestamp, $anzahl, $filter);
-            $rrze_calendar_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
+            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
         }
         
-        $rrze_calendar_page_url = $page_url;
-        $rrze_calendar_subscribe_url = $subscribe_url;
+        $calendar_page_url = $page_url;
+        $calendar_subscribe_url = $subscribe_url;
         
-        $template = locate_template('rrze-calendar-events-shortcode.php');
-                
-        if (!$template) {
+        $current_theme = wp_get_theme();
+
+        if (in_array($current_theme->stylesheet, RRZE_Calendar::$fau_stylesheets)) {
+            $template = dirname(__FILE__) . '/themes/fau/template.php';
+        } elseif (in_array($current_theme->stylesheet, RRZE_Calendar::$rrze_stylesheets)) {
+            $template = dirname(__FILE__) . '/themes/rrze/template.php';                
+        } else {
             wp_enqueue_style('rrze-calendar');
             $template = dirname(__FILE__) . '/template.php';
         }

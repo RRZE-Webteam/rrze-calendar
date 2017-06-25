@@ -265,13 +265,6 @@ class RRZE_Calendar_Functions {
         return date_i18n('d', $timestamp, TRUE);
     }
 
-    public static function get_multiday_end_day($timestamp, $convert_from_gmt = TRUE) {
-        if ($convert_from_gmt) {
-            $timestamp = self::gmt_to_local($timestamp);
-        }
-        return date_i18n('d', $timestamp, TRUE);
-    }
-
     public static function get_medium_time($timestamp, $convert_from_gmt = TRUE) {
         $time_format = get_option('time_format', 'H:i');
         if ($convert_from_gmt) {
