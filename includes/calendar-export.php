@@ -39,8 +39,9 @@ class RRZE_Calendar_Export {
         $c = new vcalendar();
         $c->setProperty('calscale', 'GREGORIAN');
         $c->setProperty('method', 'PUBLISH');
-        $c->setProperty('X-WR-CALNAME', get_bloginfo('name'));
-        $c->setProperty('X-WR-CALDESC', get_bloginfo('description'));
+        // MS Outlook problem workaround
+        //$c->setProperty('X-WR-CALNAME', get_bloginfo('name'));
+        //$c->setProperty('X-WR-CALDESC', get_bloginfo('description'));
 
         $tz = get_option('timezone_string');
         if ($tz) {
