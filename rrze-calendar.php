@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.2
+Version: 1.8.3
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 Contact Name: RRZE Webmaster
@@ -40,7 +40,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.2';
+    const version = '1.8.3';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -1527,7 +1527,7 @@ class RRZE_Calendar {
 
         $category = self::add_category($args);
         if (is_wp_error($category)) {
-            wp_die(self::$messages['error-ocurred']);
+            return FALSE;
         }
 
         add_term_meta($category->term_id, 'color', $color, TRUE);
@@ -1559,8 +1559,8 @@ class RRZE_Calendar {
         );
 
         $tag = self::add_tag($args);
-        if (is_wp_error($category)) {
-            wp_die(self::$messages['error-ocurred']);
+        if (is_wp_error($tag)) {
+            return FALSE;
         }
 
         return $tag->term_id;
@@ -1598,7 +1598,7 @@ class RRZE_Calendar {
         $category = self::update_category($category->term_id, $args, $feeds);
 
         if (is_wp_error($category)) {
-            wp_die(self::$messages['error-ocurred']);
+            return FALSE;
         }
 
         update_term_meta($category->term_id, 'color', $color);
@@ -1636,7 +1636,7 @@ class RRZE_Calendar {
         $tag = self::update_tag($tag->term_id, $args, $feeds);
 
         if (is_wp_error($tag)) {
-            wp_die(self::$messages['error-ocurred']);
+            return FALSE;
         }
 
         return TRUE;
