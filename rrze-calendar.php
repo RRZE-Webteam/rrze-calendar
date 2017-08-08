@@ -4,30 +4,15 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.3
+Version: 1.8.4
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
-Contact Name: RRZE Webmaster
-Contact Email: webmaster@rrze.fau.de
+License: GNU General Public License v2
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 GitHub Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 GitHub Branch: master
-Domain Path: /languages
 Text Domain: rrze-calendar
-License: GNU GPLv2
-License URI: https://gnu.org/licenses/gpl.html
-
-{Plugin Name} is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-any later version.
- 
-{Plugin Name} is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License
-along with {Plugin Name}. If not, see {License URI}.
+Domain Path: /languages
 */
 
 add_action('plugins_loaded', array('RRZE_Calendar', 'instance'));

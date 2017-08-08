@@ -11,8 +11,11 @@ $multiday = [];
     <?php else: ?>
     <ul>
     <?php foreach ($events_data as $date) : ?>
-        <?php foreach ($date as $event): 
-            if (in_array($event->endpoint_url, $multiday)):
+        <?php foreach ($date as $event):
+            if ($anzahl <= 0):
+                break;
+            endif;
+            if (in_array($event->id, $multiday)):
                 continue;
             endif;            
 	    $bgcolorclass = '';
@@ -37,12 +40,12 @@ $multiday = [];
                             </div>
                         <?php endif; ?>
                         <?php if ($event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->endpoint_url; ?>
+                            <?php $multiday[] = $event->id; ?>
                             <div class="event-time">
                                 <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_e_start_date, $event->long_e_end_date)) ?>
                             </div>            
                         <?php elseif (!$event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->endpoint_url; ?>
+                            <?php $multiday[] = $event->id; ?>
                             <div class="event-time">
                                 <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_e_start_date, $event->short_e_start_time, $event->long_e_end_date, $event->short_e_end_time)) ?>
                             </div>
@@ -60,6 +63,7 @@ $multiday = [];
                     </div>
                 </div>
             </li>
+            <?php $anzahl--; ?>
         <?php endforeach; ?>
     <?php endforeach; ?>
     </ul>

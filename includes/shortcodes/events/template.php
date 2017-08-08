@@ -14,10 +14,13 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
     <?php else: ?>
     <div>
         <?php foreach ($events_data as $date): ?>
-            <?php foreach ($date as $event): ?>
-                <?php if (in_array($event->endpoint_url, $multiday)): ?>
-                    <?php continue; ?>
-                <?php endif; ?>        
+            <?php foreach ($date as $event):
+                if ($anzahl <= 0):
+                    break;
+                endif;
+                if (in_array($event->id, $multiday)):
+                    continue;
+                endif; ?>
                 <div class="event-item">
                     <div class="event-title">
                         <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
@@ -32,12 +35,12 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                             </div>
                         <?php endif; ?>
                         <?php if ($event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->endpoint_url; ?>
+                            <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
                                 <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_e_start_date, $event->long_e_end_date)) ?>
                             </div>            
                         <?php elseif (!$event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->endpoint_url; ?>
+                            <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
                                 <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_e_start_date, $event->short_e_start_time, $event->long_e_end_date, $event->short_e_end_time)) ?>
                             </div>
@@ -58,6 +61,7 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php $anzahl--; ?>
             <?php endforeach; ?>
         <?php endforeach; ?>
         <?php if ($calendar_page_url): ?>
