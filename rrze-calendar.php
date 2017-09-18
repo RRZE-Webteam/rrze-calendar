@@ -45,6 +45,7 @@ class RRZE_Calendar {
     public $admin_notices = [];
     public static $fau_stylesheets = [
         'FAU-Einrichtungen',
+        'FAU-Einrichtungen-BETA',
         'FAU-Medfak',
         'FAU-RWFak',
         'FAU-Philfak',
