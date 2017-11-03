@@ -19,8 +19,7 @@ if (isset($options['breadcrumb_root'])) {
     }
     $breadcrumb .= '<nav aria-labelledby="bc-title" class="breadcrumbs">'; 
     $breadcrumb .= '<h4 class="screen-reader-text" id="bc-title">'.__('Sie befinden sich hier:','fau').'</h4>';
-    $breadcrumb .= '<a data-wpel-link="internal" href="' . site_url('/') . '">' . $options['breadcrumb_root'] . '</a>' . $options['breadcrumb_delimiter'];
-    $breadcrumb .= $options['breadcrumb_beforehtml'] . $calendar_endpoint_name . $options['breadcrumb_afterhtml'];
+    $breadcrumb .= '<a data-wpel-link="internal" href="' . site_url('/') . '">' . $options['breadcrumb_root'] . '</a>';
 }
 
 get_header(); ?>
@@ -28,15 +27,12 @@ get_header(); ?>
     <section id="hero" class="hero-small">
         <div class="container">
             <div class="row">
-                <div class="span12">
-
+                <div class="col-xs-12">
                     <?php echo $breadcrumb; ?>
-
-                    <div class="hero-meta-portal"></div>
                 </div>
             </div>
             <div class="row">
-                <div class="span12">
+                <div class="col-xs-12">
 
                     <h1><?php echo $calendar_endpoint_name; ?></h1>
 
@@ -49,10 +45,10 @@ get_header(); ?>
         <div class="container">
 
             <div class="row">
-                <div class="span12">
+                <div class="col-xs-12">
                     <main>                        
 
-                        <div class="events-list">
+                        <div class="rrze-calendar events-list">
                             <?php if (empty($events_data)): ?>
                             <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
                             <?php else: ?>
@@ -72,7 +68,9 @@ get_header(); ?>
 					    endif;
 					endif; ?>
                                         <li>                                           
-                                            <div class="event-item">
+                                            <div class="event-item" itemscope itemtype="http://schema.org/Event">
+						<meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
+						<meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
                                                 <div class="event-date <?php echo $bgcolorclass; ?>" <?php echo $inline; ?>>
                                                     <span class="event-date-month"><?php echo $event->start_month; ?></span>
                                                     <span class="event-date-day"><?php echo $event->start_day; ?></span>
@@ -98,10 +96,10 @@ get_header(); ?>
                                                             <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                                                         </div>            
                                                     <?php endif; ?>
-                                                    <div class="event-title">
-                                                        <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
+                                                    <div class="event-title" itemprop="name">
+                                                        <a itemprop="url" href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                                                     </div>
-                                                    <div class="event-location">
+                                                    <div class="event-location" itemprop="location">
                                                         <?php echo $event->location ? nl2br($event->location) : '&nbsp;'; ?>
                                                     </div>
                                                 </div>
@@ -111,6 +109,10 @@ get_header(); ?>
                                 <?php endforeach; ?>
                             </ul>
                             <?php endif; ?>      
+			    
+			     <div class="events-more-links">
+				<a class="events-more" href="<?php echo $event->subscribe_url; ?>"><?php _e('Abonnement', 'fau'); ?></a>
+			    </div>  
                         </div>
                       
                     </main>

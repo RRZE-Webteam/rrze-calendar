@@ -24,10 +24,11 @@ get_header(); ?>
 
 <div id="primary" class="content-area">
     <div id="content" class="site-content" role="main">
-        <div class="event-detail-item">
-            <h2>
+        <div class="event-detail-item" itemscope itemtype="http://schema.org/Event">
+            <h2 itemprop="name">
                 <?php echo $event->summary; ?>
-            </h2>            
+            </h2>    
+	    
             <div class="event-date <?php echo $bgcolorclass; ?>" <?php echo $inline; ?>>
                 <div class="day-month">
                     <span class="day"><?php echo $event->start_day . '. '; ?></span>
@@ -36,6 +37,8 @@ get_header(); ?>
                 <span class="year"><?php echo $event->start_year; ?></span>
             </div>
             <div class="event-info">
+		<meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
+		<meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
                 <?php if ($event->allday) : ?>
                     <div class="event-time event-allday">
                         <?php _e('Ganztägig', 'rrze-calendar'); ?>
@@ -69,7 +72,7 @@ get_header(); ?>
                     </div>                
                 <?php endif; ?>
                 <?php if ($event->location) : ?>
-                    <p class="event-location">
+                    <p class="event-location" itemprop="location">
                         <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
                     <p>
                 <?php endif; ?>

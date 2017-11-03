@@ -18,7 +18,9 @@ $multiday = [];
                 if (in_array($event->id, $multiday)):
                     continue;
                 endif; ?>
-                <div class="event-item">
+                <div class="event-item" itemscope itemtype="http://schema.org/Event">
+		    <meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
+		    <meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
                     <div class="event-date">
                         <div class="day-month">
                             <div class="day"><?php echo $event->start_day . '. '; ?></div>
@@ -26,8 +28,8 @@ $multiday = [];
                         </div>
                         <div class="year"><?php echo $event->start_year; ?></div>
                     </div>
-                    <h2 class="event-title">
-                        <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
+                    <h2 class="event-title" itemprop="name">
+                        <a itemprop="url" href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                     </h2>
                     <div class="event-info">
                         <?php if ($event->allday) : ?>
@@ -50,7 +52,7 @@ $multiday = [];
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                             </div>            
                         <?php endif; ?>
-                        <p class="event-location">
+                        <p class="event-location" itemprop="location">
                         <?php if ($event->location) : ?>
                             <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
                         <?php endif; ?>

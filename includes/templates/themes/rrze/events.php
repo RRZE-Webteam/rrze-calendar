@@ -14,7 +14,7 @@ get_header(); ?>
 <?php } ?>
 <div id="primary" class="content-area">
     <div id="content" class="site-content" role="main">
-        <div class="events-list">
+        <div class="rrze-calendar events-list">
             <?php if (empty($events_data)): ?>
             <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
             <?php else: ?>
@@ -32,7 +32,9 @@ get_header(); ?>
                                 $inline = 'style="background-color:' . $event->category->color.'"';
                             endif;
                         endif; ?>                                          
-                        <div class="event-item">
+                        <div class="event-item" itemscope itemtype="http://schema.org/Event">
+			    <meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
+			    <meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
                             <div class="event-date">
                                 <div class="day-month">
                                     <div class="day"><?php echo $event->start_day . '. '; ?></div>
@@ -61,10 +63,10 @@ get_header(); ?>
                                         <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                                     </div>            
                                 <?php endif; ?>
-                                <div class="event-title">
-                                    <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
+                                <div class="event-title" itemprop="name">
+                                    <a itemprop="url" href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                                 </div>
-                                <div class="event-location">
+                                <div class="event-location" itemprop="location">
                                     <?php echo $event->location ? nl2br($event->location) : '&nbsp;'; ?>
                                 </div>
                             </div>

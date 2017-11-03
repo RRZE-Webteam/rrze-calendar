@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 
 $multiday = [];
 ?>
-<div class="events-list">
+<div class="rrze-calendar events-list">
     <?php if (empty($events_data)): ?>
     <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
     <?php else: ?>
@@ -28,7 +28,9 @@ $multiday = [];
 		endif;
 	    endif; ?>
             <li>                                           
-                <div class="event-item">
+                <div class="event-item" itemscope itemtype="http://schema.org/Event">
+		    <meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
+		    <meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
                     <div class="event-date <?php echo $bgcolorclass; ?>" <?php echo $inline; ?>>
                         <span class="event-date-month"><?php echo $event->start_month_html ?></span>
                         <span class="event-date-day"><?php echo $event->start_day_html ?></span>
@@ -54,10 +56,10 @@ $multiday = [];
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                             </div>            
                         <?php endif; ?>
-                        <div class="event-title">
-                            <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
+                        <div class="event-title" itemprop="name">
+                            <a itemprop="url" href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                         </div>
-                        <div class="event-location">
+                        <div class="event-location" itemprop="location">
                             <?php echo $event->location ? nl2br($event->location) : '&nbsp;'; ?>
                         </div>
                     </div>
