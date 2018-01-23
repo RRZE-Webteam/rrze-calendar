@@ -51,15 +51,15 @@ class RRZE_Calendar {
             'FAU-RWFak',
             'FAU-Philfak',
             'FAU-Techfak',
-            'FAU-Natfak'            
+            'FAU-Natfak'
         ],
         'rrze' => [
             'rrze-2015'
         ],
         'fau-events' => [
             'FAU-Events'
-        ]        
-    ];  
+        ]
+    ];
     public static $fau_colors = [
         '#003366' => 'default',
         '#A36B0D' => 'phil',
@@ -67,7 +67,7 @@ class RRZE_Calendar {
         '#0381A2' => 'med',
         '#048767' => 'nat',
         '#6E7881' => 'tf'
-    ];    
+    ];
     public static $plugin_file;
     public static $db_feeds_table;
     public static $db_events_table;
@@ -221,7 +221,7 @@ class RRZE_Calendar {
         if (version_compare($version, self::version, '<')) {
             self::db_update($version);
             self::cron_schedule_event_setup();
-            
+
             update_option(self::version_option_name, self::version);
         }
     }
@@ -367,8 +367,8 @@ class RRZE_Calendar {
         if (empty($slug)) {
             $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
             $events_result = self::get_events_relative_to($timestamp);
-            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);            
-        } else {            
+            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
+        } else {
             $events_data = $this->get_event_by_slug($slug);
         }
 
@@ -379,13 +379,13 @@ class RRZE_Calendar {
                 wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
             }
         }
-        
+
         $calendar_endpoint_url = self::endpoint_url();
         $endpoint_name = self::endpoint_name();
         $calendar_endpoint_name = mb_strtoupper(mb_substr($endpoint_name, 0, 1)) . mb_substr($endpoint_name, 1);
-        
+
         $current_theme = wp_get_theme();
-        
+
         $styledir = '';
         foreach (self::$allowed_stylesheets as $dir => $style) {
             if (in_array(strtolower($current_theme->stylesheet), array_map('strtolower', $style))) {
@@ -401,7 +401,7 @@ class RRZE_Calendar {
         } else {
             include $styledir . 'single-event.php';
         }
-        
+
         exit();
     }
 
@@ -434,11 +434,11 @@ class RRZE_Calendar {
         }
     }
 
-    public function wp_enqueue_scripts() {        
-        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));        
+    public function wp_enqueue_scripts() {
+        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));
 
         wp_register_style('rrze-calendar-shortcode-events', plugins_url('includes/shortcodes/events/events.css', __FILE__));
-        
+
         wp_register_style('rrze-calendar-shortcode-calendar', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
         wp_register_style('rrze-calendar-shortcode-calendar-titip', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
 
@@ -475,11 +475,11 @@ class RRZE_Calendar {
     }
 
     public function load_calendar_page() {
-        
+
     }
 
     public function load_events_page() {
-        
+
     }
 
     public function calendar_screen_options() {
@@ -603,7 +603,7 @@ class RRZE_Calendar {
         </select>
         <?php
     }
-    
+
     public function admin_validate() {
         $page = self::get_param('page');
 
@@ -1353,7 +1353,7 @@ class RRZE_Calendar {
 
         self::$options['endpoint_name'] = $endpoint_name;
         self::$options['schedule_event'] = $schedule_event;
-        
+
         self::cron_schedule_event_setup();
 
         update_option(self::option_name, self::$options);
@@ -1731,18 +1731,18 @@ class RRZE_Calendar {
 
         $sql = "SELECT *, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end FROM " . self::$db_events_table . " WHERE slug = %s";
         $data = $wpdb->get_row($wpdb->prepare($sql, $slug), ARRAY_A);
-        
+
         if (is_null($data)) {
             return NULL;
         }
-        
+
         $data['e_start'] = $data['start'];
         $data['e_end'] = $data['end'];
-        
+
         if (!empty($data['recurrence_rules'])) {
             $data['rrules_human_readable'] = self::rrules_human_readable($data['recurrence_rules']);
         }
-        
+
         $data['category'] = self::get_category_for_feed($data['ical_feed_id']);
         $data['tags'] = self::get_tags_for_feed($data['ical_feed_id'], 'objects');
         $data['feed'] = self::get_feed($data['ical_feed_id'], 'ARRAY_A');
@@ -2435,13 +2435,13 @@ class RRZE_Calendar {
 
         $start_time = date('Y-m-d H:i:s', RRZE_Calendar_Functions::local_to_gmt($start_time));
         $end_time = date('Y-m-d H:i:s', RRZE_Calendar_Functions::local_to_gmt($end_time));
-        
+
         self::get_filter_sql($filter);
 
         $query = $wpdb->prepare(
             "SELECT e.*, " .
             "UNIX_TIMESTAMP(e.start) AS e_start, " .
-            "UNIX_TIMESTAMP(e.end) AS e_end, " .                
+            "UNIX_TIMESTAMP(e.end) AS e_end, " .
             "UNIX_TIMESTAMP(i.start) AS start, " .
             "UNIX_TIMESTAMP(i.end) AS end, " .
             "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
@@ -2455,7 +2455,7 @@ class RRZE_Calendar {
             "ORDER BY i.start ASC", array($start_time, $end_time));
 
         $events = $wpdb->get_results($query, ARRAY_A);
-        
+
         foreach ($events as &$event) {
             $event['category'] = self::get_category_for_feed($event['ical_feed_id']);
             $event['tags'] = self::get_tags_for_feed($event['ical_feed_id'], 'objects');
@@ -2480,7 +2480,7 @@ class RRZE_Calendar {
                 "UNIX_TIMESTAMP(e.start) AS e_start, " .
                 "UNIX_TIMESTAMP(e.end) AS e_end, " .
                 "UNIX_TIMESTAMP(i.start) AS start, " .
-                "UNIX_TIMESTAMP(i.end) AS end, " .                
+                "UNIX_TIMESTAMP(i.end) AS end, " .
                 "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
                 "e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates, " .
                 "e.summary, e.description, e.location, e.slug, " .
@@ -2542,7 +2542,7 @@ class RRZE_Calendar {
     public function date_match_exdates($date, $ics_rule) {
         foreach (explode(",", $ics_rule) as $_date) {
             $_date_start = strtotime($_date);
-           
+
             if ($_date_start != FALSE) {
                 $_date_end = $_date_start + DAY_IN_SECONDS - 1;
                 if ($date >= $_date_start && $date <= $_date_end) {
@@ -2565,10 +2565,10 @@ class RRZE_Calendar {
             'start' => $event->start,
             'end' => $event->end,
         );
-        
+
         $duration = $event->get_duration();
         $tif = time() + 315569260;
-        
+
         $start_date = new DateTime();
         $start_date->setTimestamp($event->start);
         $start_date->setTime(0, 0, 0);
@@ -2576,7 +2576,7 @@ class RRZE_Calendar {
         $end_date = new DateTime();
         $end_date->setTimestamp($event->end);
         $end_date->setTime(0, 0, 0);
-        
+
         $diff = $start_date->diff($end_date);
         $diff_days = $diff->days == 1 && $event->allday ? 0 : $diff->days;
 
@@ -2595,7 +2595,7 @@ class RRZE_Calendar {
                         $e['start'] = $start_date->getTimestamp() + $i * DAY_IN_SECONDS;
                         $e['end'] = $e['start'] + DAY_IN_SECONDS;
                 }
-                
+
                 $evs[] = $e;
             }
         } elseif ($event->recurrence_rules) {
@@ -2663,9 +2663,9 @@ class RRZE_Calendar {
             AND start = FROM_UNIXTIME(%d) " .
             ($has_recurrence ? "AND NOT " : "AND ") .
             "(recurrence_rules IS NULL OR recurrence_rules = '')";
-        
+
         $args = array($ical_feed_url, $ical_uid, $start);
-        
+
         if (!is_null($exclude_event_id)) {
             $query .= " AND id <> %d";
             $args[] = $exclude_event_id;
@@ -2708,8 +2708,8 @@ class RRZE_Calendar {
 
         self::get_filter_sql($filter);
 
-        $query = "SELECT e.*, 
-            UNIX_TIMESTAMP(e.start) AS e_start, UNIX_TIMESTAMP(e.end) AS e_end, 
+        $query = "SELECT e.*,
+            UNIX_TIMESTAMP(e.start) AS e_start, UNIX_TIMESTAMP(e.end) AS e_end,
             UNIX_TIMESTAMP(e.start) as start, UNIX_TIMESTAMP(e.end) as end, e.allday,
             e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates,
             e.summary, e.description, e.location, e.slug,
@@ -2951,7 +2951,7 @@ class RRZE_Calendar {
             return '#000';
         }
     }
-    
+
     public static function rrules_human_readable($recurrence_rules) {
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/RRule/autoload.php');
 
@@ -2963,13 +2963,13 @@ class RRZE_Calendar {
                 'explicit_infinite' => true,
                 'include_start' => true
         );
-       
-        $rrule = new RRule\RRule($recurrence_rules);       
+
+        $rrule = new RRule\RRule($recurrence_rules);
         return $rrule->humanReadable($default_opt);
     }
 
 }
 
 class Event_Not_Found extends Exception {
-    
+
 }
