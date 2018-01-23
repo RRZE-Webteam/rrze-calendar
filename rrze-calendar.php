@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.6
+Version: 1.8.7
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -43,19 +43,23 @@ class RRZE_Calendar {
 
     public $settings_errors = [];
     public $admin_notices = [];
-    public static $fau_stylesheets = [
-        'FAU-Einrichtungen',
-        'FAU-Einrichtungen-BETA',
-	'FAU-Einrichtungen-Beta',
-        'FAU-Medfak',
-        'FAU-RWFak',
-        'FAU-Philfak',
-        'FAU-Techfak',
-        'FAU-Natfak'
-    ];
-    public static $rrze_stylesheets = [
-        'rrze-2015'
-    ];    
+    public static $allowed_stylesheets = [
+        'fau' => [
+            'FAU-Einrichtungen',
+            'FAU-Einrichtungen-BETA',
+            'FAU-Medfak',
+            'FAU-RWFak',
+            'FAU-Philfak',
+            'FAU-Techfak',
+            'FAU-Natfak'            
+        ],
+        'rrze' => [
+            'rrze-2015'
+        ],
+        'fau-events' => [
+            'FAU-Events'
+        ]        
+    ];  
     public static $fau_colors = [
         '#003366' => 'default',
         '#A36B0D' => 'phil',
@@ -382,22 +386,20 @@ class RRZE_Calendar {
         
         $current_theme = wp_get_theme();
         
+        $styledir = '';
+        foreach (self::$allowed_stylesheets as $dir => $style) {
+            if (in_array(strtolower($current_theme->stylesheet), array_map('strtolower', $style))) {
+                $styledir = dirname(__FILE__) . "/includes/templates/themes/$dir/";
+                break;
+            }
+        }
+
+        $styledir = is_dir($styledir) ? $styledir : dirname(__FILE__) . '/includes/templates/';
+        
         if (empty($slug)) {
-            if (in_array($current_theme->stylesheet, self::$fau_stylesheets)) {
-                include dirname(__FILE__) . '/includes/templates/themes/fau/events.php';
-            } elseif (in_array($current_theme->stylesheet, self::$rrze_stylesheets)) {
-                include dirname(__FILE__) . '/includes/templates/themes/rrze/events.php';                
-            } else {
-                include dirname(__FILE__) . '/includes/templates/events.php';
-            }
+            include $styledir . 'events.php';
         } else {
-            if (in_array($current_theme->stylesheet, self::$fau_stylesheets)) {
-                include dirname(__FILE__) . '/includes/templates/themes/fau/single-event.php';
-            } elseif (in_array($current_theme->stylesheet, self::$rrze_stylesheets)) {
-                include dirname(__FILE__) . '/includes/templates/themes/rrze/single-event.php';                
-            } else {
-                include dirname(__FILE__) . '/includes/templates/single-event.php';
-            }
+            include $styledir . 'single-event.php';
         }
         
         exit();
