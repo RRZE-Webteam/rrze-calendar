@@ -13,7 +13,7 @@ wp_enqueue_style('rrze-calendar');
         <div id="primary" class="site-content cf" role="main">
 
             <header class="entry-header">
-                <h2>sdfgsdfgsdgfsdfgsdgf<?php _e('Termine', 'rrze-calendar'); ?></h2>
+                <h1 class="archive-title"><?php _e('Termine', 'rrze-calendar'); ?></h1>
             </header>
 
             <div class="entry-content">
