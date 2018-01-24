@@ -87,11 +87,15 @@ class RRZE_Calendar_Events_Shortcode {
         
         $current_theme = wp_get_theme();
 
-        if (in_array($current_theme->stylesheet, RRZE_Calendar::$fau_stylesheets)) {
-            $template = dirname(__FILE__) . '/themes/fau/template.php';
-        } elseif (in_array($current_theme->stylesheet, RRZE_Calendar::$rrze_stylesheets)) {
-            $template = dirname(__FILE__) . '/themes/rrze/template.php';                
-        } else {
+        $template = '';
+        foreach (RRZE_Calendar::$allowed_stylesheets as $dir => $style) {
+            if (in_array(strtolower($current_theme->stylesheet), array_map('strtolower', $style))) {
+                $template = dirname(__FILE__) . "/themes/$dir/template.php";
+                break;
+            }
+        }
+        
+        if (!file_exists($template)) {
             wp_enqueue_style('rrze-calendar');
             $template = dirname(__FILE__) . '/template.php';
         }
