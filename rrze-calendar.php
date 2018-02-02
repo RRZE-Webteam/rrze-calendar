@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.9
+Version: 1.8.10
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.9';
+    const version = '1.8.10';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -121,8 +121,6 @@ class RRZE_Calendar {
         add_action('init', array(__CLASS__, 'add_endpoint'));
         add_action('template_redirect', array($this, 'endpoint_template_redirect'));
 
-        add_action(self::cron_hook, array($this, 'cron_schedule_event_hook'));
-
         add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
 
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
@@ -151,6 +149,12 @@ class RRZE_Calendar {
             'daily' => __('Täglich', 'rrze-calendar')
         ];
 
+        if (!wp_get_schedule(self::cron_hook)) {
+            self::cron_schedule_event_setup();
+        }
+        
+        add_action(self::cron_hook, array($this, 'cron_schedule_event_hook'));
+        
         self::$messages = [
             'nonce-failed' => __('Schummeln, was?', 'rrze-calendar'),
             'invalid-permissions' => __('Sie haben nicht die erforderlichen Rechte, um diese Aktion durchzuführen.', 'rrze-calendar'),
