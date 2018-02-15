@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.10
+Version: 1.8.11
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -2433,7 +2433,7 @@ class RRZE_Calendar {
 
         return $slug;
     }
-
+    
     public static function get_events_between($start_time, $end_time, $filter) {
         global $wpdb;
 
@@ -2469,8 +2469,8 @@ class RRZE_Calendar {
         }
 
         return $events;
-    }
-
+    }    
+    
     public static function get_events_relative_to($time, $limit = 0, $filter = array()) {
         global $wpdb;
 
@@ -2508,7 +2508,7 @@ class RRZE_Calendar {
 
         return $events;
     }
-
+        
     private static function get_filter_sql(&$filter) {
         global $wpdb;
 
@@ -2560,6 +2560,9 @@ class RRZE_Calendar {
     private function cache_event(&$event) {
         global $wpdb;
 
+        $dtstart = $event->start;
+        $dtend = $event->end;
+        
         $event->start = RRZE_Calendar_Functions::gmt_to_local($event->start) - date('Z', $event->start);
         $event->end = RRZE_Calendar_Functions::gmt_to_local($event->end) - date('Z', $event->end);
 
@@ -2604,25 +2607,41 @@ class RRZE_Calendar {
             }
         } elseif ($event->recurrence_rules) {
             $count = 0;
-            $start = $event->start;
+            $start = $dtstart;
             $exrule = array();
             if ($event->exception_rules) {
                 $exrule = $this->get_rule_dates($start, $event->exception_rules);
             }
-            $rules = $event->get_rules($exrule);
+            $rules = $event->get_rules($start, $exrule);
 
-            $rules->first_occurrence();
+            if($start = $rules->first_occurrence() > 0) {
+                $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
+                $e['end'] = $e['start'] + $duration;
+
+                $excluded = FALSE;
+                if ($event->exception_dates) {
+                    if ($this->date_match_exdates($start, $event->exception_dates)) {
+                        $excluded = TRUE;
+                    }
+                }
+
+                if ($excluded == FALSE) {
+                    $evs[] = $e;
+                }
+            }
+            
             while (($next = $rules->next_occurrence($start)) > 0 && $count < 1000) {
                 $count++;
                 $start = $next;
-                $e['start'] = $start;
-                $e['end'] = $start + $duration;
-                $excluded = FALSE;
 
                 if ($start > $tif) {
                     break;
                 }
 
+                $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
+                $e['end'] = $e['start'] + $duration;
+                
+                $excluded = FALSE;
                 if ($event->exception_dates) {
                     if ($this->date_match_exdates($start, $event->exception_dates)) {
                         $excluded = TRUE;
@@ -2965,7 +2984,7 @@ class RRZE_Calendar {
                 'date_formatter' => function($date) {return $date->format(__('d.m.Y', 'rrze-calendar'));},
                 'fallback' => 'en_US',
                 'explicit_infinite' => true,
-                'include_start' => true
+                'include_start' => false
         );
 
         $rrule = new RRule\RRule($recurrence_rules);

@@ -58,8 +58,8 @@ get_header(); ?>
 			    
 			    <div class="event-detail-item">
 				<div class="event-date <?php echo $bgcolorclass; ?>" <?php echo $inline; ?>>
-				    <span class="event-date-month"><?php echo $event->start_month_html ?></span>
-				    <span class="event-date-day"><?php echo $event->start_day_html ?></span>
+				    <span class="event-date-month"><?php echo $event->start_month; ?></span>
+				    <span class="event-date-day"><?php echo $event->start_day; ?></span>
 				</div>
 				<div class="event-info event-id-<?php echo $event->id ?> <?php if ($event->allday) echo 'event-allday'; ?>">
 				    <meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
