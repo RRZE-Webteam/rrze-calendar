@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.11
+Version: 1.8.12
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -2276,7 +2276,7 @@ class RRZE_Calendar {
 
     private function parse_ics_feed($feed) {
         global $wpdb;
-
+        
         if (!defined('ICALCREATOR_VERSION')) {
             require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
         }
@@ -2350,32 +2350,28 @@ class RRZE_Calendar {
                     $rrule = trim(end($rrule));
                 }
 
-                $exrule = $e->createExrule();
-                if ($exrule) {
-                    $exrule = explode(':', $exrule);
-                    $exrule = trim(end($exrule));
+                $array = $e->getProperty("EXRULE");
+                $exrule = [];
+                
+                $array = $e->getProperty("RDATE");
+                $rdate = [];
+                
+                $array = $e->getProperty("EXDATE");
+                $exdate = [];
+                if ($array) {
+                    foreach($array as $d) {
+                        $exdate[] = strtotime(sprintf('%s-%s-%s %s:%s:%s', $d['year'], $d['month'], $d['day'], $d['hour'], $d['min'], $d['sec']));
+                    }
                 }
-
-                $rdate = $e->createRdate();
-                if ($rdate) {
-                    $rdate = explode(':', $rdate);
-                    $rdate = trim(end($rdate));
-                }
-
-                $exdate = $e->createExdate();
-                if ($exdate) {
-                    $exdate = explode(':', $exdate);
-                    $exdate = trim(end($exdate));
-                }
-
+                
                 $data = array(
                     'start' => $start,
                     'end' => $end,
                     'allday' => $allday,
                     'recurrence_rules' => $rrule,
-                    'exception_rules' => $exrule,
-                    'recurrence_dates' => $rdate,
-                    'exception_dates' => $exdate,
+                    'exception_rules' => implode(',', $exrule),
+                    'recurrence_dates' => implode(',', $rdate),
+                    'exception_dates' => implode(',', $exdate),
                     'summary' => stripslashes(str_replace('\n', '', $e->getProperty('summary'))),
                     'description' => stripslashes(str_replace('\n', PHP_EOL, $e->getProperty('description'))),
                     'location' => $e->getProperty('location'),
@@ -2411,7 +2407,7 @@ class RRZE_Calendar {
 
         return $count;
     }
-
+    
     public static function make_slug($str) {
         $slug = sanitize_title_with_dashes(remove_accents($str));
         return self::unique_slug($slug);
@@ -2536,27 +2532,18 @@ class RRZE_Calendar {
             $filter['filter_where'] .= ") ";
         }
     }
-
-    private function get_rule_dates($start, $ics_rule) {
+    
+    private function get_exrule($dtstart, $exrule) {
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-rules.php');
-        $rules = new RRZE_Calendar_Rules($ics_rule, $start, array(), array(), TRUE);
+        $rules = new RRZE_Calendar_Rules($exrule, $dtstart, array(), array(), TRUE);
         return $rules->get_all_occurrences();
     }
 
-    public function date_match_exdates($date, $ics_rule) {
-        foreach (explode(",", $ics_rule) as $_date) {
-            $_date_start = strtotime($_date);
-
-            if ($_date_start != FALSE) {
-                $_date_end = $_date_start + DAY_IN_SECONDS - 1;
-                if ($date >= $_date_start && $date <= $_date_end) {
-                    return TRUE;
-                }
-            }
-        }
-        return FALSE;
+    private function get_rule($recurrence_rules, $dtstart, $excluded = array()) {
+        require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/calendar-rules.php');
+        return new RRZE_Calendar_Rules($recurrence_rules, $dtstart, $excluded);
     }
-
+    
     private function cache_event(&$event) {
         global $wpdb;
 
@@ -2608,26 +2595,20 @@ class RRZE_Calendar {
         } elseif ($event->recurrence_rules) {
             $count = 0;
             $start = $dtstart;
-            $exrule = array();
-            if ($event->exception_rules) {
-                $exrule = $this->get_rule_dates($start, $event->exception_rules);
+
+            $exception_dates = array();
+            if ($event->exception_dates) {
+                $dates = explode(',', $event->exception_dates);
+                $exception_dates = array_map(array('RRZE_Calendar_Functions', 'local_to_gmt'), $dates);
             }
-            $rules = $event->get_rules($start, $exrule);
+
+            $rules = $this->get_rule($event->recurrence_rules, $start, $exception_dates);
 
             if($start = $rules->first_occurrence() > 0) {
                 $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
                 $e['end'] = $e['start'] + $duration;
 
-                $excluded = FALSE;
-                if ($event->exception_dates) {
-                    if ($this->date_match_exdates($start, $event->exception_dates)) {
-                        $excluded = TRUE;
-                    }
-                }
-
-                if ($excluded == FALSE) {
-                    $evs[] = $e;
-                }
+                $evs[] = $e;
             }
             
             while (($next = $rules->next_occurrence($start)) > 0 && $count < 1000) {
@@ -2641,16 +2622,7 @@ class RRZE_Calendar {
                 $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
                 $e['end'] = $e['start'] + $duration;
                 
-                $excluded = FALSE;
-                if ($event->exception_dates) {
-                    if ($this->date_match_exdates($start, $event->exception_dates)) {
-                        $excluded = TRUE;
-                    }
-                }
-
-                if ($excluded == FALSE) {
-                    $evs[] = $e;
-                }
+                $evs[] = $e;
             }
         } else {
             $evs[] = $e;

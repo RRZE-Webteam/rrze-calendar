@@ -112,11 +112,6 @@ class RRZE_Calendar_Event {
         return $this->end;
     }
 
-    public function get_rules($dtstart, $excluded = array()) {
-        require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/calendar-rules.php');
-        return new RRZE_Calendar_Rules($this->recurrence_rules, $dtstart, $excluded);
-    }
-
     public function get_duration() {
         return $this->end - $this->start;
     }
