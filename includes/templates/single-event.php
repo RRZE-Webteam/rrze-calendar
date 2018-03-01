@@ -54,7 +54,7 @@ wp_enqueue_style('rrze-calendar');
                 <?php endif; ?>
                 <?php if ($event->description) : ?>
                     <div class="event-summary">
-                        <?php echo make_clickable(wp_trim_words(nl2br($event->description))); ?>
+                        <?php echo make_clickable(nl2br($event->description)); ?>
                     </div>
                 <?php endif; ?>
             </div>
