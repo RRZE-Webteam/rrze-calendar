@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.10';
+    const version = '1.8.13';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
