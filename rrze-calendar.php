@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.14
+Version: 1.8.15
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.14';
+    const version = '1.8.15';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -2332,7 +2332,7 @@ class RRZE_Calendar {
                 if ($allday) {
                     $date_diff = RRZE_Calendar_Functions::days_diff($start, $end);
                     $offset = absint($date_diff) > 0 ? ' -1 day' : '';
-                    $end = RRZE_Calendar_Functions::strToTime(date('Y-m-d H:i:s', $end) . $offset, $timezone, TRUE);
+                    //$end = RRZE_Calendar_Functions::strToTime(date('Y-m-d H:i:s', $end) . $offset, $timezone, TRUE);
                     
                     $start = RRZE_Calendar_Functions::gmt_to_local($start);
                     $start = RRZE_Calendar_Functions::gmgetdate($start);
@@ -2564,7 +2564,17 @@ class RRZE_Calendar {
         $duration = $event->get_duration();
         $tif = time() + 315569260;
         
-        $days_diff = RRZE_Calendar_Functions::days_diff($event->start, $event->end);
+        $start_date = new DateTime();
+        $start_date->setTimestamp($event->start);
+        $start_date->setTime(0, 0, 0);
+
+        $end_date = new DateTime();
+        $end_date->setTimestamp($event->end);
+        $end_date->setTime(0, 0, 0);
+
+        $diff = $start_date->diff($end_date);
+        $days_diff = $diff->days;        
+
         $days_diff = absint($days_diff) == 1 && $event->allday ? 0 : absint($days_diff);
 
         if ($days_diff > 0 && !$event->recurrence_rules) {
