@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.13
+Version: 1.8.14
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.13';
+    const version = '1.8.14';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -2329,21 +2329,22 @@ class RRZE_Calendar {
                 $start = RRZE_Calendar_Functions::time_array_to_timestamp($start, $timezone);
                 $end = RRZE_Calendar_Functions::time_array_to_timestamp($end, $timezone);
 
-                if ($allday && $start === $end) {
-                    $end += 24 * 60 * 60;
-                }
-
                 if ($allday) {
+                    $date_diff = RRZE_Calendar_Functions::days_diff($start, $end);
+                    $offset = absint($date_diff) > 0 ? ' -1 day' : '';
+                    $end = RRZE_Calendar_Functions::strToTime(date('Y-m-d H:i:s', $end) . $offset, $timezone, TRUE);
+                    
                     $start = RRZE_Calendar_Functions::gmt_to_local($start);
                     $start = RRZE_Calendar_Functions::gmgetdate($start);
                     $start = gmmktime(0, 0, 0, $start['mon'], $start['mday'], $start['year']);
                     $start = RRZE_Calendar_Functions::local_to_gmt($start);
+                    
                     $end = RRZE_Calendar_Functions::gmt_to_local($end);
                     $end = RRZE_Calendar_Functions::gmgetdate($end);
                     $end = gmmktime(0, 0, 0, $end['mon'], $end['mday'], $end['year']);
-                    $end = RRZE_Calendar_Functions::local_to_gmt($end);
+                    $end = RRZE_Calendar_Functions::local_to_gmt($end);                    
                 }
-
+                
                 $rrule = $e->createRrule();
                 if ($rrule) {
                     $rrule = explode(':', $rrule);
@@ -2562,26 +2563,18 @@ class RRZE_Calendar {
 
         $duration = $event->get_duration();
         $tif = time() + 315569260;
+        
+        $days_diff = RRZE_Calendar_Functions::days_diff($event->start, $event->end);
+        $days_diff = absint($days_diff) == 1 && $event->allday ? 0 : absint($days_diff);
 
-        $start_date = new DateTime();
-        $start_date->setTimestamp($event->start);
-        $start_date->setTime(0, 0, 0);
-
-        $end_date = new DateTime();
-        $end_date->setTimestamp($event->end);
-        $end_date->setTime(0, 0, 0);
-
-        $diff = $start_date->diff($end_date);
-        $diff_days = $diff->days == 1 && $event->allday ? 0 : $diff->days;
-
-        if ($diff_days > 0 && !$event->recurrence_rules) {
-            for ($i = 0; $i <= $diff_days; $i++) {
+        if ($days_diff > 0 && !$event->recurrence_rules) {
+            for ($i = 0; $i <= $days_diff; $i++) {
                 switch($i) {
                     case 0:
                         $e['start'] = $event->start;
                         $e['end'] = strtotime(date('Y-m-d', $start_date->getTimestamp())) + DAY_IN_SECONDS;
                         break;
-                    case $diff_days:
+                    case $days_diff:
                         $e['start'] = $start_date->getTimestamp() + $i * DAY_IN_SECONDS;
                         $e['end'] = $event->end;
                         break;

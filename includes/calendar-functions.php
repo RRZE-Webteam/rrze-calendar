@@ -303,4 +303,31 @@ class RRZE_Calendar_Functions {
         return $dates;
     }    
     
+    public static function strToTime($dt, $tz = 'UTC', $noTime = FALSE) {
+        $dt = new DateTime($dt);
+        $dt->setTimeZone(new DateTimezone($tz));
+        
+        if (!$noTime) {
+            $format = 'Y-m-d H:i:s';
+        } else {
+            $dt->setTime(0, 0, 0);
+            $format = 'Y-m-d';
+        }
+
+        return strtotime($dt->format($format));
+    }
+    
+    public static function days_diff($tstart, $tend) {
+        $start_date = new DateTime();
+        $start_date->setTimestamp($tstart);
+        $start_date->setTime(0, 0, 0);
+
+        $end_date = new DateTime();
+        $end_date->setTimestamp($tend);
+        $end_date->setTime(0, 0, 0);
+
+        $diff = $start_date->diff($end_date);
+        return $diff->days;
+    }
+    
 }
