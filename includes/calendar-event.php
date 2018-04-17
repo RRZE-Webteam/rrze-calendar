@@ -129,10 +129,8 @@ class RRZE_Calendar_Event {
         $end_date->setTime(0, 0, 0);
         
         $diff = $start_date->diff($end_date);
-
-        $diff_days = $diff->days == 1 && $this->allday ? 0 : $diff->days;
         
-        return ($diff_days > 0 && !$this->recurrence_rules);        
+        return ($diff->days > 0 && !$this->recurrence_rules);        
     }
     
 }

@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.15
+Version: 1.8.16
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.15';
+    const version = '1.8.16';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -2328,21 +2328,17 @@ class RRZE_Calendar {
 
                 $start = RRZE_Calendar_Functions::time_array_to_timestamp($start, $timezone);
                 $end = RRZE_Calendar_Functions::time_array_to_timestamp($end, $timezone);
-
+                
                 if ($allday) {
                     $date_diff = RRZE_Calendar_Functions::days_diff($start, $end);
-                    $offset = absint($date_diff) > 0 ? ' -1 day' : '';
-                    //$end = RRZE_Calendar_Functions::strToTime(date('Y-m-d H:i:s', $end) . $offset, $timezone, TRUE);
+                    $offset = $date_diff > 1 ? ($date_diff - 1) * DAY_IN_SECONDS : 0;
                     
                     $start = RRZE_Calendar_Functions::gmt_to_local($start);
                     $start = RRZE_Calendar_Functions::gmgetdate($start);
                     $start = gmmktime(0, 0, 0, $start['mon'], $start['mday'], $start['year']);
                     $start = RRZE_Calendar_Functions::local_to_gmt($start);
                     
-                    $end = RRZE_Calendar_Functions::gmt_to_local($end);
-                    $end = RRZE_Calendar_Functions::gmgetdate($end);
-                    $end = gmmktime(0, 0, 0, $end['mon'], $end['mday'], $end['year']);
-                    $end = RRZE_Calendar_Functions::local_to_gmt($end);                    
+                    $end = $start + $offset;
                 }
                 
                 $rrule = $e->createRrule();
