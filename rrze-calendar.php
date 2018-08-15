@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.8.16
+Version: 1.9.0
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.8.16';
+    const version = '1.9.0';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -445,11 +445,6 @@ class RRZE_Calendar {
 
         wp_register_style('rrze-calendar-shortcode-calendar', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
         wp_register_style('rrze-calendar-shortcode-calendar-titip', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
-
-        wp_register_script('rrze-calendar-listenansicht', plugins_url('includes/shortcodes/calendar/listenansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-monatsansicht', plugins_url('includes/shortcodes/calendar/monatsansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-wochenansicht', plugins_url('includes/shortcodes/calendar/wochenansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
-        wp_register_script('rrze-calendar-tagesansicht', plugins_url('includes/shortcodes/calendar/tagesansicht.js', __FILE__), array('jquery'), FALSE, TRUE);
     }
 
     public static function get_calendar_feed() {
