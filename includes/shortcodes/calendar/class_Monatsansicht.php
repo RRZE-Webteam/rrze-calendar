@@ -2,15 +2,17 @@
 
 require_once 'class_Ansicht.php';
 
-class Monatsansicht extends Ansicht {
+class Monatsansicht extends Ansicht
+{
 
     // Gibt den Dateiname des Templates zurueck.
-    public function template_name() {
+    public function template_name()
+    {
         return "monatsansicht";
     }
 
-    // Funktion soll fuer Tagesansicht und Datum die anzuzeigenden Tage als Array zurueckgeben.
-    public function lade_tage($datum = '') {
+    public function lade_tage($datum = '')
+    {
         // Datum kann ein Tag im aktuellen Monat sein.
         if (!$datum || $datum === '') {
             $datum = date("Ymd");
@@ -45,13 +47,11 @@ class Monatsansicht extends Ansicht {
         }
         
         for ($woche = ($erste_woche_im_monat > $letzte_woche_im_monat ? 1 : $erste_woche_im_monat); $woche <= $letzte_woche_im_monat; $woche++) {
-
             if ($woche < 10) {
                 $woche = "0" . $woche;
             }
             
             for ($i = 1; $i <= 7; $i++) {
-
                 $ts = strtotime($jahr . 'W' . $woche . $i);
                 $tag = date("Y-m-d", $ts);
                 array_push($tage_in_monat, $tag);
@@ -60,7 +60,6 @@ class Monatsansicht extends Ansicht {
         
         if ($zeige_erste_woche_im_jahr) {
             for ($i = 1; $i <= 7; $i++) {
-
                 $ts = strtotime(($jahr + 1) . 'W01' . $i);
                 $tag = date("Y-m-d", $ts);
                 array_push($tage_in_monat, $tag);
@@ -72,7 +71,8 @@ class Monatsansicht extends Ansicht {
 
     // Rendert das Template mit den uebergebenen Daten.
     // Falls noetig werden die Daten noch formatiert.
-    public function rendere_daten($daten = '') {
+    public function rendere_daten($daten = '')
+    {
         $tag = $daten[10]["datum"];
         $ts = strtotime($tag);
         // Tag gleich ersten im Monat waehlen
@@ -89,11 +89,15 @@ class Monatsansicht extends Ansicht {
         $wochen_anzahl = count($daten) / 7;
         $wochen = array();
         for ($w = 0; $w < $wochen_anzahl; $w++) {
-            $tage = array();
+            $tage = [];
+            $itemCount = 0;
             for ($t = 0; $t < 7; $t++) {
-                $tage[] = $daten[7 * $w + $t];
+                $event = $daten[7 * $w + $t];
+                $tage[] = $event;
+                $count = count($event['termine']);
+                $itemCount = $itemCount < $count ? $count : $itemCount;
             }
-            $wochen[$w] = array("tage" => $tage);
+            $wochen[$w] = ['tage' => $tage, 'itemcount' => $itemCount];
         }
 
         $abonnement_url = isset($this->optionen["subscribe_url"]) ? $this->optionen["subscribe_url"] : false;
@@ -103,7 +107,7 @@ class Monatsansicht extends Ansicht {
             "monat_datum_aktuell" => esc_url(add_query_arg('calendar', 'monat', $permalink)),
             "monat_datum_vor" => esc_url(add_query_arg('calendar', 'monat_' . $this->datum_vor($tag), $permalink)),
             "monat_datum_zurueck" => esc_url(add_query_arg('calendar', 'monat_' . $this->datum_zurueck($tag), $permalink)),
-            "tag_datum" => esc_url(add_query_arg('calendar', 'tag_' . $this->datum_aktuell($tag), $permalink)),            
+            "tag_datum" => esc_url(add_query_arg('calendar', 'tag_' . $this->datum_aktuell($tag), $permalink)),
             "woche_datum" => esc_url(add_query_arg('calendar', 'woche_' . $this->datum_aktuell($tag), $permalink)),
             "liste" => esc_url(add_query_arg('calendar', 'liste', $permalink)),
             "monat" => date_i18n(__('F Y', 'rrze-calendar'), $ts),
@@ -114,7 +118,8 @@ class Monatsansicht extends Ansicht {
         return $this->rendere_template($ansicht_daten);
     }
 
-    public function datum_vor($datum = '') {
+    public function datum_vor($datum = '')
+    {
         if (!$datum || $datum === '') {
             $datum = date("Ymd");
         }
@@ -122,12 +127,12 @@ class Monatsansicht extends Ansicht {
         return date("Y-m-d", strtotime(date("Y-m-d", strtotime($datum)) . " +1 month"));
     }
 
-    public function datum_zurueck($datum = '') {
+    public function datum_zurueck($datum = '')
+    {
         if (!$datum || $datum === '') {
             $datum = date("Ymd");
         }
 
         return date("Y-m-d", strtotime(date("Y-m-d", strtotime($datum)) . " -1 month"));
     }
-
 }

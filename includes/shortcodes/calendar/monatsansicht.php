@@ -7,20 +7,6 @@
         </div>
 
         <div class="titel"><?php echo $daten['monat']; ?></div>
-
-        <div class="intervall">
-            <div><a class="aktion" href="#">&#9776;</a></div>
-            <div class="buttons">
-                <a href="<?php echo $daten['tag_datum']; ?>" class="tag"><?php _e('Tag', 'rrze-calendar'); ?></a>
-                <a href="<?php echo $daten['woche_datum']; ?>" class="woche"><?php _e('Woche', 'rrze-calendar'); ?></a>
-                <span class="monat aktiv"><?php _e('Monat', 'rrze-calendar'); ?></span>
-                <a href="<?php echo $daten['liste']; ?>" class="liste"><?php _e('Liste', 'rrze-calendar'); ?></a>
-                <?php if ($daten['abonnement_url']): ?>
-                <a href="<?php echo $daten['abonnement_url']; ?>" class="tag"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
-                <?php endif; ?>
-            </div>
-        </div>
-
     </div>
 
     <div class="inhalt">
@@ -37,7 +23,7 @@
 
             <?php foreach ($daten['wochen'] as $woche): ?>
             <?php $t = 1; ?>
-            <div class="woche">
+            <div class="woche" style="height: <?php echo $woche['itemcount'] > 4 ? 9 + ($woche['itemcount'] - 4) : 9;?>em">
                 <?php foreach ($woche['tage'] as $tag): ?>
                 <?php switch ($t) {
                         case 1:
@@ -53,9 +39,7 @@
                     <div class="datum"><?php echo $tag['datum_kurz']; ?>.</div>
                     <div class="termine">
                         <div class="center">
-                            <?php $k = 1; ?>
                             <?php foreach ($tag['termine'] as $termin): ?>
-                            <?php if ($k <= 3): ?>
                             <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin titip-default <?php echo $titip; ?>">
                                 <span class="titel"><span class="dashicons dashicons-arrow-right" style="color: <?php echo $termin['farbe']; ?>"></span><?php echo $termin['summary']; ?></span>
                                 <span class="titip-liste titip-content thick-border">
@@ -73,12 +57,65 @@
                                     <?php endif; ?>
                                 </span>
                             </a>
-                            <?php elseif ($k == 4): ?>
-                            <a class="termin" href="<?php echo esc_url(add_query_arg('calendar', 'tag_' . $tag["datum"], get_permalink())); ?>"><span class="dashicons dashicons-arrow-down"></span><?php _e('Weitere Termine', 'rrze-calendar'); ?></a>
-                            <?php endif; ?>
-                            <?php $k += 1; ?>
                             <?php endforeach; ?>
                         </div>
                     </div>
                 </div><?php endforeach; ?>
-            </div><?php endforeach; ?></div></div></div>
+            </div><?php endforeach; ?>
+        </div>
+    </div>
+    
+    <div class="inhalt-mobile">
+        <div class="listenansicht">
+            <div class="events-list">
+                <?php $multiday = []; ?>
+                <?php foreach ($daten['wochen'] as $woche): ?>
+                <?php foreach ($woche['tage'] as $tag): ?>
+                <?php if (!empty($tag['nicht_im_monat'])): continue; endif; ?>
+                <?php foreach ($tag['termine'] as $termin): ?>
+                    <?php $endpoint_url = RRZE_Calendar::endpoint_url($termin['slug']); ?>
+                    <?php if (in_array($endpoint_url, $multiday)): ?>
+                        <?php continue; ?>
+                    <?php endif; ?>                 
+                    <div class="event-info" style="border-left-color: <?php echo $termin['farbe']; ?>">
+                        <div class="event-title-date">
+                            <?php echo $termin['long_start_date']; ?>
+                        </div>
+                        
+                        <?php if ($termin['allday']) : ?>
+                            <div class="event-time event-allday">
+                                <?php _e('Ganztägig', 'rrze-calendar'); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($termin['allday'] && $termin['multiday']) : ?>
+                            <?php $multiday[] = $endpoint_url; ?>
+                            <div class="event-time">
+                                <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_e_start_date'], $termin['long_e_end_date'])) ?>
+                            </div>            
+                        <?php elseif (!$termin['allday'] && $termin['multiday']) : ?>
+                            <?php $multiday[] = $endpoint_url; ?>
+                            <div class="event-time">
+                                <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_e_start_date'], $termin['short_e_start_time'], $termin['long_e_end_date'], $termin['short_e_end_time'])) ?>
+                            </div>
+                        <?php elseif (!$termin['allday']): ?>
+                            <div class="event-time">
+                                <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?>
+                            </div>            
+                        <?php endif; ?>
+                        
+                        <div class="event-title"><a href="<?php echo esc_attr($endpoint_url); ?>">
+                            <?php echo esc_html(apply_filters('the_title', $termin['summary'])); ?></a>
+                        </div>
+                        
+                        <div class="event-location">
+                            <?php if (!empty($termin['location'])): ?><?php echo $termin['location']; ?><?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                <?php endforeach; ?>
+                <?php endforeach; ?>
+            </div>
+        </div> 
+    </div>
+    
+</div>

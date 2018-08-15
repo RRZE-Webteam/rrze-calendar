@@ -1,10 +1,10 @@
 <?php
 
-abstract class Ansicht {
-
-    protected $optionen = NULL;
-    private $tag_start = NULL;
-    private $tag_ende = NULL;
+abstract class Ansicht
+{
+    protected $optionen = null;
+    private $tag_start = null;
+    private $tag_ende = null;
 
     // Gibt den Dateiname des Templates zurueck.
     abstract protected function template_name();
@@ -20,8 +20,8 @@ abstract class Ansicht {
 
     abstract protected function datum_zurueck($datum = '');
 
-    public function __construct($optionen = NULL) {
-
+    public function __construct($optionen = null)
+    {
         if ($optionen) {
             $this->optionen = $optionen;
         } else {
@@ -29,21 +29,21 @@ abstract class Ansicht {
         }
     }
 
-    public function suche_events($tag = NULL) {
+    public function suche_events($tag = null)
+    {
+        if (empty($tag)) {
+            $tag = date("Ymd");
+        }
+        
         $this->tag_start = 0;
         $this->tag_ende = 0;
-        if (empty($tag)) {
-            // Kein Tag angegeben (zB. bei Listenansicht) -> Suche nach allen Events.
-            $events = RRZE_Calendar::get_events_relative_to(current_time('timestamp'), $this->optionen["anzahl"], $this->optionen["filter"]);
-            $events = RRZE_Calendar_Functions::get_calendar_dates($events);
-        } else {
-            $start_time = strtotime($tag . '-00:00');
-            $end_time = strtotime($tag . '-00:00 + 1 day');
-            $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
-            $events = RRZE_Calendar_Functions::get_calendar_dates($events);
-            $this->tag_start = $start_time;
-            $this->tag_ende = $end_time; 
-        }
+        
+        $start_time = strtotime($tag . '-00:00');
+        $end_time = strtotime($tag . '-00:00 + 1 day');
+        $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
+        $events = RRZE_Calendar_Functions::get_calendar_dates($events);
+        $this->tag_start = $start_time;
+        $this->tag_ende = $end_time;
 
             
         $events_data = array();
@@ -83,7 +83,8 @@ abstract class Ansicht {
         );
     }
 
-    private function event($event) {
+    private function event($event)
+    {
         $event_data = array();
 
         $event_data["id"] = $event->id;
@@ -125,7 +126,7 @@ abstract class Ansicht {
         $regel = '';
         $wochentag = date_i18n("l", $start);
 
-        $interval = $event->recurrence_dates ? $event->recurrence_dates : NULL;
+        $interval = $event->recurrence_dates ? $event->recurrence_dates : null;
         $freq = $event->recurrence_rules ? $event->recurrence_rules : -1;
 
         switch ($freq) {
@@ -170,35 +171,44 @@ abstract class Ansicht {
         return $event_data;
     }
 
-    protected function ist_heute($datum = '') {
-        if ($datum == "")
+    protected function ist_heute($datum = '')
+    {
+        if ($datum == "") {
             return false;
+        }
 
         return (date("Y-m-d") === $datum);
     }
 
-    protected function ist_wochenende($datum = '') {
-        if ($datum == "")
+    protected function ist_wochenende($datum = '')
+    {
+        if ($datum == "") {
             return false;
+        }
 
         return (date("N", strtotime($datum)) >= 6);
     }
 
-    protected function ist_sonntag($datum = '') {
-        if ($datum == "")
+    protected function ist_sonntag($datum = '')
+    {
+        if ($datum == "") {
             return false;
+        }
 
         return (date("N", strtotime($datum)) == 7);
     }
 
-    protected function ist_im_monat($datum = '', $monat = '') {
-        if ($datum == "")
+    protected function ist_im_monat($datum = '', $monat = '')
+    {
+        if ($datum == "") {
             return false;
+        }
 
         return (date("m", strtotime($datum)) === $monat);
     }
 
-    protected function datum_aktuell($datum = '') {
+    protected function datum_aktuell($datum = '')
+    {
         // Datum kann ein Tag in der aktuellen Woche.
         if (!$datum || $datum === '') {
             $datum = date("Ymd");
@@ -207,7 +217,8 @@ abstract class Ansicht {
         return date("Y-m-d", strtotime($datum));
     }
 
-    protected function rendere_template($daten) {
+    protected function rendere_template($daten)
+    {
         wp_enqueue_style('rrze-calendar-shortcode-calendar');
         wp_enqueue_style('rrze-calendar-shortcode-calendar-titip');
         wp_enqueue_script('rrze-calendar-' . $this->template_name());
@@ -225,5 +236,4 @@ abstract class Ansicht {
 
         return $template;
     }
-
 }
