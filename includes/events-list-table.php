@@ -17,7 +17,10 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
     }
 
     public function column_default($item, $column_name) {
-        switch ($column_name) {               
+        switch ($column_name) {
+            case 'feed_title':
+                $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', esc_attr(RRZE_Calendar::options_url(array('action' => 'edit', 'feed-id' => $item['feed_id']))), $item[$column_name]) : '';
+                break;                           
             case 'summary':
                 $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', esc_attr(RRZE_Calendar::endpoint_url($item['slug'])), $item[$column_name]) : '';
                 break;
@@ -44,6 +47,7 @@ class RRZE_Calendar_Events_List_Table extends WP_List_Table {
 
     public function get_columns() {
         $columns = array(
+            'feed_title' => __('Feed', 'rrze-calendar'),
             'summary' => __('Titel', 'rrze-calendar'),
             'description' => __('Beschreibung', 'rrze-calendar'),
             'location' => __('Ort', 'rrze-calendar'),

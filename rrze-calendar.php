@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.9.0
+Version: 1.9.1
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.9.0';
+    const version = '1.9.1';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -33,7 +33,7 @@ class RRZE_Calendar {
     const option_name = 'rrze_calendar';
     const version_option_name = 'rrze_calendar_version';
     const php_version = '5.5'; // Minimal erforderliche PHP-Version
-    const wp_version = '4.8'; // Minimal erforderliche WordPress-Version
+    const wp_version = '4.9'; // Minimal erforderliche WordPress-Version
     const taxonomy_cat_key = 'rrze-calendar-category';
     const taxonomy_tag_key = 'rrze-calendar-tag';
     const settings_errors_transient = 'rrze-calendar-settings-errors-';
@@ -310,6 +310,11 @@ class RRZE_Calendar {
     }
 
     public static function flush_cache() {
+        global $wpdb;
+        
+        $wpdb->query("DELETE e FROM " . self::$db_events_table . " e LEFT JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id WHERE f.id IS NULL");
+        $wpdb->query("DELETE ec FROM " . self::$db_events_cache_table . " ec LEFT JOIN " . self::$db_feeds_table . " f ON ec.ical_feed_id = f.id WHERE f.id IS NULL");
+        
         // rrze-cache plugin
         if (has_action('rrzecache_flush_cache')) {
             do_action('rrzecache_flush_cache');
@@ -325,7 +330,7 @@ class RRZE_Calendar {
     private function get_events_data($output_type = OBJECT) {
         global $wpdb;
 
-        return $wpdb->get_results("SELECT *, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end FROM " . self::$db_events_table, $output_type);
+        return $wpdb->get_results("SELECT e.*, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end, f.id AS feed_id, f.title AS feed_title FROM " . self::$db_events_table . " e JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id", $output_type);
     }
 
     /*
