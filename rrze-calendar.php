@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.9.1
+Version: 1.9.2
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -25,7 +25,7 @@ load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(
 
 class RRZE_Calendar {
 
-    const version = '1.9.1';
+    const version = '1.9.2';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -152,9 +152,9 @@ class RRZE_Calendar {
         if (!wp_get_schedule(self::cron_hook)) {
             self::cron_schedule_event_setup();
         }
-        
+
         add_action(self::cron_hook, array($this, 'cron_schedule_event_hook'));
-        
+
         self::$messages = [
             'nonce-failed' => __('Schummeln, was?', 'rrze-calendar'),
             'invalid-permissions' => __('Sie haben nicht die erforderlichen Rechte, um diese Aktion durchzuführen.', 'rrze-calendar'),
@@ -311,10 +311,10 @@ class RRZE_Calendar {
 
     public static function flush_cache() {
         global $wpdb;
-        
+
         $wpdb->query("DELETE e FROM " . self::$db_events_table . " e LEFT JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id WHERE f.id IS NULL");
         $wpdb->query("DELETE ec FROM " . self::$db_events_cache_table . " ec LEFT JOIN " . self::$db_feeds_table . " f ON ec.ical_feed_id = f.id WHERE f.id IS NULL");
-        
+
         // rrze-cache plugin
         if (has_action('rrzecache_flush_cache')) {
             do_action('rrzecache_flush_cache');
@@ -404,7 +404,7 @@ class RRZE_Calendar {
         }
 
         $styledir = is_dir($styledir) ? $styledir : dirname(__FILE__) . '/includes/templates/';
-        
+
         if (empty($slug)) {
             include $styledir . 'events.php';
         } else {
@@ -2052,7 +2052,7 @@ class RRZE_Calendar {
 
     private function delete_category($category_id) {
         $category = self::get_category_by('id', $category_id);
-        if (!empty($category->feed_ids)) {
+        if (!$category) {
             return FALSE;
         }
 
@@ -2062,7 +2062,7 @@ class RRZE_Calendar {
 
     private function delete_tag($tag_id) {
         $tag = self::get_tag_by('id', $tag_id);
-        if (!empty($tag->feed_ids)) {
+        if (!$tag) {
             return FALSE;
         }
 
@@ -2276,7 +2276,7 @@ class RRZE_Calendar {
 
     private function parse_ics_feed($feed) {
         global $wpdb;
-        
+
         if (!defined('ICALCREATOR_VERSION')) {
             require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
         }
@@ -2328,19 +2328,19 @@ class RRZE_Calendar {
 
                 $start = RRZE_Calendar_Functions::time_array_to_timestamp($start, $timezone);
                 $end = RRZE_Calendar_Functions::time_array_to_timestamp($end, $timezone);
-                
+
                 if ($allday) {
                     $date_diff = RRZE_Calendar_Functions::days_diff($start, $end);
                     $offset = $date_diff > 1 ? ($date_diff - 1) * DAY_IN_SECONDS : 0;
-                    
+
                     $start = RRZE_Calendar_Functions::gmt_to_local($start);
                     $start = RRZE_Calendar_Functions::gmgetdate($start);
                     $start = gmmktime(0, 0, 0, $start['mon'], $start['mday'], $start['year']);
                     $start = RRZE_Calendar_Functions::local_to_gmt($start);
-                    
+
                     $end = $start + $offset;
                 }
-                
+
                 $rrule = $e->createRrule();
                 if ($rrule) {
                     $rrule = explode(':', $rrule);
@@ -2349,10 +2349,10 @@ class RRZE_Calendar {
 
                 $array = $e->getProperty("EXRULE");
                 $exrule = [];
-                
+
                 $array = $e->getProperty("RDATE");
                 $rdate = [];
-                
+
                 $array = $e->getProperty("EXDATE");
                 $exdate = [];
                 if ($array) {
@@ -2360,7 +2360,7 @@ class RRZE_Calendar {
                         $exdate[] = strtotime(sprintf('%s-%s-%s %s:%s:%s', $d['year'], $d['month'], $d['day'], $d['hour'], $d['min'], $d['sec']));
                     }
                 }
-                
+
                 $data = array(
                     'start' => $start,
                     'end' => $end,
@@ -2404,7 +2404,7 @@ class RRZE_Calendar {
 
         return $count;
     }
-    
+
     public static function make_slug($str) {
         $slug = sanitize_title_with_dashes(remove_accents($str));
         return self::unique_slug($slug);
@@ -2426,7 +2426,7 @@ class RRZE_Calendar {
 
         return $slug;
     }
-    
+
     public static function get_events_between($start_time, $end_time, $filter) {
         global $wpdb;
 
@@ -2462,8 +2462,8 @@ class RRZE_Calendar {
         }
 
         return $events;
-    }    
-    
+    }
+
     public static function get_events_relative_to($time, $limit = 0, $filter = array()) {
         global $wpdb;
 
@@ -2501,7 +2501,7 @@ class RRZE_Calendar {
 
         return $events;
     }
-        
+
     private static function get_filter_sql(&$filter) {
         global $wpdb;
 
@@ -2529,7 +2529,7 @@ class RRZE_Calendar {
             $filter['filter_where'] .= ") ";
         }
     }
-    
+
     private function get_exrule($dtstart, $exrule) {
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-rules.php');
         $rules = new RRZE_Calendar_Rules($exrule, $dtstart, array(), array(), TRUE);
@@ -2540,13 +2540,13 @@ class RRZE_Calendar {
         require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/calendar-rules.php');
         return new RRZE_Calendar_Rules($recurrence_rules, $dtstart, $excluded);
     }
-    
+
     private function cache_event(&$event) {
         global $wpdb;
 
         $dtstart = $event->start;
         $dtend = $event->end;
-        
+
         $event->start = RRZE_Calendar_Functions::gmt_to_local($event->start) - date('Z', $event->start);
         $event->end = RRZE_Calendar_Functions::gmt_to_local($event->end) - date('Z', $event->end);
 
@@ -2559,7 +2559,7 @@ class RRZE_Calendar {
 
         $duration = $event->get_duration();
         $tif = time() + 315569260;
-        
+
         $start_date = new DateTime();
         $start_date->setTimestamp($event->start);
         $start_date->setTime(0, 0, 0);
@@ -2569,7 +2569,7 @@ class RRZE_Calendar {
         $end_date->setTime(0, 0, 0);
 
         $diff = $start_date->diff($end_date);
-        $days_diff = $diff->days;        
+        $days_diff = $diff->days;
 
         $days_diff = absint($days_diff) == 1 && $event->allday ? 0 : absint($days_diff);
 
@@ -2609,7 +2609,7 @@ class RRZE_Calendar {
 
                 $evs[] = $e;
             }
-            
+
             while (($next = $rules->next_occurrence($start)) > 0 && $count < 1000) {
                 $count++;
                 $start = $next;
@@ -2620,7 +2620,7 @@ class RRZE_Calendar {
 
                 $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
                 $e['end'] = $e['start'] + $duration;
-                
+
                 $evs[] = $e;
             }
         } else {
