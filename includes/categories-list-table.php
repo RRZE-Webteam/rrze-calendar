@@ -7,7 +7,7 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
     public function __construct() {
 
         parent::__construct(array(
-            'singular' => 'category',            
+            'singular' => 'category',
             'plural' => 'categories',
             'ajax' => true
         ));
@@ -32,7 +32,7 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
 
         $columns = array(
             'name' => __('Name', 'rrze-calendar'),
-            'color' => __('Farbe', 'rrze-calendar'),            
+            'color' => __('Farbe', 'rrze-calendar'),
             'description' => __('Beschreibung', 'rrze-calendar'),
             'slug' => __('Titelform', 'rrze-calendar'),
             'feeds' => __('Feeds', 'rrze-calendar'),
@@ -42,7 +42,7 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
     }
 
     public function column_default($category, $column_name) {
-        
+
     }
 
     public function column_name($category) {
@@ -50,10 +50,7 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
 
         $actions = array();
         $actions['edit'] = sprintf('<a href="%1$s">' . __('Bearbeiten', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'edit', 'category-id' => $category->term_id)));
-        
-        if (empty($category->feed_ids)) {
-            $actions['delete'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'delete', 'category-id' => $category->term_id)));
-        }
+        $actions['delete'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-categories', 'action' => 'delete', 'category-id' => $category->term_id)));
         $output .= $this->row_actions($actions, FALSE);
 
         return $output;
@@ -66,13 +63,13 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
             return '<div style="height: 20px; width: 30px; background-color: ' . $color . ';"></div>';
         }
 
-        return '';        
+        return '';
     }
-    
+
     public function column_slug($category) {
         return esc_html($category->slug);
     }
-    
+
     public function column_description($category) {
         return esc_html($category->description);
     }
@@ -80,7 +77,7 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
     public function column_feeds($category) {
         return count($category->feed_ids);
     }
-    
+
     public function single_row($category) {
         static $row_class = '';
         $row_class = ($row_class == '' ? ' class="alternate"' : '');
@@ -91,4 +88,3 @@ class RRZE_Calendar_Categories_List_Table extends WP_List_Table {
     }
 
 }
-
