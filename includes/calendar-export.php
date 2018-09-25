@@ -62,9 +62,9 @@ class RRZE_Calendar_Export
         $url_path = parse_url(site_url(), PHP_URL_PATH);
         $filename = sprintf('%1$s%2$s.ics', $url_host, $url_path ? '.' . $url_path : '');
 
-        header('Content-Description: File Transfer');
+        header('Content-Description: ICS');
         header('Content-Disposition: attachment; filename=' . $filename);
-        header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
+        header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
 
         echo $str;
         exit;
