@@ -1,11 +1,12 @@
 <?php
 
-class RRZE_Calendar_Export {
-    
+class RRZE_Calendar_Export
+{
     protected $rrze_calendar;
-    protected static $instance = NULL;
+    protected static $instance = null;
 
-    public static function instance() {
+    public static function instance()
+    {
         if (is_null(self::$instance)) {
             self::$instance = new self;
         }
@@ -13,26 +14,27 @@ class RRZE_Calendar_Export {
         return self::$instance;
     }
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->rrze_calendar = RRZE_Calendar::instance();
     }
 
-    public function export_events() {
-        
-        $feed_ids = !empty($_REQUEST['feed-ids']) ? $_REQUEST['feed-ids'] : FALSE;
-        $event_ids = !empty($_REQUEST['event-ids']) ? $_REQUEST['event-ids'] : FALSE;
+    public function export_events()
+    {
+        $feed_ids = !empty($_REQUEST['feed-ids']) ? $_REQUEST['feed-ids'] : false;
+        $event_ids = !empty($_REQUEST['event-ids']) ? $_REQUEST['event-ids'] : false;
         $filter = array();
 
         if ($feed_ids) {
             $filter['feed_ids'] = explode(',', $feed_ids);
         }
-        
+
         if ($event_ids) {
             $filter['event_ids'] = explode(',', $event_ids);
         }
 
-        $start = $event_ids !== FALSE ? FALSE : time() - DAY_IN_SECONDS;
-        $end = FALSE;
+        $start = $event_ids !== false ? false : time() - DAY_IN_SECONDS;
+        $end = false;
 
         $events = $this->rrze_calendar->get_matching_events($start, $end, $filter);
 
@@ -49,19 +51,27 @@ class RRZE_Calendar_Export {
             $tz_xprops = array('X-LIC-LOCATION' => $tz);
             iCalUtilityFunctions::createTimezone($c, $tz, $tz_xprops);
         }
-        
+
         foreach ($events as $event) {
-            $this->insert_event_in_calendar($event, $c, $export = TRUE);
+            $this->insert_event_in_calendar($event, $c);
         }
-        
+
         $str = $c->createCalendar();
 
-        header('Content-type: text/calendar; charset=utf-8');
+        $url_host = parse_url(site_url(), PHP_URL_HOST);
+        $url_path = parse_url(site_url(), PHP_URL_PATH);
+        $filename = sprintf('%1$s%2$s.ics', $url_host, $url_path ? '.' . $url_path : '');
+
+        header('Content-Description: File Transfer');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
+
         echo $str;
         exit;
     }
-    
-    public function insert_event_in_calendar($event, &$c, $export = FALSE) {
+
+    public function insert_event_in_calendar($event, &$c)
+    {
         $tz = get_option('timezone_string');
 
         $e = & $c->newComponent('vevent');
@@ -69,39 +79,29 @@ class RRZE_Calendar_Export {
         $e->setProperty('url', RRZE_Calendar::endpoint_url($event->slug));
         $e->setProperty('summary', html_entity_decode($event->summary, ENT_QUOTES, 'UTF-8'));
         $e->setProperty('description', $event->description);
-        
+
         if ($event->allday) {
             $dtstart = $dtend = array();
             $dtstart["VALUE"] = $dtend["VALUE"] = 'DATE';
+            $dtstart["TZID"] = $dtend["TZID"] = $tz;
 
-            if ($tz && !$export) {
-                $dtstart["TZID"] = $dtend["TZID"] = $tz;
-            }
-
-            if ($export) {
-                $e->setProperty('dtstart', gmdate("Ymd", RRZE_Calendar_Functions::gmt_to_local($event->start)), $dtstart);
-                $e->setProperty('dtend', gmdate("Ymd", RRZE_Calendar_Functions::gmt_to_local($event->end)), $dtend);
-            } else {
-                $e->setProperty('dtstart', gmdate("Ymd\T", RRZE_Calendar_Functions::gmt_to_local($event->start)), $dtstart);
-                $e->setProperty('dtend', gmdate("Ymd\T", RRZE_Calendar_Functions::gmt_to_local($event->end)), $dtend);
-            }
+            $e->setProperty('dtstart', gmdate("Ymd", RRZE_Calendar_Functions::gmt_to_local($event->start)), $dtstart);
+            $e->setProperty('dtend', gmdate("Ymd", RRZE_Calendar_Functions::gmt_to_local($event->end)), $dtend);
         } else {
             $dtstart = $dtend = array();
-            if ($tz) {
-                $dtstart["TZID"] = $dtend["TZID"] = $tz;
-            }
-            $e->setProperty('dtstart', gmdate("Ymd\THis\Z", RRZE_Calendar_Functions::gmt_to_local($event->start)), $dtstart);
+            $dtstart["TZID"] = $dtend["TZID"] = $tz;
 
-            $e->setProperty('dtend', gmdate("Ymd\THis\Z",RRZE_Calendar_Functions::gmt_to_local($event->end)), $dtend);
+            $e->setProperty('dtstart', gmdate("Ymd\THis", RRZE_Calendar_Functions::gmt_to_local($event->start)), $dtstart);
+            $e->setProperty('dtend', gmdate("Ymd\THis", RRZE_Calendar_Functions::gmt_to_local($event->end)), $dtend);
         }
-        
-        $e->setProperty('location', $event->location);        
+
+        $e->setProperty('location', $event->location);
         $e->setProperty('contact', '');
 
         $rrule = array();
         if (!empty($event->recurrence_rules)) {
             $rules = array();
-            foreach (explode(';', $event->recurrence_rules) AS $v) {
+            foreach (explode(';', $event->recurrence_rules) as $v) {
                 if (strpos($v, '=') === false) {
                     continue;
                 }
@@ -140,7 +140,7 @@ class RRZE_Calendar_Export {
         $exrule = array();
         if (!empty($event->exception_rules)) {
             $rules = array();
-            foreach (explode(';', $event->exception_rules) AS $v) {
+            foreach (explode(';', $event->exception_rules) as $v) {
                 if (strpos($v, '=') === false) {
                     continue;
                 }
@@ -187,7 +187,5 @@ class RRZE_Calendar_Export {
         if (!empty($event->exception_dates)) {
             $e->setProperty('exdate', explode(',', $event->exception_dates));
         }
-        
-    }    
-
+    }
 }
