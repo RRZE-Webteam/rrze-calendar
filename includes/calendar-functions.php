@@ -1,6 +1,7 @@
 <?php
 
-class RRZE_Calendar_Functions {
+class RRZE_Calendar_Functions
+{
     private static $windows_timezones = [
         "Africa/Bangui" => "W. Central Africa Standard Time",
         "Africa/Cairo" => "Egypt Standard Time",
@@ -101,6 +102,7 @@ class RRZE_Calendar_Functions {
         "Europe/Athens" => "GTB Standard Time",
         "Europe/Belgrade" => "Central Europe Standard Time",
         "Europe/Berlin" => "W. Europe Standard Time",
+        "Europe/Berlin" => "(UTC+01:00) Amsterdam, Berlin, Bern, Rom, Stockholm, Wien",
         "Europe/Brussels" => "Romance Standard Time",
         "Europe/Budapest" => "Central Europe Standard Time",
         "Europe/Dublin" => "GMT Standard Time",
@@ -123,9 +125,10 @@ class RRZE_Calendar_Functions {
         "Pacific/Pago_Pago" => "UTC-11",
         "Pacific/Port_Moresby" => "West Pacific Standard Time",
         "Pacific/Tongatapu" => "Tonga Standard Time"
-    ];            
+    ];
 
-    public static function time_array_to_timestamp($t, $def_timezone) {
+    public static function time_array_to_timestamp($t, $def_timezone)
+    {
         $date_str = sprintf('%s-%s-%s', $t['value']['year'], $t['value']['month'], $t['value']['day']);
 
         if (isset($t['value']['hour'])) {
@@ -137,8 +140,8 @@ class RRZE_Calendar_Functions {
             $timezone = 'Z';
         } elseif (isset($t['params']['TZID'])) {
             $key = array_search($t['params']['TZID'], self::$windows_timezones);
-            
-            if ($key !== FALSE) {
+
+            if ($key !== false) {
                 $timezone = $key;
             } else {
                 $timezone = $t['params']['TZID'];
@@ -155,8 +158,9 @@ class RRZE_Calendar_Functions {
 
         return strtotime($date_str);
     }
-    
-    public static function gmt_to_local($timestamp) {
+
+    public static function gmt_to_local($timestamp)
+    {
         $offset = get_option('gmt_offset');
         $tz = get_option('timezone_string');
 
@@ -168,21 +172,24 @@ class RRZE_Calendar_Functions {
 
         return $timestamp + $offset;
     }
-    
-    public static function gmgetdate($timestamp = NULL) {
+
+    public static function gmgetdate($timestamp = null)
+    {
         if (!$timestamp) {
             $timestamp = time();
         }
-        
+
         $bits = explode(',', gmdate('s,i,G,j,w,n,Y,z,l,F,U', $timestamp));
         $bits = array_combine(
-            array('seconds', 'minutes', 'hours', 'mday', 'wday', 'mon', 'year', 'yday', 'weekday', 'month', 0), $bits
+            array('seconds', 'minutes', 'hours', 'mday', 'wday', 'mon', 'year', 'yday', 'weekday', 'month', 0),
+            $bits
         );
-        
+
         return $bits;
     }
-    
-    public static function local_to_gmt($timestamp) {
+
+    public static function local_to_gmt($timestamp)
+    {
         $offset = get_option('gmt_offset');
         $tz = get_option('timezone_string', 'Europe/Berlin');
 
@@ -194,15 +201,16 @@ class RRZE_Calendar_Functions {
 
         return $timestamp - $offset;
     }
-    
-    public static function get_timezone_offset($remote_tz, $origin_tz = NULL, $timestamp = FALSE) {
-        if ($timestamp == FALSE) {
+
+    public static function get_timezone_offset($remote_tz, $origin_tz = null, $timestamp = false)
+    {
+        if ($timestamp == false) {
             $timestamp = time();
         }
 
-        if ($origin_tz === NULL) {
+        if ($origin_tz === null) {
             if (!is_string($origin_tz = date_default_timezone_get())) {
-                return FALSE;
+                return false;
             }
         }
 
@@ -210,87 +218,96 @@ class RRZE_Calendar_Functions {
             $origin_dtz = new DateTimeZone($origin_tz);
             $remote_dtz = new DateTimeZone($remote_tz);
 
-            if ($origin_dtz == FALSE || $remote_dtz == FALSE) {
+            if ($origin_dtz == false || $remote_dtz == false) {
                 throw new Exception('DateTimeZone Error');
             }
 
             $origin_dt = new DateTime(gmdate('Y-m-d H:i:s', $timestamp), $origin_dtz);
             $remote_dt = new DateTime(gmdate('Y-m-d H:i:s', $timestamp), $remote_dtz);
 
-            if ($origin_dt == FALSE || $remote_dt == FALSE) {
+            if ($origin_dt == false || $remote_dt == false) {
                 throw new Exception('DateTime Error');
             }
 
             $offset = $origin_dtz->getOffset($origin_dt) - $remote_dtz->getOffset($remote_dt);
         } catch (Exception $e) {
-            return FALSE;
+            return false;
         }
 
         return $offset;
     }
-    
-    public static function get_short_time($timestamp, $convert_from_gmt = TRUE) {
+
+    public static function get_short_time($timestamp, $convert_from_gmt = true)
+    {
         $time_format = get_option('time_format', 'H:i');
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n($time_format, $timestamp, TRUE);
+        return date_i18n($time_format, $timestamp, true);
     }
 
-    public static function get_short_date($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_short_date($timestamp, $convert_from_gmt = true)
+    {
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n('j. M', $timestamp, TRUE);
+        return date_i18n('j. M', $timestamp, true);
     }
 
-    public static function get_year_date($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_year_date($timestamp, $convert_from_gmt = true)
+    {
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n('Y', $timestamp, TRUE);
+        return date_i18n('Y', $timestamp, true);
     }
-    
-    public static function get_month_date($timestamp, $convert_from_gmt = TRUE) {
+
+    public static function get_month_date($timestamp, $convert_from_gmt = true)
+    {
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n('M', $timestamp, TRUE);
+        return date_i18n('M', $timestamp, true);
     }
 
-    public static function get_day_date($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_day_date($timestamp, $convert_from_gmt = true)
+    {
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n('d', $timestamp, TRUE);
+        return date_i18n('d', $timestamp, true);
     }
 
-    public static function get_medium_time($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_medium_time($timestamp, $convert_from_gmt = true)
+    {
         $time_format = get_option('time_format', 'H:i');
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n($time_format, $timestamp, TRUE);
+        return date_i18n($time_format, $timestamp, true);
     }
 
-    public static function get_long_time($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_long_time($timestamp, $convert_from_gmt = true)
+    {
         $date_format = get_option('date_format', 'l, j. F Y');
         $time_format = get_option('time_format', 'H:i');
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n($date_format, $timestamp, TRUE) . ' &minus; ' . date_i18n($time_format, $timestamp, TRUE);
+        return date_i18n($date_format, $timestamp, true) . ' &minus; ' . date_i18n($time_format, $timestamp, true);
     }
 
-    public static function get_long_date($timestamp, $convert_from_gmt = TRUE) {
+    public static function get_long_date($timestamp, $convert_from_gmt = true)
+    {
         $date_format = get_option('date_format', 'l, j. F Y');
         if ($convert_from_gmt) {
             $timestamp = self::gmt_to_local($timestamp);
         }
-        return date_i18n($date_format, $timestamp, TRUE);
+        return date_i18n($date_format, $timestamp, true);
     }
-    
-    public static function get_calendar_dates($events) {
+
+    public static function get_calendar_dates($events)
+    {
         $dates = array();
 
         foreach ($events as $event) {
@@ -301,12 +318,13 @@ class RRZE_Calendar_Functions {
         }
 
         return $dates;
-    }    
-    
-    public static function strToTime($dt, $tz = 'UTC', $noTime = FALSE) {
+    }
+
+    public static function strToTime($dt, $tz = 'UTC', $noTime = false)
+    {
         $dt = new DateTime($dt);
         $dt->setTimeZone(new DateTimezone($tz));
-        
+
         if (!$noTime) {
             $format = 'Y-m-d H:i:s';
         } else {
@@ -316,8 +334,9 @@ class RRZE_Calendar_Functions {
 
         return strtotime($dt->format($format));
     }
-    
-    public static function days_diff($tstart, $tend) {
+
+    public static function days_diff($tstart, $tend)
+    {
         $start_date = new DateTime();
         $start_date->setTimestamp($tstart);
         $start_date->setTime(0, 0, 0);
@@ -329,5 +348,4 @@ class RRZE_Calendar_Functions {
         $diff = $start_date->diff($end_date);
         return $diff->days;
     }
-    
 }
