@@ -138,7 +138,9 @@ class RRZE_Calendar_Functions
         $timezone = '';
         if (isset($t['value']['tz']) && $t['value']['tz'] == 'Z') {
             $timezone = 'Z';
-        } elseif (isset($t['params']['TZID'])) {
+        }
+        /*
+        elseif (isset($t['params']['TZID'])) {
             $key = array_search($t['params']['TZID'], self::$windows_timezones);
 
             if ($key !== false) {
@@ -147,7 +149,7 @@ class RRZE_Calendar_Functions
                 $timezone = $t['params']['TZID'];
             }
         }
-
+        */
         if (empty($timezone)) {
             $timezone = $def_timezone;
         }
