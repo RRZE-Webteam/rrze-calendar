@@ -13,21 +13,28 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
     <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
     <?php else: ?>
     <div>
-        <?php foreach ($events_data as $date): ?>
-            <?php foreach ($date as $event):
+        <?php foreach ($events_data as $event_date): ?>
+            <?php foreach ($event_date as $event):
                 if ($anzahl <= 0):
                     break;
                 endif;
                 if (in_array($event->id, $multiday)):
                     continue;
-                endif; ?>
+                endif;
+                if (!empty($start_date) && $event->start < $start_date) {
+                    continue;
+                }
+                if (!empty($end_date) && $event->end > $end_date) {
+                    continue;
+                }
+                ?>
                 <div class="event-item">
                     <div class="event-title">
                         <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
                     </div>
                     <div class="event-title-date">
                         <?php echo $event->long_start_date ?>
-                    </div>                    
+                    </div>
                     <div class="event-info">
                         <?php if ($event->allday) : ?>
                             <div class="event-date event-allday">
@@ -38,7 +45,7 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                             <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
                                 <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_e_start_date, $event->long_e_end_date)) ?>
-                            </div>            
+                            </div>
                         <?php elseif (!$event->allday && $event->multiday) : ?>
                             <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
@@ -47,7 +54,7 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                         <?php elseif (!$event->allday): ?>
                             <div class="event-date">
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
-                            </div>            
+                            </div>
                         <?php endif; ?>
                         <?php if ($location && $event->location) : ?>
                             <div class="event-location">
