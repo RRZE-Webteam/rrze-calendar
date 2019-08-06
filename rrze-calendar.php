@@ -20,9 +20,6 @@ add_action('plugins_loaded', array('RRZE_Calendar', 'instance'));
 register_activation_hook(__FILE__, array('RRZE_Calendar', 'activation'));
 register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
-// Sprachdateien werden eingebunden.
-load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(plugin_basename(__FILE__))));
-
 class RRZE_Calendar {
 
     const version = '1.10.0';
@@ -89,6 +86,9 @@ class RRZE_Calendar {
     }
 
     private function __construct() {
+        // Sprachdateien werden eingebunden.
+        load_plugin_textdomain('rrze-calendar', FALSE, sprintf('%s/languages/', dirname(plugin_basename(__FILE__))));
+
         self::$plugin_file = __FILE__;
 
         // Enthaltene Optionen.
