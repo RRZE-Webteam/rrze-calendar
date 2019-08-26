@@ -51,7 +51,8 @@ class RRZE_Calendar {
             'FAU-Natfak'
         ],
         'rrze' => [
-            'rrze-2015'
+            'rrze-2015',
+            'rrze-2019'
         ],
         'fau-events' => [
             'FAU-Events'
