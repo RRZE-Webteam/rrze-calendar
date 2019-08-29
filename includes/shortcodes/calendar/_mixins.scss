@@ -8,15 +8,13 @@
         display: none;
     }
 }
-
 @mixin inline-block() {
-    display: inline-block; 
-    *display:inline; 
-    *zoom:1;
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
 }
-
 @mixin border-radius($radius) {
-	-webkit-border-radius: $radius;
-	-moz-border-radius: $radius;
-	border-radius: $radius;
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+    border-radius: $radius;
 }

@@ -426,7 +426,7 @@ class RRZE_Calendar {
         }
 
         wp_enqueue_script('jquery-listfilterizer');
-        wp_enqueue_script('rrze-calendar-admin', plugins_url('js/rrze-calendar-admin.js', __FILE__), array('jquery', 'jquery-listfilterizer'), self::version, TRUE);
+        wp_enqueue_script('rrze-calendar-admin', plugins_url('js/rrze-calendar-admin.min.js', __FILE__), array('jquery', 'jquery-listfilterizer'), self::version, TRUE);
 
         wp_localize_script('rrze-calendar-admin', 'rrze_calendar_vars', array(
             'filters_label_1' => __('Alle', 'rrze-calendar'),
@@ -434,22 +434,22 @@ class RRZE_Calendar {
             'placeholder' => __('Suchen...', 'rrze-calendar'),
         ));
 
-        wp_enqueue_style('rrze-calendar-admin', plugins_url('css/rrze-calendar-admin.css', __FILE__), array(), self::version);
+        wp_enqueue_style('rrze-calendar-admin', plugins_url('css/rrze-calendar-admin.min.css', __FILE__), array(), self::version);
 
         if (strpos($hook, 'rrze-calendar-categories') !== FALSE) {
             wp_enqueue_script('wp-color-picker');
             wp_enqueue_style('wp-color-picker');
-            wp_enqueue_script('color-picker', plugins_url('js/color-picker.js', __FILE__), array('jquery', 'wp-color-picker'), self::version, TRUE);
-            wp_enqueue_style('color-picker', plugins_url('css/color-picker.css', __FILE__), array(), self::version);
+            wp_enqueue_script('color-picker', plugins_url('js/color-picker.min.js', __FILE__), array('jquery', 'wp-color-picker'), self::version, TRUE);
+            wp_enqueue_style('color-picker', plugins_url('css/color-picker.min.css', __FILE__), array(), self::version);
         }
     }
 
     public function wp_enqueue_scripts() {
-        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.css', __FILE__));
+        wp_register_style('rrze-calendar', plugins_url('css/rrze-calendar.min.css', __FILE__));
 
-        wp_register_style('rrze-calendar-shortcode-events', plugins_url('includes/shortcodes/events/events.css', __FILE__));
+        wp_register_style('rrze-calendar-shortcode-events', plugins_url('includes/shortcodes/events/events.min.css', __FILE__));
 
-        wp_register_style('rrze-calendar-shortcode-calendar', plugins_url('includes/shortcodes/calendar/calendar.css', __FILE__));
+        wp_register_style('rrze-calendar-shortcode-calendar', plugins_url('includes/shortcodes/calendar/calendar.min.css', __FILE__));
         wp_register_style('rrze-calendar-shortcode-calendar-titip', plugins_url('includes/shortcodes/calendar/titip.min.css', __FILE__));
     }
 
