@@ -1,4 +1,4 @@
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function($) {
     $('ul.rrze-calendar-select-list').listFilterizer({
         filters: [{
             label: rrze_calendar_vars.filters_label_1,
@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
         inputPlaceholder: rrze_calendar_vars.placeholder
     });
 
-    $('.delete-category a').click(function () {
+    $('.delete-category a').click(function() {
         return showNotice.warn();
     })
 });

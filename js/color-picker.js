@@ -1,4 +1,4 @@
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function($) {
     "use strict";
 
     var default_color = '';
@@ -18,10 +18,10 @@ jQuery(document).ready(function ($) {
     }
 
     link_color.wpColorPicker({
-        change: function (event, ui) {
+        change: function(event, ui) {
             pickColor(link_color.wpColorPicker('color'));
         },
-        clear: function () {
+        clear: function() {
             pickColor('');
         }
     });

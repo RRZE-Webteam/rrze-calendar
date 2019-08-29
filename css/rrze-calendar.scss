@@ -1,4 +1,5 @@
-.event-title, .event-title-date {
+.event-title,
+.event-title-date {
     font-weight: 400;
 }
 
@@ -11,23 +12,25 @@
 .event-title-date {
     font-size: 150%;
     line-height: 1;
-    margin: 0 0 1em;    
+    margin: 0 0 1em;
 }
 
 .event-date {
     line-height: 1;
-    margin: 0 0 0.5em;    
+    margin: 0 0 0.5em;
 }
 
-.event-date, .event-location {
-    font-size: 110%;;
+.event-date,
+.event-location {
+    font-size: 110%;
 }
 
 .event-rrules {
     margin: 0 0 1em;
 }
 
-.event-location, .event-summary {
+.event-location,
+.event-summary {
     margin: 0.5em 0;
 }
 

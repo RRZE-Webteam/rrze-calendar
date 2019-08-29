@@ -1,138 +1,402 @@
 @charset "UTF-8";
-body { font-family: "roboto", "Helvetica Neue", Helvetica, Arial, sans-serif; }
-
-.kalender { /** For modern browsers 1. The space content is one way to avoid an Opera bug when the contenteditable attribute is included anywhere else in the document. Otherwise it causes space to appear at the top and bottom of elements that are clearfixed. 2. The use of `table` rather than `block` is only necessary if using `:before` to contain the top-margins of child elements. */ /** For IE 6/7 only Include this rule to trigger hasLayout and contain floats. */ border: solid 1px #DDD; color: #444; max-width: 80em; }
-
-.kalender .clear-fix:after { /* für Firefox, IE8, Opera, Safari, etc. */ content: "."; display: inline-block; visibility: hidden; }
-
-.kalender * + html .clear-fix { /* für IE7 */ display: inline-block; }
-
-.kalender * html .clear-fix { /* für IE6 */ height: 1%; }
-
-.kalender .cf:before, .kalender .cf:after { content: " "; /* 1 */ display: table; /* 2 */ }
-
-.kalender .cf:after { clear: both; }
-
-.kalender .cf { *zoom: 1; }
-
-.kalender .titip-liste { line-height: 1.2em; }
-
-.kalender .menue { position: relative; border: solid 1px white; background-color: #FAFAFA; box-shadow: 0 1px 1px #CCC; height: 40px; }
-
-.kalender .menue a { text-decoration: none; color: #555; }
-
-.kalender .menue a:hover { color: #B00E0E; font-weight: 100; }
-
-.kalender .menue .buttons { font-size: 1em; margin: 6px; padding: 0 6px; padding-top: 2px; display: inline-block; line-height: 24px; }
-
-.kalender .menue .buttons .aktiv { font-weight: 600; }
-
-.kalender .menue .buttons .aktiv:hover { color: #555; }
-
-.kalender .menue .zeit { position: absolute; }
-
-.kalender .menue .titel { display: block; position: relative; top: 9px; margin-left: 105px; margin-right: 220px; text-align: center; font-size: 1em; }
-
-.kalender .inhalt .monatsansicht { position: relative; }
-
-.kalender .inhalt .monatsansicht * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
-
-.kalender .inhalt .monatsansicht .kopfzeile { height: 28px; border-bottom: solid 1px #EEE; box-shadow: inset 0 -1px 0px #FBFBFB; }
-
-.kalender .inhalt .monatsansicht .kopfzeile > div { position: relative; width: 14.28%; float: left; height: 26px; top: 0px; padding: 0 6px; padding-top: 2px; margin-top: 2px; border-right: solid 1px #F6F6F6; }
-
-.kalender .inhalt .monatsansicht .kopfzeile > div .tag { display: block; text-align: center; position: relative; font-size: 1em; }
-
-.kalender .inhalt .monatsansicht .kopfzeile > div .tag .lang { display: inline-block; }
-
-.kalender .inhalt .monatsansicht .kopfzeile > div:last-child { border-right: none; }
-
-.kalender .inhalt .monatsansicht .woche { position: relative; border-bottom: solid 1px #ddd; }
-
-.kalender .inhalt .monatsansicht .woche > div { display: inline-block; float: left; width: 14.285%; height: 100%; border-right: solid 1px #eee; padding: 4px; }
-
-.kalender .inhalt .monatsansicht .woche > div .datum { display: block; text-align: right; font-size: 1em; color: #777; }
-
-.kalender .inhalt .monatsansicht .woche > div .termine { width: 100%; text-align: left; margin-top: 2px; }
-
-.kalender .inhalt .monatsansicht .woche > div .termine .center .termin { float: left; width: 100%; font-size: 0.9em; text-decoration: none; cursor: pointer; }
-
-.kalender .inhalt .monatsansicht .woche > div .termine .center .termin .marker { font-size: 1em; line-height: 1.5; }
-
-.kalender .inhalt .monatsansicht .woche > div .termine .center .termin .titel { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.kalender .inhalt .monatsansicht .woche > div.heute { background-color: #fdfad3; }
-
-.kalender .inhalt .monatsansicht .woche > div.wochenende { background-color: #fafafa; }
-
-.kalender .inhalt .monatsansicht .woche .nicht-aktuell { background: repeating-linear-gradient(-55deg, #FAFAFA, #FAFAFA 5px, #FFF 4px, #FFF 8px); }
-
-.kalender .inhalt .monatsansicht .woche > div:last-child { border-right: none; }
-
-.kalender .events-list { padding-bottom: 10px; }
-
-.kalender .widget_event_widget ul, .kalender .events-list ul { list-style: none; margin: 0; padding: 0; background: none; }
-
-.kalender .widget_event_widget ul:before, .kalender .events-list ul:before { display: none; }
-
-.kalender .widget_event_widget ul li, .kalender .events-list ul li { list-style: none; margin: 0; padding: 0; background: none; padding: 10px 0 0 0; min-height: 42px; font-size: 12px; line-height: 18px; background-image: none; border-bottom: 1px solid #eee; }
-
-.kalender .widget_event_widget ul li:before, .kalender .events-list ul li:before { display: none; }
-
-.kalender .event-date { float: left; display: block; color: #fff; padding: 5px; width: 30px; text-align: center; }
-
-.kalender .event-date-month { font-size: 9px; line-height: 10px; text-transform: uppercase; font-weight: bold; }
-
-.kalender .event-date-day { font-size: 20px; line-height: 20px; font-weight: bold; }
-
-.kalender .event-info { margin-left: 0px; margin-bottom: 10px; padding-left: 5px; padding-bottom: 5px; border-left: 7px solid grey; }
-
-.kalender .event-title-date { line-height: 1.4em; }
-
-.kalender .event-time { color: #444; }
-
-.kalender .event-location { color: #797676; }
-
-.kalender .event-info a, .kalender .event-info .event-time { color: #444; }
-
-.kalender .event-category-fau .event-date { background: #003366; }
-
-.kalender .event-category-einrichtungen .event-date { background: #003366; }
-
-.kalender .event-category-techfak .event-date { background: #6E7881; }
-
-.kalender .event-category-rwfak .event-date { background: #8d1429; }
-
-.kalender .event-category-philfak .event-date { background: #A36B0D; }
-
-.kalender .event-category-natfak .event-date { background: #048767; }
-
-.kalender .event-category-medfak .event-date { background: #0381A2; }
-
-.kalender .widget_event_widget a { text-decoration: none; }
-
-.kalender .widget_event_widget a:hover, .kalender .widget_event_widget a:focus { text-decoration: underline; }
-
-.kalender .events-list ul { list-style: none; margin: 0; padding: 0; background: none; }
-
-.kalender .events-list ul:before { display: none; }
-
-.kalender .events-list ul li { list-style: none; margin: 0; padding: 0; background: none; margin-bottom: 3px; }
-
-.kalender .events-list ul li:before { display: none; }
-
-.kalender .event-detail-item { margin-bottom: 20px; min-height: 50px; }
-
-.kalender .event-detail-item .event-info { margin-left: 70px; font-size: 15px; line-height: 20px; padding-top: 6px; }
-
-.kalender .event-detail-item .event-date { width: 50px; padding: 7px 0; }
-
-.kalender .event-detail-item .event-date-month { font-size: 14px; line-height: 18px; }
-
-.kalender .event-detail-item .event-date-day { font-size: 28px; line-height: 28px; }
-
-@media screen and (min-width: 768px) { .inhalt-mobile { display: none; } }
-
-@media screen and (max-width: 768px) { .inhalt { display: none; }
-  .kalender { border: none; }
-  .inhalt-mobile .listenansicht { position: relative; padding: 10px; } }
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.kalender {
+  /**
+     * For modern browsers
+     * 1. The space content is one way to avoid an Opera bug when the
+     *    contenteditable attribute is included anywhere else in the document.
+     *    Otherwise it causes space to appear at the top and bottom of elements
+     *    that are clearfixed.
+     * 2. The use of `table` rather than `block` is only necessary if using
+     *    `:before` to contain the top-margins of child elements.
+     */
+  /**
+     * For IE 6/7 only
+     * Include this rule to trigger hasLayout and contain floats.
+     */
+  border: solid 1px #DDD;
+  color: #444;
+  max-width: 80em;
+}
+
+.kalender .clear-fix:after {
+  /* für Firefox, IE8, Opera, Safari, etc. */
+  content: ".";
+  display: inline-block;
+  visibility: hidden;
+}
+
+.kalender * + html .clear-fix {
+  /* für IE7 */
+  display: inline-block;
+}
+
+.kalender * html .clear-fix {
+  /* für IE6 */
+  height: 1%;
+}
+
+.kalender .cf:before,
+.kalender .cf:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+
+.kalender .cf:after {
+  clear: both;
+}
+
+.kalender .cf {
+  *zoom: 1;
+}
+
+.kalender .titip-liste {
+  line-height: 1.2em;
+}
+
+.kalender .menue {
+  position: relative;
+  border: solid 1px white;
+  background-color: #FAFAFA;
+  box-shadow: 0 1px 1px #CCC;
+  height: 40px;
+}
+
+.kalender .menue a {
+  text-decoration: none;
+  color: #555;
+}
+
+.kalender .menue a:hover {
+  color: #B00E0E;
+  font-weight: 100;
+}
+
+.kalender .menue .buttons {
+  font-size: 1em;
+  margin: 6px;
+  padding: 0 6px;
+  padding-top: 2px;
+  display: inline-block;
+  line-height: 24px;
+}
+
+.kalender .menue .buttons .aktiv {
+  font-weight: 600;
+}
+
+.kalender .menue .buttons .aktiv:hover {
+  color: #555;
+}
+
+.kalender .menue .zeit {
+  position: absolute;
+}
+
+.kalender .menue .titel {
+  display: block;
+  position: relative;
+  top: 9px;
+  margin-left: 105px;
+  margin-right: 220px;
+  text-align: center;
+  font-size: 1em;
+}
+
+.kalender .inhalt .monatsansicht {
+  position: relative;
+}
+
+.kalender .inhalt .monatsansicht * {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.kalender .inhalt .monatsansicht .kopfzeile {
+  height: 28px;
+  border-bottom: solid 1px #EEE;
+  box-shadow: inset 0 -1px 0px #FBFBFB;
+}
+
+.kalender .inhalt .monatsansicht .kopfzeile > div {
+  position: relative;
+  width: 14.28%;
+  float: left;
+  height: 26px;
+  top: 0px;
+  padding: 0 6px;
+  padding-top: 2px;
+  margin-top: 2px;
+  border-right: solid 1px #F6F6F6;
+}
+
+.kalender .inhalt .monatsansicht .kopfzeile > div .tag {
+  display: block;
+  text-align: center;
+  position: relative;
+  font-size: 1em;
+}
+
+.kalender .inhalt .monatsansicht .kopfzeile > div .tag .lang {
+  display: inline-block;
+}
+
+.kalender .inhalt .monatsansicht .kopfzeile > div:last-child {
+  border-right: none;
+}
+
+.kalender .inhalt .monatsansicht .woche {
+  position: relative;
+  border-bottom: solid 1px #ddd;
+}
+
+.kalender .inhalt .monatsansicht .woche > div {
+  display: inline-block;
+  float: left;
+  width: 14.285%;
+  height: 100%;
+  border-right: solid 1px #eee;
+  padding: 4px;
+}
+
+.kalender .inhalt .monatsansicht .woche > div .datum {
+  display: block;
+  text-align: right;
+  font-size: 1em;
+  color: #777;
+}
+
+.kalender .inhalt .monatsansicht .woche > div .termine {
+  width: 100%;
+  text-align: left;
+  margin-top: 2px;
+}
+
+.kalender .inhalt .monatsansicht .woche > div .termine .center .termin {
+  float: left;
+  width: 100%;
+  font-size: 0.9em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.kalender .inhalt .monatsansicht .woche > div .termine .center .termin .marker {
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.kalender .inhalt .monatsansicht .woche > div .termine .center .termin .titel {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kalender .inhalt .monatsansicht .woche > div.heute {
+  background-color: #fdfad3;
+}
+
+.kalender .inhalt .monatsansicht .woche > div.wochenende {
+  background-color: #fafafa;
+}
+
+.kalender .inhalt .monatsansicht .woche .nicht-aktuell {
+  background: repeating-linear-gradient(-55deg, #FAFAFA, #FAFAFA 5px, #FFF 4px, #FFF 8px);
+}
+
+.kalender .inhalt .monatsansicht .woche > div:last-child {
+  border-right: none;
+}
+
+.kalender .events-list {
+  padding-bottom: 10px;
+}
+
+.kalender .widget_event_widget ul,
+.kalender .events-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+
+.kalender .widget_event_widget ul:before,
+.kalender .events-list ul:before {
+  display: none;
+}
+
+.kalender .widget_event_widget ul li,
+.kalender .events-list ul li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  padding: 10px 0 0 0;
+  min-height: 42px;
+  font-size: 12px;
+  line-height: 18px;
+  background-image: none;
+  border-bottom: 1px solid #eee;
+}
+
+.kalender .widget_event_widget ul li:before,
+.kalender .events-list ul li:before {
+  display: none;
+}
+
+.kalender .event-date {
+  float: left;
+  display: block;
+  color: #fff;
+  padding: 5px;
+  width: 30px;
+  text-align: center;
+}
+
+.kalender .event-date-month {
+  font-size: 9px;
+  line-height: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.kalender .event-date-day {
+  font-size: 20px;
+  line-height: 20px;
+  font-weight: bold;
+}
+
+.kalender .event-info {
+  margin-left: 0px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+  padding-bottom: 5px;
+  border-left: 7px solid grey;
+}
+
+.kalender .event-title-date {
+  line-height: 1.4em;
+}
+
+.kalender .event-time {
+  color: #444;
+}
+
+.kalender .event-location {
+  color: #797676;
+}
+
+.kalender .event-info a, .kalender .event-info .event-time {
+  color: #444;
+}
+
+.kalender .event-category-fau .event-date {
+  background: #003366;
+}
+
+.kalender .event-category-einrichtungen .event-date {
+  background: #003366;
+}
+
+.kalender .event-category-techfak .event-date {
+  background: #6E7881;
+}
+
+.kalender .event-category-rwfak .event-date {
+  background: #8d1429;
+}
+
+.kalender .event-category-philfak .event-date {
+  background: #A36B0D;
+}
+
+.kalender .event-category-natfak .event-date {
+  background: #048767;
+}
+
+.kalender .event-category-medfak .event-date {
+  background: #0381A2;
+}
+
+.kalender .widget_event_widget a {
+  text-decoration: none;
+}
+
+.kalender .widget_event_widget a:hover, .kalender .widget_event_widget a:focus {
+  text-decoration: underline;
+}
+
+.kalender .events-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+
+.kalender .events-list ul:before {
+  display: none;
+}
+
+.kalender .events-list ul li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  margin-bottom: 3px;
+}
+
+.kalender .events-list ul li:before {
+  display: none;
+}
+
+.kalender .event-detail-item {
+  margin-bottom: 20px;
+  min-height: 50px;
+}
+
+.kalender .event-detail-item .event-info {
+  margin-left: 70px;
+  font-size: 15px;
+  line-height: 20px;
+  padding-top: 6px;
+}
+
+.kalender .event-detail-item .event-date {
+  width: 50px;
+  padding: 7px 0;
+}
+
+.kalender .event-detail-item .event-date-month {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.kalender .event-detail-item .event-date-day {
+  font-size: 28px;
+  line-height: 28px;
+}
+
+@media screen and (min-width: 768px) {
+  .inhalt-mobile {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .inhalt {
+    display: none;
+  }
+  .kalender {
+    border: none;
+  }
+  .inhalt-mobile .listenansicht {
+    position: relative;
+    padding: 10px;
+  }
+}
