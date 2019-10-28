@@ -1,12 +1,14 @@
 <?php
 
-add_shortcode('rrze-events', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
-add_shortcode('rrze-termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
+use \RRZE\Calendar\Util;
 
-add_shortcode('events', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
-add_shortcode('termine', array('RRZE_Calendar_Events_Shortcode', 'shortcode'));
+add_shortcode('rrze-events', array('Events_Shortcode', 'shortcode'));
+add_shortcode('rrze-termine', array('Events_Shortcode', 'shortcode'));
 
-class RRZE_Calendar_Events_Shortcode
+add_shortcode('events', array('Events_Shortcode', 'shortcode'));
+add_shortcode('termine', array('Events_Shortcode', 'shortcode'));
+
+class Events_Shortcode
 {
     public static function shortcode($atts, $content = "")
     {
@@ -75,7 +77,7 @@ class RRZE_Calendar_Events_Shortcode
             }
         }
 
-        $subscribe_url = $abonnement_link ? RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : '')) : '';
+        $subscribe_url = $abonnement_link ? Util::webCalUrl(['feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : '']) : '';
 
         $filter = array(
             'feed_ids' => $feed_ids
@@ -84,9 +86,9 @@ class RRZE_Calendar_Events_Shortcode
         $events_data = array();
 
         if ($feed_ids or (!$feed_ids && !$taxonomy_empty)) {
-            $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
-            $events_result = RRZE_Calendar::get_events_relative_to($timestamp, 0, $filter);
-            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
+            $today = date('Y-m-d 00:00:00', time());
+            $events_result = RRZE_Calendar::getEventsRelativeTo($today, 0, $filter);
+            $events_data = Util::getCalendarDates($events_result);
         }
 
         $calendar_page_url = $page_url;

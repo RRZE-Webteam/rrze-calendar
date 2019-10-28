@@ -1,5 +1,7 @@
 <?php
 
+use \RRZE\Calendar\Util;
+
 abstract class Ansicht
 {
     protected $optionen = null;
@@ -32,21 +34,16 @@ abstract class Ansicht
     public function suche_events($tag = null)
     {
         if (empty($tag)) {
-            $tag = date("Ymd");
+            $tag = date('Y-m-d');
         }
-        
-        $this->tag_start = 0;
-        $this->tag_ende = 0;
-        
-        $start_time = strtotime($tag . '-00:00');
-        $end_time = strtotime($tag . '-00:00 + 1 day');
-        $events = RRZE_Calendar::get_events_between($start_time, $end_time, $this->optionen["filter"]);
-        $events = RRZE_Calendar_Functions::get_calendar_dates($events);
-        $this->tag_start = $start_time;
-        $this->tag_ende = $end_time;
 
-            
-        $events_data = array();
+        $this->tag_start = strtotime($tag);
+        $this->tag_ende = strtotime($tag . ' + 1 day');
+        $events = RRZE_Calendar::getEventsBetween(date('Y-m-d H:i:s', $this->tag_start), date('Y-m-d H:i:s', $this->tag_ende), $this->optionen["filter"]);
+
+        $events = Util::getCalendarDates($events);
+
+        $events_data = [];
 
         foreach ($events as $e) {
             foreach ($e as $event) {
@@ -55,11 +52,11 @@ abstract class Ansicht
         }
 
         $ts = strtotime($tag);
-        $datum = date("j", $ts);
+        $datum = date('j', $ts);
 
-        $monat = date_i18n("F", $ts);
+        $monat = date_i18n('F', $ts);
 
-        $wochentag = str_split(date_i18n("l", $ts), 2);
+        $wochentag = str_split(date_i18n('l', $ts), 2);
         $wochentag_anfang = $wochentag[0];
         unset($wochentag[0]);
         $wochentag_ende = implode("", $wochentag);
@@ -68,7 +65,7 @@ abstract class Ansicht
         $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
         $tag_anfang = date('H:i', $this->tag_start);
 
-        return array(
+        return [
             "termine" => $events_data,
             "datum" => $tag,
             "monat" => $monat,
@@ -80,7 +77,7 @@ abstract class Ansicht
             "sonntag" => $this->ist_sonntag($tag),
             "tag_laenge" => $tag_laenge,
             "tag_anfang" => $tag_anfang,
-        );
+        ];
     }
 
     private function event($event)
@@ -91,59 +88,19 @@ abstract class Ansicht
         $event_data["slug"] = $event->slug;
         $event_data["summary"] = $event->summary;
         $event_data["location"] = $event->location;
-        $event_data["datum_start"] = date(__('d.m.Y', 'rrze-calendar'), $event->start);
-        $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $event->end);
 
-        if ($event->allday) {
-            $start = RRZE_Calendar_Functions::gmt_to_local($event->start);
-            $ende = strtotime('tomorrow 00:00:00', $event->start);
-        } else {
-            $start = RRZE_Calendar_Functions::gmt_to_local($event->start);
-            $ende = RRZE_Calendar_Functions::gmt_to_local($event->end);
-        }
+        $start = Util::gmtToLocal(strtotime($event->start));
+        $ende = Util::gmtToLocal(strtotime($event->end));
 
-        if ($ende > strtotime('tomorrow 00:00:00', $start)) {
-            $ende = strtotime('tomorrow 00:00:00', $start);
-        }
-
-        // Dauer in Minuten
-        $tag_laenge = ($this->tag_ende - $this->tag_start) / 60;
-        $duration = floor(($ende - $start) / 60);
-
-        $event_data["start"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + date('i', $start) - date('i', $this->tag_ende);
-
-        $event_data["duration"] = $duration < $tag_laenge - $event_data["start"] ? $duration : $tag_laenge - $event_data["start"];
-
-        // Ende (Pro Minute ein Pixel hoehe)
-        $event_data["ende"] = (date('G', $start) - date('G', $this->tag_start)) * 60 + $event_data["duration"];
+        $event_data["datum_start"] = date(__('d.m.Y', 'rrze-calendar'), $start);
+        $event_data["datum_ende"] = date(__('d.m.Y', 'rrze-calendar'), $ende);
 
         // Zeitanzeige am Termin
-        $event_data["time_start"] = $event->start_time;
-        $event_data["time_ende"] = $event->end_time;
+        $event_data["time_start"] = date(__('H:i', 'rrze-calendar'), $start);
+        $event_data["time_ende"] = date(__('H:i', 'rrze-calendar'), $ende);
         $event_data["time"] = sprintf("%s - %s", $event_data["time_start"], $event_data["time_ende"]);
 
-        // Bei Wiederholenden Events die Regeln zusammenfassen.
-        $regel = '';
-        $wochentag = date_i18n("l", $start);
-
-        $interval = $event->recurrence_dates ? $event->recurrence_dates : null;
-        $freq = $event->recurrence_rules ? $event->recurrence_rules : -1;
-
-        switch ($freq) {
-            case 'weekly':
-                if ($interval == 1) {
-                    $regel = sprintf(__('Jeden %s', 'rrze-calendar'), $wochentag);
-                } else {
-                    $regel = sprintf(__('Jeden %s. %s', 'rrze-calendar'), $interval, $wochentag);
-                }
-                break;
-
-            default:
-                $regel = date(__('d.m.Y', 'rrze-calendar'), $start);
-                break;
-        }
-
-        $event_data["datum"] = $regel;
+        $event_data["datum"] = date(__('d.m.Y', 'rrze-calendar'), $start);
         $event_data["start_timestamp"] = $start;
 
         // Ganztagige Events rausfiltern
@@ -153,16 +110,16 @@ abstract class Ansicht
         } else {
             $event_data["nicht_ganztagig"] = true;
         }
-
+        
         // Farbmarkierung
         $event_data["farbe"] = isset($event->category->color) ? $event->category->color : 'grey';
 
         $event_data["allday"] = $event->allday;
-        $event_data["multiday"] = $event->multiday;
-        $event_data["long_e_start_date"] = $event->long_e_start_date;
-        $event_data["long_e_end_date"] = $event->long_e_end_date;
-        $event_data["short_e_start_time"] = $event->short_e_start_time;
-        $event_data["short_e_end_time"] = $event->short_e_end_time;
+        $event_data["multiday"] = $event->is_multiday();
+        $event_data["long_start_date"] = $event->long_start_date;
+        $event_data["long_end_date"] = $event->long_end_date;
+        $event_data["short_start_time"] = $event->short_start_time;
+        $event_data["short_end_time"] = $event->short_end_time;
         $event_data["short_start_time"] = $event->short_start_time;
         $event_data["short_end_time"] = $event->short_end_time;
         $event_data["long_start_date"] = $event->long_start_date;

@@ -21,101 +21,105 @@
                 <div class="wochenende sonntag"><span class="tag">So<span class="lang">nntag</span></span></div>
             </div>
 
-            <?php foreach ($daten['wochen'] as $woche): ?>
-            <?php $t = 1; ?>
-            <div class="woche" style="height: <?php echo $woche['itemcount'] > 4 ? 9 + ($woche['itemcount'] - 4) : 9;?>em">
-                <?php foreach ($woche['tage'] as $tag): ?>
-                <?php switch ($t) {
-                        case 1:
-                            $titip = 'titip-right';
-                        break;
-                        case 7:
-                            $titip = 'titip-left';
-                        break;
-                        default:
-                            $titip = 'titip-top';
-                } $t++; ?>
-                <div class="<?php if (!empty($tag['heute'])): ?>heute <?php endif; ?><?php if (!empty($tag['nicht_im_monat'])): ?>nicht-aktuell <?php endif; ?><?php if (!empty($tag['wochenende'])): ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])): ?>sonntag <?php endif; ?>">
-                    <div class="datum"><?php echo $tag['datum_kurz']; ?>.</div>
-                    <div class="termine">
-                        <div class="center">
-                            <?php foreach ($tag['termine'] as $termin): ?>
-                            <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin titip-default <?php echo $titip; ?>">
-                                <span class="titel"><span class="dashicons dashicons-arrow-right" style="color: <?php echo $termin['farbe']; ?>"></span><?php echo $termin['summary']; ?></span>
-                                <span class="titip-liste titip-content thick-border">
-                                    <strong><?php echo wordwrap($termin['summary'], 50, "<br>\n"); ?></strong>
-                                    <?php if (!empty($termin['location'])): ?>
-                                    <br><span><?php echo $termin['location']; ?></span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($termin['ganztagig'])): ?>
-                                    <br><?php if (!empty($termin['datum'])): ?><?php echo $termin['datum']; ?><?php endif; ?>
-                                    <?php endif; ?>
-                                    <?php if (!empty($termin['nicht_ganztagig'])): ?>
-                                    <?php if (!empty($termin['time'])): ?>
-                                    <br> <?php if (!empty($termin['datum'])): ?><?php echo $termin['datum']; ?>, <?php endif; ?><?php printf(__("%s Uhr", 'rrze-calendar'), $termin['time']); ?>
-                                    <?php endif; ?>
-                                    <?php endif; ?>
-                                </span>
-                            </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
+            <?php foreach ($daten['wochen'] as $woche) : ?>
+                <?php $t = 1; ?>
+                <div class="woche" style="height: <?php echo $woche['itemcount'] > 4 ? 9 + ($woche['itemcount'] - 4) : 9; ?>em">
+                    <?php foreach ($woche['tage'] as $tag) : ?>
+                        <?php switch ($t) {
+                                    case 1:
+                                        $titip = 'titip-right';
+                                        break;
+                                    case 7:
+                                        $titip = 'titip-left';
+                                        break;
+                                    default:
+                                        $titip = 'titip-top';
+                                }
+                                $t++; ?>
+                            <div class="<?php if (!empty($tag['heute'])) : ?>heute <?php endif; ?><?php if (!empty($tag['nicht_im_monat'])) : ?>nicht-aktuell <?php endif; ?><?php if (!empty($tag['wochenende'])) : ?>wochenende <?php endif; ?><?php if (!empty($tag['sonntag'])) : ?>sonntag <?php endif; ?>">
+                                <div class="datum"><?php echo $tag['datum_kurz']; ?>.</div>
+                                <div class="termine">
+                                    <div class="center">
+                                        <?php foreach ($tag['termine'] as $termin) : ?>
+                                            <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>" class="termin titip-default <?php echo $titip; ?>">
+                                                <span class="titel"><span class="dashicons dashicons-arrow-right" style="color: <?php echo $termin['farbe']; ?>"></span><?php echo $termin['summary']; ?></span>
+                                                <span class="titip-liste titip-content thick-border">
+                                                    <strong><?php echo wordwrap($termin['summary'], 50, "<br>\n"); ?></strong>
+                                                    <?php if (!empty($termin['location'])) : ?>
+                                                        <br><span><?php echo $termin['location']; ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if ($termin['allday']) : ?>
+                                                        <div class="event-time event-allday">
+                                                            <?php _e('Ganztägig', 'rrze-calendar'); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if ($termin['allday'] && $termin['multiday']) : ?>
+                                                        <div class="event-time">
+                                                            <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_start_date'], $termin['long_end_date'])) ?>
+                                                        </div>
+                                                    <?php elseif (!$termin['allday'] && $termin['multiday']) : ?>
+                                                        <div class="event-time">
+                                                            <?php echo esc_html(sprintf(__('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_start_date'], $termin['short_start_time'], $termin['long_end_date'], $termin['short_end_time'])) ?>
+                                                        </div>
+                                                    <?php elseif (!$termin['allday']) : ?>
+                                                        <div class="event-time">
+                                                            <?php echo esc_html(sprintf(__('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div><?php endforeach; ?>
                 </div><?php endforeach; ?>
-            </div><?php endforeach; ?>
         </div>
     </div>
-    
+
     <div class="inhalt-mobile">
         <div class="listenansicht">
             <div class="events-list">
-                <?php $multiday = []; ?>
-                <?php foreach ($daten['wochen'] as $woche): ?>
-                <?php foreach ($woche['tage'] as $tag): ?>
-                <?php if (!empty($tag['nicht_im_monat'])): continue; endif; ?>
-                <?php foreach ($tag['termine'] as $termin): ?>
-                    <?php $endpoint_url = RRZE_Calendar::endpoint_url($termin['slug']); ?>
-                    <?php if (in_array($endpoint_url, $multiday)): ?>
-                        <?php continue; ?>
-                    <?php endif; ?>                 
-                    <div class="event-info" style="border-left-color: <?php echo $termin['farbe']; ?>">
-                        <div class="event-title-date">
-                            <?php echo $termin['long_start_date']; ?>
-                        </div>
-                        
-                        <?php if ($termin['allday']) : ?>
-                            <div class="event-time event-allday">
-                                <?php _e('Ganztägig', 'rrze-calendar'); ?>
+                <?php foreach ($daten['wochen'] as $woche) : ?>
+                    <?php foreach ($woche['tage'] as $tag) : ?>
+                        <?php if (!empty($tag['nicht_im_monat'])) : continue;
+                                endif; ?>
+                        <?php foreach ($tag['termine'] as $termin) : ?>
+                            <div class="event-info" style="border-left-color: <?php echo $termin['farbe']; ?>">
+                                <div class="event-title-date">
+                                    <?php echo $termin['long_start_date']; ?>
+                                </div>
+                                <?php if ($termin['allday']) : ?>
+                                    <div class="event-time event-allday">
+                                        <?php _e('Ganztägig', 'rrze-calendar'); ?>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($termin['allday'] && $termin['multiday']) : ?>
+                                    <div class="event-time">
+                                        <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_start_date'], $termin['long_end_date'])) ?>
+                                    </div>
+                                <?php elseif (!$termin['allday'] && $termin['multiday']) : ?>
+                                    <div class="event-time">
+                                        <?php echo esc_html(sprintf(__('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_start_date'], $termin['short_start_time'], $termin['long_end_date'], $termin['short_end_time'])) ?>
+                                    </div>
+                                <?php elseif (!$termin['allday']) : ?>
+                                    <div class="event-time">
+                                        <?php echo esc_html(sprintf(__('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="event-title"><a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($termin['slug'])); ?>">
+                                        <?php echo esc_html(apply_filters('the_title', $termin['summary'])); ?></a>
+                                </div>
+
+                                <div class="event-location">
+                                    <?php if (!empty($termin['location'])) : ?><?php echo $termin['location']; ?><?php endif; ?>
+                                </div>
                             </div>
-                        <?php endif; ?>
-                        <?php if ($termin['allday'] && $termin['multiday']) : ?>
-                            <?php $multiday[] = $endpoint_url; ?>
-                            <div class="event-time">
-                                <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_e_start_date'], $termin['long_e_end_date'])) ?>
-                            </div>            
-                        <?php elseif (!$termin['allday'] && $termin['multiday']) : ?>
-                            <?php $multiday[] = $endpoint_url; ?>
-                            <div class="event-time">
-                                <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_e_start_date'], $termin['short_e_start_time'], $termin['long_e_end_date'], $termin['short_e_end_time'])) ?>
-                            </div>
-                        <?php elseif (!$termin['allday']): ?>
-                            <div class="event-time">
-                                <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?>
-                            </div>            
-                        <?php endif; ?>
-                        
-                        <div class="event-title"><a href="<?php echo esc_attr($endpoint_url); ?>">
-                            <?php echo esc_html(apply_filters('the_title', $termin['summary'])); ?></a>
-                        </div>
-                        
-                        <div class="event-location">
-                            <?php if (!empty($termin['location'])): ?><?php echo $termin['location']; ?><?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-                <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
                 <?php endforeach; ?>
             </div>
-        </div> 
+        </div>
     </div>
-    
+
 </div>
