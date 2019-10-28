@@ -1,5 +1,7 @@
 <?php
 
+use \RRZE\Calendar\Util;
+
 add_shortcode('rrze-calendar', array('RRZE_Calendar_Shortcode', 'shortcode'));
 add_shortcode('rrze-kalender', array('RRZE_Calendar_Shortcode', 'shortcode'));
 
@@ -48,7 +50,7 @@ class RRZE_Calendar_Shortcode
         }
 
         if (!empty($atts['abonnement_link'])) {
-            $subscribe_url = RRZE_Calendar::webcal_url(array('feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : ''));
+            $subscribe_url = Util::webCalUrl(['feed-ids' => !empty($feed_ids) ? implode(',', $feed_ids) : '']);
             $atts['subscribe_url'] = $subscribe_url;
         }
                 

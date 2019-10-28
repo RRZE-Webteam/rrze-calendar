@@ -4,7 +4,7 @@
 Plugin Name: RRZE Calendar
 Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
 Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.10.3
+Version: 1.11.0
 Author: RRZE-Webteam
 Author URI: https://blogs.fau.de/webworking/
 License: GNU General Public License v2
@@ -15,6 +15,13 @@ Text Domain: rrze-calendar
 Domain Path: /languages
 */
 
+use \RRZE\Calendar\Import;
+use \RRZE\Calendar\Event;
+use \RRZE\Calendar\Util;
+
+// Include composer autoload
+require __DIR__ . '/vendor/autoload.php';
+
 add_action('plugins_loaded', array('RRZE_Calendar', 'instance'));
 
 register_activation_hook(__FILE__, array('RRZE_Calendar', 'activation'));
@@ -22,15 +29,15 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.10.3';
+    const version = '1.11.0';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
     const cron_hook = 'rrze_calendar';
     const option_name = 'rrze_calendar';
     const version_option_name = 'rrze_calendar_version';
-    const php_version = '7.1'; // Minimal erforderliche PHP-Version
-    const wp_version = '5.1'; // Minimal erforderliche WordPress-Version
+    const php_version = '7.3'; // Minimal erforderliche PHP-Version
+    const wp_version = '5.2'; // Minimal erforderliche WordPress-Version
     const taxonomy_cat_key = 'rrze-calendar-category';
     const taxonomy_tag_key = 'rrze-calendar-tag';
     const settings_errors_transient = 'rrze-calendar-settings-errors-';
@@ -69,7 +76,6 @@ class RRZE_Calendar {
     public static $plugin_file;
     public static $db_feeds_table;
     public static $db_events_table;
-    public static $db_events_cache_table;
     public static $db_terms_table;
     public static $db_term_taxonomy_table;
     public static $db_term_relationships_table;
@@ -107,9 +113,6 @@ class RRZE_Calendar {
 
         $this->settings_errors();
         $this->admin_notices();
-
-        require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-functions.php');
-        require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-event.php');
 
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/feeds-list-table.php');
         require_once(plugin_dir_path(self::$plugin_file) . 'includes/events-list-table.php');
@@ -241,7 +244,6 @@ class RRZE_Calendar {
 
         self::$db_feeds_table = $wpdb->prefix . self::feeds_table_name;
         self::$db_events_table = $wpdb->prefix . self::events_table_name;
-        self::$db_events_cache_table = $wpdb->prefix . self::events_cache_table_name;
     }
 
     private static function db_delta() {
@@ -288,18 +290,6 @@ class RRZE_Calendar {
             ) $charset_collate;";
 
         dbDelta($sql);
-
-        $sql = "CREATE TABLE " . self::$db_events_cache_table . " (
-            id bigint(20) unsigned NOT NULL auto_increment,
-            event_id bigint(20) NOT NULL default 0,
-            start datetime NOT NULL default '0000-00-00 00:00:00',
-            end datetime NOT NULL default '0000-00-00 00:00:00',
-            ical_feed_id bigint(20) unsigned NOT NULL default 0,
-            PRIMARY KEY  (id),
-            KEY ical_feed_id (ical_feed_id)
-            ) $charset_collate;";
-
-        dbDelta($sql);
     }
 
     private static function db_update($version) {
@@ -314,7 +304,6 @@ class RRZE_Calendar {
         global $wpdb;
 
         $wpdb->query("DELETE e FROM " . self::$db_events_table . " e LEFT JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id WHERE f.id IS NULL");
-        $wpdb->query("DELETE ec FROM " . self::$db_events_cache_table . " ec LEFT JOIN " . self::$db_feeds_table . " f ON ec.ical_feed_id = f.id WHERE f.id IS NULL");
 
         // rrze-cache plugin
         if (has_action('rrzecache_flush_cache')) {
@@ -331,7 +320,7 @@ class RRZE_Calendar {
     private function get_events_data($output_type = OBJECT) {
         global $wpdb;
 
-        return $wpdb->get_results("SELECT e.*, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end, f.id AS feed_id, f.title AS feed_title FROM " . self::$db_events_table . " e JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id", $output_type);
+        return $wpdb->get_results("SELECT e.*, f.id AS feed_id, f.title AS feed_title FROM " . self::$db_events_table . " e JOIN " . self::$db_feeds_table . " f ON e.ical_feed_id = f.id", $output_type);
     }
 
     /*
@@ -375,9 +364,9 @@ class RRZE_Calendar {
         $slug = $wp_query->query_vars[self::$options['endpoint_slug']];
 
         if (empty($slug)) {
-            $timestamp = RRZE_Calendar_Functions::gmt_to_local(time());
-            $events_result = self::get_events_relative_to($timestamp);
-            $events_data = RRZE_Calendar_Functions::get_calendar_dates($events_result);
+            $today = date('Y-m-d 00:00:00', time());
+            $events_result = self::getEventsRelativeTo($today);
+            $events_data = Util::getCalendarDates($events_result);
         } else {
             $events_data = $this->get_event_by_slug($slug);
         }
@@ -501,7 +490,7 @@ class RRZE_Calendar {
     }
 
     public function events_screen_options() {
-        new RRZE_Calendar_Events_List_Table();
+        new Events_List_Table();
 
         $option = 'per_page';
         $args = array(
@@ -964,8 +953,8 @@ class RRZE_Calendar {
 
     public function events_page() {
         $events = (array) $this->get_events_data(ARRAY_A);
-
-        $list_table = new RRZE_Calendar_Events_List_Table($events);
+       
+        $list_table = new Events_List_Table($events);
         $list_table->prepare_items();
         ?>
         <form method="get">
@@ -1734,7 +1723,7 @@ class RRZE_Calendar {
     private function get_event_by_slug($slug) {
         global $wpdb;
 
-        $sql = "SELECT *, UNIX_TIMESTAMP(start) AS start, UNIX_TIMESTAMP(end) AS end FROM " . self::$db_events_table . " WHERE slug = %s";
+        $sql = "SELECT * FROM " . self::$db_events_table . " WHERE slug = %s";
         $data = $wpdb->get_row($wpdb->prepare($sql, $slug), ARRAY_A);
 
         if (is_null($data)) {
@@ -1752,7 +1741,7 @@ class RRZE_Calendar {
         $data['tags'] = self::get_tags_for_feed($data['ical_feed_id'], 'objects');
         $data['feed'] = self::get_feed($data['ical_feed_id'], 'ARRAY_A');
 
-        $event = new RRZE_Calendar_Event($data);
+        $event = new Event($data);
         return $event;
     }
 
@@ -1802,19 +1791,6 @@ class RRZE_Calendar {
 
     public static function endpoint_name() {
         return self::$options['endpoint_slug'];
-    }
-
-    public static function webcal_url($atts = array()) {
-        $atts = array_merge(
-            array(
-                'plugin' => 'rrze-calendar',
-                'action' => 'export',
-                'feed-ids' => '',
-                'event-ids' => '',
-                'cb' => rand()
-            ), $atts
-        );
-        return add_query_arg($atts, site_url('/'));
     }
 
     public static function get_param($param, $default = '') {
@@ -2251,12 +2227,7 @@ class RRZE_Calendar {
         }
 
         if ($feed_id) {
-
-            $count = $wpdb->delete(self::$db_events_cache_table, array('ical_feed_id' => $feed_id), array('%d'));
-
-            if ($count !== FALSE) {
-                $count = $wpdb->delete(self::$db_events_table, array('ical_feed_id' => $feed_id), array('%d'));
-            }
+            $count = $wpdb->delete(self::$db_events_table, array('ical_feed_id' => $feed_id), array('%d'));
 
             $output = array(
                 'error' => $count !== FALSE ? FALSE : TRUE,
@@ -2275,135 +2246,95 @@ class RRZE_Calendar {
         }
     }
 
-    private function parse_ics_feed($feed) {
+    protected function parse_ics_feed($feed) {
         global $wpdb;
 
-        if (!defined('ICALCREATOR_VERSION')) {
-            require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
-        }
+        $import = new Import;
+        $events = $import->importEvents($feed->url, false);
 
         $count = 0;
-        $config = array('unique_id' => 'events');
 
-        $v = new vcalendar(array(
-            'unique_id' => $feed->url,
-            'url' => $feed->url,
-        ));
+        foreach ($events as $event) {
+            $data = array(
+                'start' => date('Y-m-d H:i:s', $event->dtstart_array[2]),
+                'end' => date('Y-m-d H:i:s', $event->dtend_array[2]),
+                'allday' => $this->isAllDay($event),
+                'recurrence_rules' => isset($event->rrule) ? $event->rrule : '',
+                'exception_rules' => isset($event->exrule) ? $event->exrule : '',
+                'recurrence_dates' => isset($event->rdate) ? $event->rdate : '',
+                'exception_dates' => isset($event->exdate) ? $event->rexdate : '',
+                'summary' => $event->summary,
+                'description' => $event->description,
+                'location' => $event->location,
+                'slug' => self::make_slug($event->summary),
+                'ical_feed_id' => $feed->id,
+                'ical_feed_url' => $feed->url,
+                'ical_uid' => $event->uid,
+                'ical_source_url' => $feed->url
+            );
 
-        if ($v->parse()) {
-            $v->sort();
-            $v->components = array_reverse($v->components);
+            $event = new Event($data);
+            
+            $matchingEventId = $this->getMatchingEventId(
+                $data['ical_uid'],
+                $data['ical_feed_url'],
+                $data['start']
+            );
 
-            $timezone = $v->getProperty('X-WR-TIMEZONE');
-            $timezone = isset($timezone[1]) ? $timezone[1] : get_option('timezone_string');
-
-            while ($e = $v->getComponent('vevent')) {
-                $start = $e->getProperty('dtstart', 1, TRUE);
-                $end = $e->getProperty('dtend', 1, TRUE);
-
-                if (empty($end)) {
-                    $end = $e->getProperty('duration', 1, TRUE, TRUE);
-                    if (empty($end)) {
-                        if (!isset($start['value']['hour'])) {
-                            $end = array(
-                                'year' => $start['value']['year'],
-                                'month' => $start['value']['month'],
-                                'day' => $start['value']['day'],
-                                'hour' => 23,
-                                'min' => 59,
-                                'sec' => 59,
-                                'tz' => $start['value']['tz']
-                            );
-                        } else {
-                            $end = $start;
-                        }
-                    }
-                }
-
-                $allday = !isset($start['value']['hour']);
-
-                $ms_allday = $e->getProperty('X-MICROSOFT-CDO-ALLDAYEVENT');
-                if (!empty($ms_allday) && $ms_allday[1] == 'TRUE') {
-                    $allday = TRUE;
-                }
-
-                $start = RRZE_Calendar_Functions::time_array_to_timestamp($start, $timezone);
-                $end = RRZE_Calendar_Functions::time_array_to_timestamp($end, $timezone);
-
-                if ($allday) {
-                    $date_diff = RRZE_Calendar_Functions::days_diff($start, $end);
-                    $offset = $date_diff > 1 ? ($date_diff - 1) * DAY_IN_SECONDS : 0;
-
-                    $start = RRZE_Calendar_Functions::gmt_to_local($start);
-                    $start = RRZE_Calendar_Functions::gmgetdate($start);
-                    $start = gmmktime(0, 0, 0, $start['mon'], $start['mday'], $start['year']);
-                    $start = RRZE_Calendar_Functions::local_to_gmt($start);
-
-                    $end = $start + $offset;
-                }
-
-                $rrule = $e->createRrule();
-                if ($rrule) {
-                    $rrule = explode(':', $rrule);
-                    $rrule = trim(end($rrule));
-                }
-
-                $array = $e->getProperty("EXRULE");
-                $exrule = [];
-
-                $array = $e->getProperty("RDATE");
-                $rdate = [];
-
-                $array = $e->getProperty("EXDATE");
-                $exdate = [];
-                if ($array) {
-                    foreach($array as $d) {
-                        $exdate[] = strtotime(sprintf('%s-%s-%s %s:%s:%s', $d['year'], $d['month'], $d['day'], $d['hour'], $d['min'], $d['sec']));
-                    }
-                }
-
-                $data = array(
-                    'start' => $start,
-                    'end' => $end,
-                    'allday' => $allday,
-                    'recurrence_rules' => $rrule,
-                    'exception_rules' => implode(',', $exrule),
-                    'recurrence_dates' => implode(',', $rdate),
-                    'exception_dates' => implode(',', $exdate),
-                    'summary' => stripslashes(str_replace('\n', '', $e->getProperty('summary'))),
-                    'description' => stripslashes(str_replace('\n', PHP_EOL, $e->getProperty('description'))),
-                    'location' => $e->getProperty('location'),
-                    'slug' => self::make_slug($e->getProperty('summary')),
-                    'ical_feed_id' => $feed->id,
-                    'ical_feed_url' => $feed->url,
-                    'ical_uid' => $e->getProperty('uid'),
-                    'ical_source_url' => $e->getProperty('url')
+            if (is_null($matchingEventId)) {
+                $row = $wpdb->insert(
+                    self::$db_events_table, 
+                    $data, 
+                    [
+                        '%s', 
+                        '%s', 
+                        '%d', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%d', 
+                        '%s', 
+                        '%s', 
+                        '%s'
+                    ]
                 );
 
-                $event = new RRZE_Calendar_Event($data);
-
-                $matching_event_id = $this->get_matching_event_id(
-                        $data['ical_uid'], $data['ical_feed_url'], $data['start'], !empty($data['recurrence_rules'])
-                );
-
-                if (is_null($matching_event_id)) {
-                    $row = $wpdb->insert(self::$db_events_table, $data, array('FROM_UNIXTIME(%d)', 'FROM_UNIXTIME(%d)', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s'));
-                    $event->id = $row !== FALSE ? $wpdb->insert_id : NULL;
-                } else {
-                    $event->id = $matching_event_id;
-                    $this->delete_event_cache($matching_event_id);
-                }
-
-                if (is_null($event->id)) {
-                    continue;
-                }
-
-                $this->cache_event($event);
-                $count++;
+                $event->id = $row !== FALSE ? $wpdb->insert_id : NULL;
             }
+            
+            if (is_null($event->id)) {
+                continue;
+            }
+
+            $count++;            
         }
 
         return $count;
+    }
+    
+    protected function isAllDay(&$event) {
+        if (strlen($event->dtstart) == 8 || (strpos($event->dtstart, 'T000000Z') !== false && strpos($event->dtend, 'T000000Z') !== false)) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getMatchingEventId($ical_uid, $ical_feed_url, $start)
+    {
+        global $wpdb;
+
+        $query = "SELECT id FROM " . self::$db_events_table . " WHERE ical_feed_url = %s
+            AND ical_uid = %s
+            AND start = FROM_UNIXTIME(%d)";
+
+        $args = [$ical_feed_url, $ical_uid, $start];
+
+        return $wpdb->get_var($wpdb->prepare($query, $args));
     }
 
     public static function make_slug($str) {
@@ -2428,29 +2359,17 @@ class RRZE_Calendar {
         return $slug;
     }
 
-    public static function get_events_between($start_time, $end_time, $filter) {
+    public static function getEventsBetween($start_time, $end_time, $filter) {
         global $wpdb;
-
-        $start_time = date('Y-m-d H:i:s', RRZE_Calendar_Functions::local_to_gmt($start_time));
-        $end_time = date('Y-m-d H:i:s', RRZE_Calendar_Functions::local_to_gmt($end_time));
 
         self::get_filter_sql($filter);
 
         $query = $wpdb->prepare(
-            "SELECT e.*, " .
-            "UNIX_TIMESTAMP(e.start) AS e_start, " .
-            "UNIX_TIMESTAMP(e.end) AS e_end, " .
-            "UNIX_TIMESTAMP(i.start) AS start, " .
-            "UNIX_TIMESTAMP(i.end) AS end, " .
-            "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
-            "e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates, " .
-            "e.summary, e.description, e.location, e.slug, " .
-            "e.ical_feed_id, e.ical_feed_url, e.ical_source_url, e.ical_uid " .
-            "FROM " . self::$db_events_table . " e " .
-            "INNER JOIN " . self::$db_events_cache_table . " i ON e.id = i.event_id " .
-            "WHERE i.start >= %s AND i.start < %s " .
+            "SELECT * " .
+            "FROM " . self::$db_events_table . " " .
+            "WHERE start >= %s AND start < %s " .
             $filter['filter_where'] .
-            "ORDER BY i.start ASC", array($start_time, $end_time));
+            "ORDER BY start ASC", [$start_time, $end_time]);
 
         $events = $wpdb->get_results($query, ARRAY_A);
 
@@ -2459,36 +2378,26 @@ class RRZE_Calendar {
             $event['tags'] = self::get_tags_for_feed($event['ical_feed_id'], 'objects');
             $event['feed'] = self::get_feed($event['ical_feed_id'], 'ARRAY_A');
 
-            $event = new RRZE_Calendar_Event($event);
+            $event = new Event($event);
         }
 
         return $events;
     }
 
-    public static function get_events_relative_to($time, $limit = 0, $filter = array()) {
+    public static function getEventsRelativeTo($date, $limit = 0, $filter = array()) {
         global $wpdb;
 
-        $time = date('Y-m-d 00:00:00', RRZE_Calendar_Functions::local_to_gmt($time));
         $limit = absint($limit);
 
         self::get_filter_sql($filter);
 
         $query = $wpdb->prepare(
-                "SELECT e.*, " .
-                "UNIX_TIMESTAMP(e.start) AS e_start, " .
-                "UNIX_TIMESTAMP(e.end) AS e_end, " .
-                "UNIX_TIMESTAMP(i.start) AS start, " .
-                "UNIX_TIMESTAMP(i.end) AS end, " .
-                "IF(e.allday, e.allday, i.end = DATE_ADD(i.start, INTERVAL 1 DAY)) AS allday, " .
-                "e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates, " .
-                "e.summary, e.description, e.location, e.slug, " .
-                "e.ical_feed_id, e.ical_feed_url, e.ical_source_url, e.ical_uid " .
-                "FROM " . self::$db_events_table . " e " .
-                "INNER JOIN " . self::$db_events_cache_table . " i ON e.id = i.event_id " .
-                "WHERE i.start >= %s " .
+                "SELECT * " .
+                "FROM " . self::$db_events_table . " " .
+                "WHERE start >= %s " .
                 $filter['filter_where'] .
-                "ORDER BY i.start ASC" .
-                ($limit ? " LIMIT $limit" : ""), array($time));
+                "ORDER BY start ASC" .
+                ($limit ? " LIMIT $limit" : ""), [$date]);
 
         $events = $wpdb->get_results($query, ARRAY_A);
 
@@ -2497,7 +2406,7 @@ class RRZE_Calendar {
             $event['tags'] = self::get_tags_for_feed($event['ical_feed_id'], 'objects');
             $event['feed'] = self::get_feed($event['ical_feed_id'], 'ARRAY_A');
 
-            $event = new RRZE_Calendar_Event($event);
+            $event = new Event($event);
         }
 
         return $events;
@@ -2515,11 +2424,11 @@ class RRZE_Calendar {
             if ($filter_ids && is_array($filter_ids)) {
                 switch ($filter_type) {
                     case 'feed_ids':
-                        $filter['filter_where'] .= $where_logic . " e.ical_feed_id IN (" . implode(',', $filter_ids) . ") ";
+                        $filter['filter_where'] .= $where_logic . " ical_feed_id IN (" . implode(',', $filter_ids) . ") ";
                         $where_logic = "OR ";
                         break;
                     case 'event_ids':
-                        $filter['filter_where'] .= $where_logic . " e.id IN (" . implode(',', $filter_ids) . ") ";
+                        $filter['filter_where'] .= $where_logic . " id IN (" . implode(',', $filter_ids) . ") ";
                         $where_logic = "OR ";
                         break;
                 }
@@ -2531,191 +2440,17 @@ class RRZE_Calendar {
         }
     }
 
-    private function get_exrule($dtstart, $exrule) {
-        require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-rules.php');
-        $rules = new RRZE_Calendar_Rules($exrule, $dtstart, array(), array(), TRUE);
-        return $rules->get_all_occurrences();
-    }
-
-    private function get_rule($recurrence_rules, $dtstart, $excluded = array()) {
-        require_once(plugin_dir_path(RRZE_Calendar::$plugin_file) . 'includes/calendar-rules.php');
-        return new RRZE_Calendar_Rules($recurrence_rules, $dtstart, $excluded);
-    }
-
-    private function cache_event(&$event) {
+    public function get_matching_events($filter = array()) {
         global $wpdb;
 
-        $dtstart = $event->start;
-        $dtend = $event->end;
-
-        $event->start = RRZE_Calendar_Functions::gmt_to_local($event->start) - date('Z', $event->start);
-        $event->end = RRZE_Calendar_Functions::gmt_to_local($event->end) - date('Z', $event->end);
-
-        $evs = array();
-        $e = array(
-            'event_id' => $event->id,
-            'start' => $event->start,
-            'end' => $event->end,
-        );
-
-        $duration = $event->get_duration();
-        $tif = time() + 315569260;
-
-        $start_date = new DateTime();
-        $start_date->setTimestamp($event->start);
-        $start_date->setTime(0, 0, 0);
-
-        $end_date = new DateTime();
-        $end_date->setTimestamp($event->end);
-        $end_date->setTime(0, 0, 0);
-
-        $diff = $start_date->diff($end_date);
-        $days_diff = $diff->days;
-
-        $days_diff = absint($days_diff) == 1 && $event->allday ? 0 : absint($days_diff);
-
-        if ($days_diff > 0 && !$event->recurrence_rules) {
-            for ($i = 0; $i <= $days_diff; $i++) {
-                switch($i) {
-                    case 0:
-                        $e['start'] = $event->start;
-                        $e['end'] = strtotime(date('Y-m-d', $start_date->getTimestamp())) + DAY_IN_SECONDS;
-                        break;
-                    case $days_diff:
-                        $e['start'] = $start_date->getTimestamp() + $i * DAY_IN_SECONDS;
-                        $e['end'] = $event->end;
-                        break;
-                    default:
-                        $e['start'] = $start_date->getTimestamp() + $i * DAY_IN_SECONDS;
-                        $e['end'] = $e['start'] + DAY_IN_SECONDS;
-                }
-
-                $evs[] = $e;
-            }
-        } elseif ($event->recurrence_rules) {
-            $count = 0;
-            $start = $dtstart;
-
-            $exception_dates = array();
-            if ($event->exception_dates) {
-                $dates = explode(',', $event->exception_dates);
-                $exception_dates = array_map(array('RRZE_Calendar_Functions', 'local_to_gmt'), $dates);
-            }
-
-            $rules = $this->get_rule($event->recurrence_rules, $start, $exception_dates);
-
-            if($start = $rules->first_occurrence() > 0) {
-                $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
-                $e['end'] = $e['start'] + $duration;
-
-                $evs[] = $e;
-            }
-
-            while (($next = $rules->next_occurrence($start)) > 0 && $count < 1000) {
-                $count++;
-                $start = $next;
-
-                if ($start > $tif) {
-                    break;
-                }
-
-                $e['start'] = RRZE_Calendar_Functions::gmt_to_local($start) - date('Z', $start);;
-                $e['end'] = $e['start'] + $duration;
-
-                $evs[] = $e;
-            }
-        } else {
-            $evs[] = $e;
-        }
-
-        $evs_unique = array();
-        foreach ($evs as $ev) {
-            $evs_unique[md5(serialize($ev))] = $ev;
-        }
-
-        foreach ($evs_unique as $e) {
-            $matching_event_id = $event->ical_uid ?
-                $this->get_matching_event_id(
-                    $event->ical_uid, $event->ical_feed_url, $start = RRZE_Calendar_Functions::local_to_gmt($e['start']) - date('Z', $e['start']), FALSE, $event->id
-                ) : NULL;
-
-            if (is_null($matching_event_id)) {
-                $start = getdate($e['start']);
-                $end = getdate($e['end']);
-
-                $e['ical_feed_id'] = $event->ical_feed_id;
-
-                $this->insert_event_in_cache($e);
-            }
-        }
-    }
-
-    public function get_matching_event_id($ical_uid, $ical_feed_url, $start, $has_recurrence = FALSE, $exclude_event_id = NULL) {
-        global $wpdb;
-
-        $query = "SELECT id FROM " . self::$db_events_table . " WHERE ical_feed_url = %s
-            AND ical_uid = %s
-            AND start = FROM_UNIXTIME(%d) " .
-            ($has_recurrence ? "AND NOT " : "AND ") .
-            "(recurrence_rules IS NULL OR recurrence_rules = '')";
-
-        $args = array($ical_feed_url, $ical_uid, $start);
-
-        if (!is_null($exclude_event_id)) {
-            $query .= " AND id <> %d";
-            $args[] = $exclude_event_id;
-        }
-
-        return $wpdb->get_var($wpdb->prepare($query, $args));
-    }
-
-    private function insert_event_in_cache($event) {
-        global $wpdb;
-
-        $event['start'] = RRZE_Calendar_Functions::local_to_gmt($event['start']) + date('Z', $event['start']);
-        $event['end'] = RRZE_Calendar_Functions::local_to_gmt($event['end']) + date('Z', $event['end']);
-
-        $wpdb->insert(self::$db_events_cache_table, $event, array('%d', 'FROM_UNIXTIME(%d)', 'FROM_UNIXTIME(%d)', '%d'));
-    }
-
-    private function delete_event_cache($event_id) {
-        global $wpdb;
-
-        $wpdb->delete(self::$db_events_cache_table, array('event_id' => $event_id), array('%d'));
-    }
-
-    public function get_matching_events($start = FALSE, $end = FALSE, $filter = array()) {
-        global $wpdb;
-
-        $start_where_sql = '';
-        $end_where_sql = '';
-        $args = array();
-
-        if ($start !== FALSE) {
-            $start_where_sql = " AND (e.start >= FROM_UNIXTIME(%d) OR e.recurrence_rules != '')";
-            $args[] = $start;
-        }
-
-        if ($end !== FALSE) {
-            $end_where_sql = " AND (e.end <= FROM_UNIXTIME(%d) OR e.recurrence_rules != '')";
-            $args[] = $end;
-        }
 
         self::get_filter_sql($filter);
 
-        $query = "SELECT e.*,
-            UNIX_TIMESTAMP(e.start) AS e_start, UNIX_TIMESTAMP(e.end) AS e_end,
-            UNIX_TIMESTAMP(e.start) as start, UNIX_TIMESTAMP(e.end) as end, e.allday,
-            e.recurrence_rules, e.exception_rules, e.recurrence_dates, e.exception_dates,
-            e.summary, e.description, e.location, e.slug,
-            e.ical_feed_id, e.ical_feed_url, e.ical_source_url, e.ical_uid " .
-            "FROM " . self::$db_events_table . " e " .
+        $query = "SELECT * " .
+            "FROM " . self::$db_events_table . " " .
             "WHERE 1 = 1 " .
-            $filter['filter_where'] .
-            $start_where_sql .
-            $end_where_sql;
+            $filter['filter_where'];
 
-        $query = !empty($args) ? $wpdb->prepare($query, $args) : $query;
         $events = $wpdb->get_results($query, ARRAY_A);
 
         foreach ($events as &$event) {
@@ -2724,21 +2459,10 @@ class RRZE_Calendar {
                 $event['tags'] = self::get_tags_for_feed($event['ical_feed_id'], 'objects');
                 $event['feed'] = self::get_feed($event['ical_feed_id'], 'ARRAY_A');
 
-                $event = new RRZE_Calendar_Event($event);
+                $event = new Event($event);
             } catch (Event_Not_Found $n) {
                 unset($event);
                 continue;
-            }
-
-            if (empty($event->recurrence_rules)) {
-                if ($start !== FALSE && $event->start < $start) {
-                    unset($event);
-                    continue;
-                }
-                if ($end !== FALSE && $ev->end < $end) {
-                    unset($event);
-                    continue;
-                }
             }
         }
 
@@ -2750,12 +2474,42 @@ class RRZE_Calendar {
         $action = self::get_param('action');
 
         if ($plugin == 'rrze-calendar' && $action == 'export') {
-            if (!defined('ICALCREATOR_VERSION')) {
-                require_once(plugin_dir_path(self::$plugin_file) . 'includes/iCalcreator/iCalcreator.php');
+            $feed_ids = !empty($_REQUEST['feed-ids']) ? $_REQUEST['feed-ids'] : false;
+            $event_ids = !empty($_REQUEST['event-ids']) ? $_REQUEST['event-ids'] : false;
+            $filter = array();
+
+            if ($feed_ids) {
+                $filter['feed_ids'] = explode(',', $feed_ids);
             }
-            require_once(plugin_dir_path(self::$plugin_file) . 'includes/calendar-export.php');
-            $event_explorer = RRZE_Calendar_Export::instance();
-            $event_explorer->export_events();
+
+            if ($event_ids) {
+                $filter['event_ids'] = explode(',', $event_ids);
+            }
+
+            $events = $this->get_matching_events($filter);
+
+            $export = new RRZE\Calendar\Export;
+
+            $export->createCalendar();
+
+            foreach ($events as $event) {
+                $data = new stdClass();
+                $data->uid = $event->ical_uid;
+                //$data->uid = uniqid(rand(0, getmypid()));
+                $data->start = $event->start;
+                $data->end = $event->end;
+                $data->summary = $event->summary;
+                $data->description = $event->description;
+                $data->location = $event->location;
+                $data->rrule = !empty($event->recurrence_rules) ? $event->recurrence_rules : '';
+                $data->exrule = !empty($event->exception_rules) ? $event->exception_rules : '';
+                $data->rdate = !empty($event->recurrence_dates) ? $event->recurrence_dates : '';
+                $data->exdate = !empty($event->exception_dates) ? $event->exception_dates : '';
+
+                $export->addVevent($data);
+            }
+
+            $export->output();
         }
     }
 
@@ -2948,13 +2702,11 @@ class RRZE_Calendar {
     }
 
     public static function rrules_human_readable($recurrence_rules) {
-        require_once(plugin_dir_path(self::$plugin_file) . 'includes/RRule/autoload.php');
-
         $default_opt = array(
                 'use_intl' => true,
-                'locale' => get_locale(),
+                'locale' => substr(get_locale(), 0, 2),
                 'date_formatter' => function($date) {return $date->format(__('d.m.Y', 'rrze-calendar'));},
-                'fallback' => 'en_US',
+                'fallback' => 'en',
                 'explicit_infinite' => true,
                 'include_start' => false
         );

@@ -69,8 +69,8 @@ get_header(); ?>
 					endif; ?>
                                         <li>                                           
                                             <div class="event-item" itemscope itemtype="http://schema.org/Event">
-						<meta itemprop="startDate" content="<?php echo date_i18n( "c", $event->start ); ?>">
-						<meta itemprop="endDate" content="<?php echo date_i18n( "c", $event->end ); ?>">
+						<meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">
+						<meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>">
                                                 <div class="event-date <?php echo $bgcolorclass; ?>" <?php echo $inline; ?>>
                                                     <span class="event-date-month"><?php echo $event->start_month; ?></span>
                                                     <span class="event-date-day"><?php echo $event->start_day; ?></span>
@@ -84,12 +84,12 @@ get_header(); ?>
                                                     <?php if ($event->allday && $event->multiday) : ?>
                                                         <?php $multiday[] = $event->endpoint_url; ?>
                                                         <div class="event-time">
-                                                            <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_e_start_date, $event->long_e_end_date)) ?>
+                                                            <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_start_date, $event->long_end_date)) ?>
                                                         </div>            
                                                     <?php elseif (!$event->allday && $event->multiday) : ?>
                                                         <?php $multiday[] = $event->endpoint_url; ?>
                                                         <div class="event-time">
-                                                            <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_e_start_date, $event->short_e_start_time, $event->long_e_end_date, $event->short_e_end_time)) ?>
+                                                            <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_start_date, $event->short_start_time, $event->long_end_date, $event->short_end_time)) ?>
                                                         </div>                        
                                                     <?php elseif (!$event->allday): ?>
                                                         <div class="event-time">

@@ -3,8 +3,6 @@
 /* Quit */
 defined('ABSPATH') || exit;
 
-$multiday = [];
-
 wp_enqueue_style('rrze-calendar-shortcode-events');
 ?>
 
@@ -18,9 +16,6 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                 if ($anzahl <= 0):
                     break;
                 endif;
-                if (in_array($event->id, $multiday)):
-                    continue;
-                endif;
                 if (!empty($start_date) && $event->start < $start_date) {
                     continue;
                 }
@@ -30,7 +25,7 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                 ?>
                 <div class="event-item">
                     <div class="event-title">
-                        <a href="<?php echo $event->endpoint_url; ?>"><?php echo esc_html($event->summary); ?></a>
+                        <a href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>"><?php echo esc_html($event->summary); ?></a>
                     </div>
                     <div class="event-title-date">
                         <?php echo $event->long_start_date ?>
@@ -42,14 +37,12 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                             </div>
                         <?php endif; ?>
                         <?php if ($event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
-                                <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_e_start_date, $event->long_e_end_date)) ?>
+                                <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $event->long_start_date, $event->long_end_date)) ?>
                             </div>
                         <?php elseif (!$event->allday && $event->multiday) : ?>
-                            <?php $multiday[] = $event->id; ?>
                             <div class="event-date">
-                                <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_e_start_date, $event->short_e_start_time, $event->long_e_end_date, $event->short_e_end_time)) ?>
+                                <?php echo esc_html(sprintf( __('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $event->long_start_date, $event->short_start_time, $event->long_end_date, $event->short_end_time)) ?>
                             </div>
                         <?php elseif (!$event->allday): ?>
                             <div class="event-date">
