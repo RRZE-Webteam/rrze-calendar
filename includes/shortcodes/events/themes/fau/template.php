@@ -13,10 +13,10 @@ defined('ABSPATH') || exit;
             if ($anzahl <= 0):
                 break;
             endif;
-            if (!empty($start_date) && $event->start < $start_date) {
+            if (!empty($start_date) && strtotime($event->start) < $start_date) {
                 continue;
             }
-            if (!empty($end_date) && $event->end > $end_date) {
+            if (!empty($end_date) && strtotime($event->end) > $end_date) {
                 continue;
             }
     	    $bgcolorclass = '';
