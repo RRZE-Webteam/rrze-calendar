@@ -1,5 +1,7 @@
 <?php
 
+use \RRZE\Calendar\Settings;
+
 class RRZE_Calendar_Tags_List_Table extends WP_List_Table {
 
     public $callback_args;
@@ -45,11 +47,11 @@ class RRZE_Calendar_Tags_List_Table extends WP_List_Table {
     }
 
     public function column_name($tag) {
-        $output = '<strong><a href="' . esc_url(RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag->term_id))) . '">' . esc_html($tag->name) . '</a></strong>';
+        $output = '<strong><a href="' . esc_url(Settings::optionsUrl(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag->term_id))) . '">' . esc_html($tag->name) . '</a></strong>';
 
         $actions = array();
-        $actions['edit'] = sprintf('<a href="%1$s">' . __('Bearbeiten', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag->term_id)));
-        $actions['delete'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', RRZE_Calendar::options_url(array('page' => 'rrze-calendar-tags', 'action' => 'delete', 'tag-id' => $tag->term_id)));
+        $actions['edit'] = sprintf('<a href="%1$s">' . __('Bearbeiten', 'rrze-calendar') . '</a>', Settings::optionsUrl(array('page' => 'rrze-calendar-tags', 'action' => 'edit', 'tag-id' => $tag->term_id)));
+        $actions['delete'] = sprintf('<a href="%1$s">' . __('Löschen', 'rrze-calendar') . '</a>', Settings::optionsUrl(array('page' => 'rrze-calendar-tags', 'action' => 'delete', 'tag-id' => $tag->term_id)));
         $output .= $this->row_actions($actions, FALSE);
 
         return $output;

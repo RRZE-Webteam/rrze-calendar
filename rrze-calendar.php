@@ -1,20 +1,20 @@
 <?php
 
 /*
-Plugin Name: RRZE Calendar
-Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
-Description: Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version: 1.11.0
-Author: RRZE-Webteam
-Author URI: https://blogs.fau.de/webworking/
-License: GNU General Public License v2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-GitHub Plugin URI: https://github.com/RRZE-Webteam/rrze-calendar
-GitHub Branch: master
-Text Domain: rrze-calendar
-Domain Path: /languages
+Plugin Name:     RRZE Calendar
+Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
+Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
+Version:         1.11.0
+Author:          RRZE Webteam
+Author URI:      https://blogs.fau.de/webworking/
+License:         GNU General Public License v2
+License URI:     http://www.gnu.org/licenses/gpl-2.0.html
+Domain Path:     /languages
+Text Domain:     rrze-calendar
 */
 
+use \RRZE\Calendar\Settings;
+use \RRZE\Calendar\Endpoint;
 use \RRZE\Calendar\Import;
 use \RRZE\Calendar\Event;
 use \RRZE\Calendar\Util;
@@ -140,7 +140,7 @@ class RRZE_Calendar {
         add_action('init', array($this, 'register_taxonomies'));
 
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), function($links) {
-            $settings_link = '<a href="' . self::options_url(array('page' => 'rrze-calendar-settings')) . '">' . esc_html(__('Einstellungen', 'rrze-calendar')) . '</a>';
+            $settings_link = '<a href="' . Settings::optionsUrl(array('page' => 'rrze-calendar-settings')) . '">' . esc_html(__('Einstellungen', 'rrze-calendar')) . '</a>';
             array_unshift($links, $settings_link);
             return $links;
         });
@@ -620,10 +620,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$feed_id = $this->validate_new_feed()) {
-                                wp_redirect(self::options_url(array('action' => 'new')));
+                                wp_redirect(Settings::optionsUrl(array('action' => 'new')));
                             } else {
                                 $this->add_admin_notice(__('Der Feed wurde hinzugefügt.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
+                                wp_redirect(Settings::optionsUrl(array('action' => 'edit', 'feed-id' => $feed_id)));
                             }
 
                             exit();
@@ -645,10 +645,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$this->validate_edit_feed($feed_id, $feed)) {
-                                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
+                                wp_redirect(Settings::optionsUrl(array('action' => 'edit', 'feed-id' => $feed_id)));
                             } else {
                                 $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)));
+                                wp_redirect(Settings::optionsUrl(array('action' => 'edit', 'feed-id' => $feed_id)));
                             }
 
                             exit();
@@ -692,10 +692,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$category_id = $this->validate_add_category()) {
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'add')));
                             } else {
                                 $this->add_admin_notice(__('Die Kategorie wurde hinzugefügt.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
                             }
 
                             exit();
@@ -717,10 +717,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$this->validate_edit_category($category_id, $category)) {
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
                             } else {
                                 $this->add_admin_notice(__('Die Kategorie wurde aktualisiert.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id)));
                             }
 
                             exit();
@@ -755,10 +755,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$tag_id = $this->validate_add_tag()) {
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'add')));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'add')));
                             } else {
                                 $this->add_admin_notice(__('Das Schlagwort wurde hinzugefügt.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
                             }
 
                             exit();
@@ -780,10 +780,10 @@ class RRZE_Calendar {
                             }
 
                             if (!$this->validate_edit_tag($tag_id, $tag)) {
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
                             } else {
                                 $this->add_admin_notice(__('Das Schlagwort wurde aktualisiert.', 'rrze-calendar'));
-                                wp_redirect(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
+                                wp_redirect(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id)));
                             }
 
                             exit();
@@ -817,7 +817,7 @@ class RRZE_Calendar {
                         $this->add_admin_notice(__('Einstellungen gespeichert.', 'rrze-calendar'));
                     }
 
-                    wp_redirect(self::options_url(array('page' => $page)));
+                    wp_redirect(Settings::optionsUrl(array('page' => $page)));
                     exit();
                 }
                 break;
@@ -833,7 +833,7 @@ class RRZE_Calendar {
             <h2>
                 <?php echo esc_html(__('Kalender &rsaquo; Feeds', 'rrze-calendar')); ?>
             <?php if (empty($action)): ?>
-                    <a href="<?php echo self::options_url(array('action' => 'new')); ?>" class="add-new-h2"><?php _e('Neuer Feed hinzufügen', 'rrze-calendar'); ?></a>
+                    <a href="<?php echo Settings::optionsUrl(array('action' => 'new')); ?>" class="add-new-h2"><?php _e('Neuer Feed hinzufügen', 'rrze-calendar'); ?></a>
             <?php endif; ?>
             </h2>
             <?php
@@ -987,7 +987,7 @@ class RRZE_Calendar {
     private function feed_new() {
         ?>
         <h2><?php echo esc_html(__('Neuer Feed hinzufügen', 'rrze-calendar')); ?></h2>
-        <form action="<?php echo self::options_url(array('action' => 'new')); ?>" method="post">
+        <form action="<?php echo Settings::optionsUrl(array('action' => 'new')); ?>" method="post">
             <?php
             settings_fields('rrze-calendar-feed-new');
             do_settings_sections('rrze-calendar-feed-new');
@@ -1006,7 +1006,7 @@ class RRZE_Calendar {
         }
         ?>
         <h2><?php echo esc_html(__('Feed bearbeiten', 'rrze-calendar')); ?></h2>
-        <form action="<?php echo self::options_url(array('action' => 'edit', 'feed-id' => $feed_id)) ?>" method="post">
+        <form action="<?php echo Settings::optionsUrl(array('action' => 'edit', 'feed-id' => $feed_id)) ?>" method="post">
             <?php
             settings_fields('rrze-calendar-feed-edit');
             do_settings_sections('rrze-calendar-feed-edit');
@@ -1034,7 +1034,7 @@ class RRZE_Calendar {
 
         $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
 
-        wp_redirect(self::options_url());
+        wp_redirect(Settings::optionsUrl());
         exit();
     }
 
@@ -1079,7 +1079,7 @@ class RRZE_Calendar {
 
         $this->add_admin_notice(__('Der Feed wurde gelöscht.', 'rrze-calendar'));
 
-        wp_redirect(self::options_url());
+        wp_redirect(Settings::optionsUrl());
         exit();
     }
 
@@ -1130,7 +1130,7 @@ class RRZE_Calendar {
             $this->add_admin_notice(__('Der Feed wurde deaktiviert.'));
         }
 
-        wp_redirect(self::options_url());
+        wp_redirect(Settings::optionsUrl());
         exit();
     }
 
@@ -1168,7 +1168,7 @@ class RRZE_Calendar {
                     <h2>
                         <?php _e('Neue Kategorie hinzufügen', 'rrze-calendar'); ?></a>
                     </h2>
-                    <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addcategory" name="addcategory">
+                    <form class="add:the-list:" action="<?php echo esc_url(Settings::optionsUrl(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addcategory" name="addcategory">
                         <input type="hidden" name="option_page" value="rrze-calendar-categories-add">
         <?php wp_nonce_field('rrze-calendar-categories-add-options'); ?>
                         <div class="form-field form-required">
@@ -1207,7 +1207,7 @@ class RRZE_Calendar {
         $color = get_term_meta($category->term_id, 'color', TRUE);
         $feeds = self::get_feeds();
         ?>
-        <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id))); ?>">
+        <form method="post" action="<?php echo esc_url(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'category-id' => $category_id))); ?>">
             <input type="hidden" name="option_page" value="rrze-calendar-categories-edit">
         <?php wp_nonce_field('rrze-calendar-categories-edit-options'); ?>
             <table class="form-table">
@@ -1252,7 +1252,7 @@ class RRZE_Calendar {
                     <h2>
                         <?php _e('Neues Schlagwort erstellen', 'rrze-calendar'); ?></a>
                     </h2>
-                    <form class="add:the-list:" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addtag" name="addtag">
+                    <form class="add:the-list:" action="<?php echo esc_url(Settings::optionsUrl(array('page' => $page, 'action' => 'add'))); ?>" method="post" id="addtag" name="addtag">
                         <input type="hidden" name="option_page" value="rrze-calendar-tags-add">
         <?php wp_nonce_field('rrze-calendar-tags-add-options'); ?>
                         <div class="form-field form-required">
@@ -1287,7 +1287,7 @@ class RRZE_Calendar {
         $color = get_term_meta($tag->term_id, 'color', TRUE);
         $feeds = self::get_feeds();
         ?>
-        <form method="post" action="<?php echo esc_url(self::options_url(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id))); ?>">
+        <form method="post" action="<?php echo esc_url(Settings::optionsUrl(array('page' => $page, 'action' => 'edit', 'tag-id' => $tag_id))); ?>">
             <input type="hidden" name="option_page" value="rrze-calendar-tags-edit">
         <?php wp_nonce_field('rrze-calendar-tags-edit-options'); ?>
             <div id="col-right">
@@ -1660,7 +1660,7 @@ class RRZE_Calendar {
 
         $this->add_admin_notice(__('Die Kategorie wurde gelöscht.', 'rrze-calendar'));
 
-        wp_redirect(self::options_url($args));
+        wp_redirect(Settings::optionsUrl($args));
         exit();
     }
 
@@ -1699,7 +1699,7 @@ class RRZE_Calendar {
 
         $this->add_admin_notice(__('Das Schlagwort wurde gelöscht.', 'rrze-calendar'));
 
-        wp_redirect(self::options_url($args));
+        wp_redirect(Settings::optionsUrl($args));
         exit();
     }
 
@@ -1758,31 +1758,6 @@ class RRZE_Calendar {
         $status = !empty($status) ? $status : __('FEHLER', 'rrze-calendar');
 
         $this->response->respond(array('message' => $message), $error, $status);
-    }
-
-    public static function options_url($atts = array()) {
-        $atts = array_merge(
-            array(
-                'page' => 'rrze-calendar'
-            ), $atts
-        );
-
-        if (isset($atts['action'])) {
-            switch ($atts['action']) {
-                case 'update':
-                case 'activate':
-                case 'deactivate':
-                case 'delete':
-                case 'delete-category':
-                case 'delete-tag':
-                    $atts['_wpnonce'] = wp_create_nonce($atts['action']);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return add_query_arg($atts, get_admin_url(NULL, 'admin.php'));
     }
 
     public static function endpoint_url($slug = '') {
@@ -2006,7 +1981,7 @@ class RRZE_Calendar {
 
         if ($this->delete_category($category_id)) {
             $this->add_admin_notice(__('Die Kategorie wurde gelöscht.', 'rrze-calendar'));
-            wp_redirect(self::options_url(array('page' => 'rrze-calendar-categories')));
+            wp_redirect(Settings::optionsUrl(array('page' => 'rrze-calendar-categories')));
             exit();
         }
     }
@@ -2022,7 +1997,7 @@ class RRZE_Calendar {
 
         if ($this->delete_tag($tag_id)) {
             $this->add_admin_notice(__('Das Schlagwort wurde gelöscht.', 'rrze-calendar'));
-            wp_redirect(self::options_url(array('page' => 'rrze-calendar-tags')));
+            wp_redirect(Settings::optionsUrl(array('page' => 'rrze-calendar-tags')));
             exit();
         }
     }
@@ -2398,7 +2373,7 @@ class RRZE_Calendar {
                 $filter['filter_where'] .
                 "ORDER BY start ASC" .
                 ($limit ? " LIMIT $limit" : ""), [$date]);
-
+        
         $events = $wpdb->get_results($query, ARRAY_A);
 
         foreach ($events as &$event) {
