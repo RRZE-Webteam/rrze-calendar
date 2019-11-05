@@ -36,8 +36,8 @@ class Events_Shortcode
             $anzahl = 10;
         }
 
-        $start_date = strtotime(trim($atts['start'])) !== false ? strtotime('midnight', strtotime(trim($atts['start']))) : '';
-        $end_date = strtotime(trim($atts['end'])) !== false ? strtotime('tomorrow', strtotime('midnight', strtotime(trim($atts['end'])))) - 1 : '';
+        $start_date = strtotime(trim($atts['start'])) !== false ? strtotime(trim($atts['start'])) : '';
+        $end_date = strtotime(trim($atts['end'])) !== false ? strtotime(trim($atts['end'])) : '';
 
         $taxonomy_empty = false;
         $feed_ids = array();

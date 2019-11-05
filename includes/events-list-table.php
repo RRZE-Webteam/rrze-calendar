@@ -1,5 +1,6 @@
 <?php
 
+use \RRZE\Calendar\Settings;
 use \RRZE\Calendar\Util;
 
 class Events_List_Table extends WP_List_Table {
@@ -21,7 +22,7 @@ class Events_List_Table extends WP_List_Table {
     public function column_default($item, $column_name) {
         switch ($column_name) {
             case 'feed_title':
-                $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', esc_attr(RRZE_Calendar::options_url(array('action' => 'edit', 'feed-id' => $item['feed_id']))), $item[$column_name]) : '';
+                $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', esc_attr(Settings::optionsUrl(array('action' => 'edit', 'feed-id' => $item['feed_id']))), $item[$column_name]) : '';
                 break;                           
             case 'summary':
                 $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', esc_attr(RRZE_Calendar::endpoint_url($item['slug'])), $item[$column_name]) : '';

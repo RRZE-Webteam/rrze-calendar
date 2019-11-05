@@ -1,6 +1,6 @@
 <?php
 
-namespace FAU\Calendar;
+namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
@@ -11,21 +11,21 @@ class DB
      *
      * @var string
      */
-    const FEEDS_TABLE_NAME = 'fau_calendar_feeds';
+    const FEEDS_TABLE_NAME = 'rrze_calendar_feeds';
 
     /**
      * Events table name.
      *
      * @var string
      */
-    const EVENTS_TABLE_NAME = 'fau_calendar_events';
+    const EVENTS_TABLE_NAME = 'rrze_calendar_events';
 
     /**
      * Events cache table name.
      *
      * @var string
      */
-    const EVENTS_CACHE_TABLE_NAME = 'fau_calendar_events_cache';
+    const EVENTS_CACHE_TABLE_NAME = 'rrze_calendar_events_cache';
 
     /**
      * Create db tables.
