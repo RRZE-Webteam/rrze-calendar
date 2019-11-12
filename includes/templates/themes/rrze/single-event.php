@@ -78,7 +78,12 @@ get_header(); ?>
                 <?php endif; ?>
                 <?php if ($event->description) : ?>
                     <p>
-                        <?php echo make_clickable(nl2br($event->description)); ?>
+                        <?php 
+                        $content = make_clickable(nl2br(htmlspecialchars_decode($event->description)));
+                        $content = apply_filters('the_content', $content);
+                        $content = str_replace(']]>', ']]&gt;', $content);
+                        echo $content;
+                        ?>
                     </p>
                 <?php endif; ?>
             </div>

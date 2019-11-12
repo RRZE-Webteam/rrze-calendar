@@ -101,11 +101,12 @@ get_header(); ?>
 				</div>
 			    </div>
 			    <div>
-				<?php			    
-				$content =  make_clickable(nl2br($event->description));; 
-				$content = apply_filters( 'the_content', $content );
-				echo $content;			    
-				?>
+				<?php 
+                $content = make_clickable(nl2br(htmlspecialchars_decode($event->description)));
+                $content = apply_filters('the_content', $content);
+                $content = str_replace(']]>', ']]&gt;', $content);
+                echo $content;
+                ?>
 			    </div>                        
 			    <div class="events-more-links">
 				<a class="events-more" href="<?php echo $event->subscribe_url; ?>"><?php _e('Abonnement', 'rrze-calendar'); ?></a>

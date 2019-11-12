@@ -54,7 +54,12 @@ wp_enqueue_style('rrze-calendar');
                 <?php endif; ?>
                 <?php if ($event->description) : ?>
                     <div class="event-summary">
-                        <?php echo make_clickable(nl2br($event->description)); ?>
+                        <?php 
+                        $content = make_clickable(nl2br(htmlspecialchars_decode($event->description)));
+                        $content = apply_filters('the_content', $content);
+                        $content = str_replace(']]>', ']]&gt;', $content);
+                        echo $content;
+                        ?>
                     </div>
                 <?php endif; ?>
             </div>
