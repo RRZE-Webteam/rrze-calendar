@@ -4,6 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
+use RRZE_Calendar;
 use \RRZE\Calendar\Util;
 use \DateTime;
 
@@ -54,8 +55,8 @@ class Event {
         switch ($name) {
             case 'uid':
                 return $this->ical_feed_id . '@' . bloginfo('url');
-            //case 'endpoint_url':
-                //return RRZE_Calendar::endpoint_url($this->slug);
+            case 'endpoint_url':
+                return RRZE_Calendar::endpoint_url($this->slug);
             case 'subscribe_url':
                 return Util::webCalUrl(['event-ids' => $this->id]);
             case "multiday":
@@ -89,6 +90,8 @@ class Event {
             case 'start_day':
             case 'start_day_html':
                 return Util::getDayDate(strtotime($this->start));
+            default:
+                return '';
         }
     }
 
