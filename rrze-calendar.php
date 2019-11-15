@@ -2226,8 +2226,9 @@ class RRZE_Calendar {
 
         $import = new Import;
         $events = $import->importEvents($feed->url, false);
-
-        $count = 0;
+        if (empty($events)) {
+            return;
+        }
 
         foreach ($events as $event) {
             $data = array(
@@ -2285,11 +2286,9 @@ class RRZE_Calendar {
             if (is_null($event->id)) {
                 continue;
             }
-
-            $count++;            
+          
         }
 
-        return $count;
     }
     
     protected function isAllDay(&$event) {
