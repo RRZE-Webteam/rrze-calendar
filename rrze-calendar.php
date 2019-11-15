@@ -2237,7 +2237,7 @@ class RRZE_Calendar {
                 'recurrence_rules' => isset($event->rrule) ? $event->rrule : '',
                 'exception_rules' => isset($event->exrule) ? $event->exrule : '',
                 'recurrence_dates' => isset($event->rdate) ? $event->rdate : '',
-                'exception_dates' => isset($event->exdate) ? $event->rexdate : '',
+                'exception_dates' => isset($event->exdate) ? $event->exdate : '',
                 'summary' => $event->summary,
                 'description' => $event->description,
                 'location' => $event->location,
