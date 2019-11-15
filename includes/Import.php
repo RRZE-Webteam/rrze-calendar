@@ -88,16 +88,17 @@ class Import
      */
     protected function getRemoteContent($icalUrl)
     {
+        global $wp_version;
+        
         $response = null;
 
-        $request_args = array(
+        $args = array(
             'timeout'     => static::TIMEOUT_IN_SECONDS,
             'sslverify'   => false,
-            'method'      => 'GET',
-            'user-agent'  => 'WordPress/' . RRZE_WP_VERSION . '; ' . home_url(),
+            'method'      => 'GET'
         );
 
-        $response = wp_remote_get($icalUrl, $request_args);
+        $response = wp_remote_get($icalUrl, $args);
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) != 200) {
             // Unable to retrieve content from the provided URL.
