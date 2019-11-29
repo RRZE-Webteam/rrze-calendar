@@ -35,14 +35,12 @@ class Events_Shortcode
         if ($anzahl < 1) {
             $anzahl = 10;
         }
-        
-        $startDateAtt = trim($atts['start']);
-        $strToTime = strtotime($startDateAtt, current_time('timestamp'));
-        $startDate = $strToTime != false ? date('Y-m-d 00:00:00', $strToTime) : date('Y-m-d 00:00:00', time());
+
+        $startDateAtt = trim($atts['start']);                        
+        $startDate = $startDateAtt ? date('Y-m-d H:i:s', strtotime(get_gmt_from_date($startDateAtt))) : date('Y-m-d 00:00:00', time());
         
         $endDateAtt = trim($atts['end']);
-        $strToTime = strtotime($endDateAtt, current_time('timestamp'));
-        $endDate = $strToTime !== false ?  date('Y-m-d 00:00:00', $strToTime) : '';
+        $endDate = $endDateAtt ? date('Y-m-d H:i:s', strtotime(get_gmt_from_date($endDateAtt))) : '';
         
         $taxonomy_empty = false;
         $feed_ids = array();
