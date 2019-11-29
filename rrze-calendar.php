@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version:         1.11.5
+Version:         1.11.6
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -29,7 +29,7 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.11.5';
+    const version = '1.11.6';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -2358,20 +2358,23 @@ class RRZE_Calendar {
         return $events;
     }
 
-    public static function getEventsRelativeTo($date, $limit = 0, $filter = array()) {
+    public static function getEventsRelativeTo($start, $end = '', $limit = 0, $filter = []) {
         global $wpdb;
 
         $limit = absint($limit);
 
         self::get_filter_sql($filter);
-
+        
+        $dateStr = $end ? "WHERE start >= %s AND end <= %s " : "WHERE start >= %s ";
+        $dateAry = $end ? [$start, $end] : [$start];
+        
         $query = $wpdb->prepare(
-                "SELECT * " .
-                "FROM " . self::$db_events_table . " " .
-                "WHERE start >= %s " .
-                $filter['filter_where'] .
-                "ORDER BY start ASC" .
-                ($limit ? " LIMIT $limit" : ""), [$date]);
+            "SELECT * " .
+            "FROM " . self::$db_events_table . " " .
+            $dateStr .
+            $filter['filter_where'] .
+            "ORDER BY start ASC" .
+            ($limit ? " LIMIT $limit" : ""), $dateAry);
         
         $events = $wpdb->get_results($query, ARRAY_A);
 

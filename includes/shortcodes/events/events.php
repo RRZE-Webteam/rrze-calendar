@@ -35,10 +35,15 @@ class Events_Shortcode
         if ($anzahl < 1) {
             $anzahl = 10;
         }
-
-        $start_date = strtotime(trim($atts['start'])) !== false ? strtotime(trim($atts['start'])) : '';
-        $end_date = strtotime(trim($atts['end'])) !== false ? strtotime(trim($atts['end'])) : '';
-
+        
+        $startDateAtt = trim($atts['start']);
+        $strToTime = strtotime($startDateAtt, current_time('timestamp'));
+        $startDate = $strToTime != false ? date('Y-m-d 00:00:00', $strToTime) : date('Y-m-d 00:00:00', time());
+        
+        $endDateAtt = trim($atts['end']);
+        $strToTime = strtotime($endDateAtt, current_time('timestamp'));
+        $endDate = $strToTime !== false ?  date('Y-m-d 00:00:00', $strToTime) : '';
+        
         $taxonomy_empty = false;
         $feed_ids = array();
 
@@ -86,8 +91,7 @@ class Events_Shortcode
         $events_data = array();
 
         if ($feed_ids or (!$feed_ids && !$taxonomy_empty)) {
-            $today = date('Y-m-d 00:00:00', time());
-            $events_result = RRZE_Calendar::getEventsRelativeTo($today, 0, $filter);
+            $events_result = RRZE_Calendar::getEventsRelativeTo($startDate, $endDate, 0, $filter);
             $events_data = Util::getCalendarDates($events_result);
         }
 
