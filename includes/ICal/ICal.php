@@ -612,8 +612,10 @@ class ICal
                 if (!$this->disableCharacterReplacement) {
                     $line = $this->cleanData($line);
                 }
-
-                $add = $this->keyValueFromString($line);
+                
+                if (($add = $this->keyValueFromString($line)) === false) {
+                    continue;
+                }
 
                 $keyword = $add[0];
                 $values  = $add[1]; // May be an array containing multiple values
