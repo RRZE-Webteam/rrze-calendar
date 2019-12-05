@@ -1671,7 +1671,7 @@ class ICal
 
         if (!empty($events)) {
             foreach ($events as $key => $anEvent) {
-                if (!$this->isValidDate($anEvent['DTSTART'])) {
+                if (!isset($anEvent['DTSTART']) || !$this->isValidDate($anEvent['DTSTART'])) {
                     unset($events[$key]);
                     $this->eventCount--;
 

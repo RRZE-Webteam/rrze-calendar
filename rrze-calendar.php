@@ -2233,7 +2233,7 @@ class RRZE_Calendar {
         foreach ($events as $event) {
             $data = array(
                 'start' => date('Y-m-d H:i:s', $event->dtstart_array[2]),
-                'end' => date('Y-m-d H:i:s', $event->dtend_array[2]),
+                'end' => date('Y-m-d H:i:s', isset($event->dtend_array[2]) ? $event->dtend_array[2] : $event->dtstart_array[2]),
                 'allday' => $this->isAllDay($event),
                 'recurrence_rules' => isset($event->rrule) ? $event->rrule : '',
                 'exception_rules' => isset($event->exrule) ? $event->exrule : '',
