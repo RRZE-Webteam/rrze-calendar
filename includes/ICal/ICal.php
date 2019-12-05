@@ -7,7 +7,7 @@
  *
  * @author  Jonathan Goode <https://github.com/u01jmg3>
  * @license https://opensource.org/licenses/mit-license.php MIT License
- * @version 2.1.15
+ * @version 2.1.16
  */
 
 namespace ICal;
@@ -612,8 +612,10 @@ class ICal
                 if (!$this->disableCharacterReplacement) {
                     $line = $this->cleanData($line);
                 }
-
-                $add = $this->keyValueFromString($line);
+                
+                if (($add = $this->keyValueFromString($line)) === false) {
+                    continue;
+                }
 
                 $keyword = $add[0];
                 $values  = $add[1]; // May be an array containing multiple values
@@ -1227,8 +1229,9 @@ class ICal
         }
 
         $allEventRecurrences = array();
+        $eventKeysToRemove = array();
 
-        foreach ($events as $anEvent) {
+        foreach ($events as $key => $anEvent) {
             if (!isset($anEvent['RRULE']) || $anEvent['RRULE'] === '') {
                 continue;
             }
@@ -1278,10 +1281,22 @@ class ICal
             // Compute EXDATEs
             $exdates = $this->parseExdates($anEvent);
 
+            // Determine if the initial date is also an EXDATE
+            $initialDateIsExdate = array_reduce($exdates, function ($carry, $exdate) use ($initialEventDate) {
+                return $carry || $exdate->getTimestamp() == $initialEventDate->getTimestamp();
+            }, false);
+
+            if ($initialDateIsExdate) {
+                $eventKeysToRemove[] = $key;
+            }
+
             /**
              * Determine at what point we should stop calculating recurrences
              * by looking at the UNTIL or COUNT rrule stanza, or, if neither
              * if set, using a fallback.
+             *
+             * If the initial date is also an EXDATE, it shouldn't be included
+             * in the count.
              *
              * Syntax:
              *   UNTIL={enddate}
@@ -1290,7 +1305,7 @@ class ICal
              * Where:
              *   enddate = <icalDate> || <icalDateTime>
              */
-            $count      = 1;
+            $count      = (int) !$initialDateIsExdate;
             $countLimit = (isset($rrules['COUNT'])) ? intval($rrules['COUNT']) : 0;
             $until      = date_create()->modify("{$this->defaultSpan} years")->setTime(23, 59, 59)->getTimestamp();
 
@@ -1528,6 +1543,13 @@ class ICal
             $allEventRecurrences = array_merge($allEventRecurrences, $eventRecurrences);
         }
 
+        // Nullify the initial events that are also EXDATEs
+        if (!empty($eventKeysToRemove)) {
+            foreach ($eventKeysToRemove as $eventKeyToRemove) {
+                $events[$eventKeyToRemove] = null;
+            }
+        }
+
         $events = array_merge($events, $allEventRecurrences);
 
         $this->cal['VEVENT'] = $events;
@@ -1649,7 +1671,7 @@ class ICal
 
         if (!empty($events)) {
             foreach ($events as $key => $anEvent) {
-                if (!$this->isValidDate($anEvent['DTSTART'])) {
+                if (!isset($anEvent['DTSTART']) || !$this->isValidDate($anEvent['DTSTART'])) {
                     unset($events[$key]);
                     $this->eventCount--;
 

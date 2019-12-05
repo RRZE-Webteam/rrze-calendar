@@ -21,6 +21,7 @@ class RRuleTest extends TestCase
 			array(array('FOOBAR' => 'DAILY')),
 
 			array(array('FREQ' => 'foobar')),
+			'Invalid integer frequency' => [['FREQ' => 42]],
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => -1)),
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => 'foobar')),
@@ -70,6 +71,8 @@ class RRuleTest extends TestCase
 
 			array(array('FREQ' => 'YEARLY', 'BYWEEKNO' => 0)),
 			array(array('FREQ' => 'YEARLY', 'BYWEEKNO' => 1.5)),
+			// The BYWEEKNO rule part MUST NOT be used when the FREQ rule part is set to anything other than YEARLY.
+			'BYWEEKNO with FREQ not yearly' => [['FREQ' => 'DAILY', 'BYWEEKNO' => 1]],
 
 			array(array('FREQ' => 'MONTHLY', 'BYHOUR' => -1)),
 			array(array('FREQ' => 'MONTHLY', 'BYHOUR' => 1.5)),
@@ -81,7 +84,11 @@ class RRuleTest extends TestCase
 
 			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => -1)),
 			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 1.5)),
-			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 61))
+			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 61)),
+
+			'Invalid WKST' => [['FREQ' => 'DAILY', 'WKST' => 'XX']],
+
+			'Invalid DTSTART (invalid date)' => [['FREQ' => 'DAILY', 'DTSTART' => new stdClass()]]
 		);
 	}
 
@@ -151,14 +158,26 @@ class RRuleTest extends TestCase
 				date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
 			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH'), 'BYMONTH' => array(1,3)), array(
 				date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(
+			'byyearday positive' => array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(
 				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(
+			'byyearday negative' => array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(
 				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+			'byyearday positive + bymonth' => array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
 				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+			'byyearday negative + bymonth' => array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
 				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
+			'byyearday, 29 February' => [
+				['BYYEARDAY' => '60'],
+				[date_create('1998-03-01'), date_create('1999-03-01'), date_create('2000-02-29')]
+			],
+			'byyearday, 366th day' => [
+				['BYYEARDAY' => '366'],
+				[date_create('2000-12-31'), date_create('2004-12-31'), date_create('2008-12-31')]
+			],
+			'byyearday, -366th day' => [
+				['BYYEARDAY' => '-366'],
+				[date_create('2000-01-01'), date_create('2004-01-01'), date_create('2008-01-01')]
+			],
 			array(array('BYWEEKNO' => 20),array(
 				date_create('1998-05-11'),date_create('1998-05-12'),date_create('1998-05-13'))),
 			// That's a nice one. The first days of week number one may be in the last year.
@@ -244,8 +263,12 @@ class RRuleTest extends TestCase
 				date_create('1997-09-02'),date_create('1997-10-02'),date_create('1997-11-02'))),
 			array(array('INTERVAL'=>2),array(
 				date_create('1997-09-02'),date_create('1997-11-02'),date_create('1998-01-02'))),
-			array(array('INTERVAL'=>18),array(
+			'1.5 years' => array(array('INTERVAL'=>18),array(
 				date_create('1997-09-02'),date_create('1999-03-02'),date_create('2000-09-02'))),
+			'exactly 2 years in December' => [
+				['INTERVAL'=> 24, 'DTSTART' => '1997-12-01'],
+				[date_create('1997-12-01'),date_create('1999-12-01'),date_create('2001-12-01')]
+			],
 			array(array('BYMONTH' => '1,3'),array(
 				date_create('1998-01-02'),date_create('1998-03-02'),date_create('1999-01-02'))),
 			array(array('BYMONTHDAY' => '1,3'),array(
@@ -551,6 +574,18 @@ class RRuleTest extends TestCase
 				date_create('1998-04-10 01:00'),
 				date_create('1998-04-10 02:00'),
 				date_create('1998-04-10 03:00'))),
+			'byyearday, 29 February' => [
+				['BYYEARDAY' => '60'],
+				[date_create('1998-03-01 00:00'), date_create('1998-03-01 01:00'), date_create('1998-03-01 02:00')]
+			],
+			'byyearday, 366th day' => [
+				['BYYEARDAY' => '366'],
+				[date_create('2000-12-31 00:00'), date_create('2000-12-31 01:00'), date_create('2000-12-31 02:00')]
+			],
+			'byyearday, -366th day' => [
+				['BYYEARDAY' => '-366'],
+				[date_create('2000-01-01 00:00'), date_create('2000-01-01 01:00'), date_create('2000-01-01 02:00')]
+			],
 			array(array('byhour'=>'6, 18'), array(
 				date_create('1997-09-02 18:00'),
 				date_create('1997-09-03 06:00'),
@@ -1704,13 +1739,25 @@ class RRuleTest extends TestCase
 				array('FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02', 'INTERVAL' => 2),
 				array('2000-09-02', '2002-09-02')
 			),
+			'byyearday' => [
+				['FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02', 'byyearday' => 1],
+				['1999-09-02']
+			],
+			'byweekno' => [
+				['FREQ' => 'YEARLY', 'DTSTART' => '2015-07-01', 'BYWEEKNO' => 1],
+				['2015-07-01']
+			],
 			array(
 				array('FREQ' => 'MONTHLY', 'DTSTART' => '1999-09-02', 'INTERVAL' => 2),
 				array('1999-10-02', '1999-12-02')
 			),
+			'bymonth' => [
+				['FREQ' => 'MONTHLY', 'DTSTART' => '1999-09-02', 'bymonth' => 1],
+				['1999-10-02', '1999-12-02']
+			],
 			array(
 				array('FREQ' => 'WEEKLY', 'DTSTART' => '2015-07-01', 'INTERVAL' => 2),
-				array('2015-07-02', '2015-07-07 23:59:59', '2015-07-08 00:00:01')
+				array('2015-07-02', '2015-07-07 23:59:59', '2015-07-08 00:00:01', '2015-07-08')
 			),
 			array(
 				array('FREQ' => 'DAILY', 'DTSTART' => '2015-07-01', 'INTERVAL' => 2),
@@ -1734,6 +1781,7 @@ class RRuleTest extends TestCase
 			),
 		);
 	}
+
 	/**
 	 * @dataProvider notOccurrences
 	 */
@@ -1743,6 +1791,28 @@ class RRuleTest extends TestCase
 		foreach ($not_occurences as $date) {
 			$this->assertFalse($rule->occursAt($date), "Rule must not match $date");
 		}
+	}
+
+	public function rulesBeyondMaxCycles()
+	{
+		return [
+			['yearly' => 'YEARLY', 30],
+			['monthly' => 'MONTHLY', 400],
+			['weekly' => 'WEEKLY', 1500],
+			['daily' => 'DAILY', 11000],
+			['hourly' => 'HOURLY', 30],
+			['minutely' => 'MINUTELY', 1500]
+		];
+	}
+
+	/**
+	 * @dataProvider rulesBeyondMaxCycles
+	 */
+	public function testMaxCyclesDoesntKickInIfTheRuleProduceOccurrences($frequency, $count)
+	{
+		// see https://github.com/rlanvin/php-rrule/issues/78
+		$rrule = new RRule(['FREQ' => $frequency, 'COUNT' => $count]);
+		$this->assertEquals($count, $rrule->count());
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1914,6 +1984,26 @@ class RRuleTest extends TestCase
 		$this->assertEquals($result, $occurrence);
 	}
 
+	public function testGetNthOccurrenceFromInvalidIndex()
+	{
+		$rrule = new RRule(['FREQ' => 'DAILY']);
+		$this->expectException('InvalidArgumentException');
+		$rrule->getNthOccurrenceFrom(date_create('2017-01-09'), []);
+	}
+
+	public function testGetNthOccurrenceBeforeInvalidIndex()
+	{
+		$rrule = new RRule(['FREQ' => 'DAILY']);
+		$this->expectException('InvalidArgumentException');
+		$rrule->getNthOccurrenceBefore(date_create('2017-01-09'), -1);
+	}
+
+	public function testGetNthOccurrenceAfterInvalidIndex()
+	{
+		$rrule = new RRule(['FREQ' => 'DAILY']);
+		$this->expectException('InvalidArgumentException');
+		$rrule->getNthOccurrenceAfter(date_create('2017-01-09'), -1);
+	}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RFC Strings
@@ -2044,6 +2134,17 @@ class RRuleTest extends TestCase
 			array("FREQ=YEARLY;UNTIL=20170202T090000Z",
 				null
 			),
+
+			// non-standard timezones
+			'Windows timezone' => [
+				'DTSTART;TZID=W. Europe Standard Time:19970901T090000
+			RRULE:FREQ=DAILY;COUNT=3',
+				[
+					date_create('1997-09-01 09:00:00', new DateTimeZone('Europe/Berlin')),
+					date_create('1997-09-02 09:00:00', new DateTimeZone('Europe/Berlin')),
+					date_create('1997-09-03 09:00:00', new DateTimeZone('Europe/Berlin')),
+				]
+			],
 		);
 	}
 
@@ -2062,6 +2163,8 @@ class RRuleTest extends TestCase
 			$this->assertEquals($occurrences, $rule->getOccurrences());
 		}
 	}
+
+
 
 	public function testRfcStringParserWithDtStart()
 	{
@@ -2213,18 +2316,16 @@ class RRuleTest extends TestCase
 
 	public function testUnsupportedTimezoneConvertedToUtc()
 	{
-		if (version_compare(PHP_VERSION, '5.5', '>=')) {
-			$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
-			$rrule = new RRule(array(
-				"freq" => "WEEKLY",
-				"dtstart" => $date,
-				"interval" => 1
-			));
+		$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
+		$rrule = new RRule(array(
+			"freq" => "WEEKLY",
+			"dtstart" => $date,
+			"interval" => 1
+		));
 
-			$str = $rrule->rfcString();
-			$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
-			$new_rrule = new RRule($str);
-		}
+		$str = $rrule->rfcString();
+		$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
+		$new_rrule = new RRule($str);
 	}
 
 	public function rfcStringsWithoutTimezone()
@@ -2311,6 +2412,15 @@ class RRuleTest extends TestCase
 				),
 				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=SECONDLY;BYMINUTE=0;BYHOUR=0"
 			),
+			'with a value as an array' => [
+				array(
+					'FREQ' => RRule::SECONDLY,
+					'BYMINUTE' => 0,
+					'BYHOUR' => [0,1],
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=SECONDLY;BYMINUTE=0;BYHOUR=0,1"
+			],
 		);
 	}
 
@@ -2321,6 +2431,14 @@ class RRuleTest extends TestCase
 	{
 		$rule = new RRule($params);
 		$this->assertEquals($expected_str, $rule->rfcString());
+	}
+
+	public function testMagicStringMethod()
+	{
+		$rule = new RRule('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1');
+
+		$this->assertEquals($rule->rfcString(), (string) $rule);
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2353,14 +2471,26 @@ class RRuleTest extends TestCase
 			array("\nDTSTART:19970512\nRRULE:FREQ=YEARLY;COUNT=3\n\n",
 				'\RRule\RRule'
 			),
-			// no DTSTART
-			array("RRULE:FREQ=YEARLY;COUNT=3",
+			'no DTSTART' => [
+				"RRULE:FREQ=YEARLY;COUNT=3",
 				'\RRule\RRule'
-			),
+			],
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY\nEXRULE:FREQ=YEARLY\nEXDATE;TZID=America/New_York:19970902T090000",
 				'\RRule\RSet'
-			)
+			),
+			'no rrule' => [
+				'EXRULE:FREQ=DAILY;COUNT=3',
+				\RRule\RRule::class
+			],
+			'lowercase rrule' => [
+				"rrule:freq=yearly;count=3",
+				"\RRule\RRule"
+			],
+			'lowercase rset with 2 rrules' => [
+				"rrule:freq=yearly;count=3\nrrule:freq=monthly",
+				"\RRule\RSet"
+			]
 		);
 	}
 
@@ -2518,6 +2648,26 @@ class RRuleTest extends TestCase
 ///////////////////////////////////////////////////////////////////////////////
 // Other tests
 
+	public function invalidConstructorParameters()
+	{
+		return [
+			[new stdClass, null],
+			[true, null],
+			[1, null],
+			[4.2, null],
+			'dtstart optional parameter only for string rules' => [['FREQ' => 'DAILY'], new DateTime()]
+		];
+	}
+
+	/**
+	 * @dataProvider invalidConstructorParameters
+	 */
+	public function testConstructorDoesntAcceptInvalidTypes($parts, $dtstart)
+	{
+		$this->expectException(\InvalidArgumentException::class);
+		new RRule($dtstart, $dtstart);
+	}
+
 	public function testIsFinite()
 	{
 		$rrule = new RRule(array(
@@ -2646,6 +2796,15 @@ class RRuleTest extends TestCase
 		$this->assertEquals(10, count($rrule));
 	}
 
+	public function testCannotCountInfinite()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly'
+		));
+		$this->expectException('LogicException');
+		count($rrule);
+	}
+
 	public function testOffsetExists()
 	{
 		$rrule = new RRule(array(
@@ -2676,6 +2835,30 @@ class RRuleTest extends TestCase
 		$this->assertEquals(date_create('2007-01-09'), $rrule[2]);
 		$this->assertEquals(null, $rrule[4]);
 		$this->assertEquals(null, $rrule['4']);
+	}
+
+	public function testOffsetSetUnsupported()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+		$this->expectException('LogicException');
+		$rrule[] = 'blah';
+	}
+
+	public function testOffsetUnsetUnsupported()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+		$this->expectException('LogicException');
+		unset($rrule[0]);
 	}
 
 	public function illegalOffsets()
