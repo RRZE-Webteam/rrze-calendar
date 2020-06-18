@@ -414,7 +414,7 @@ class RRZE_Calendar {
             return;
         }
 
-        wp_enqueue_script('jquery-listfilterizer');
+        wp_enqueue_script('jquery-listfilterizer', plugins_url('js/jquery.listfilterizer.min.js', __FILE__), [], '1.0');
         wp_enqueue_script('rrze-calendar-admin', plugins_url('js/rrze-calendar-admin.min.js', __FILE__), array('jquery', 'jquery-listfilterizer'), self::version, TRUE);
 
         wp_localize_script('rrze-calendar-admin', 'rrze_calendar_vars', array(
@@ -423,6 +423,7 @@ class RRZE_Calendar {
             'placeholder' => __('Suchen...', 'rrze-calendar'),
         ));
 
+        wp_enqueue_style('jquery-listfilterizer', plugins_url('css/jquery.listfilterizer.min.css', __FILE__), [], '1.0');
         wp_enqueue_style('rrze-calendar-admin', plugins_url('css/rrze-calendar-admin.min.css', __FILE__), array(), self::version);
 
         if (strpos($hook, 'rrze-calendar-categories') !== FALSE) {
