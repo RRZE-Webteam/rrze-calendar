@@ -18,6 +18,20 @@ wp_enqueue_style('rrze-calendar');
         <?php else: ?>
             <?php foreach ($events_data as $date): ?>
                 <?php foreach ($date as $event): ?>
+                    <?php 
+                    if (isset($event->tags)):
+                        $_nolist = false;
+                        foreach ($event->tags as $tag):
+                            if ($tag->name == '_nolist_'):
+                                $_nolist = true;
+                                break;
+                            endif;
+                        endforeach;
+                        if ($_nolist):
+                            continue;
+                        endif;
+                    endif; 
+                    ?>
                     <?php if (in_array($event->endpoint_url, $multiday)): ?>
                         <?php continue; ?>
                     <?php endif; ?>

@@ -55,6 +55,18 @@ get_header(); ?>
                             <ul>
                                 <?php foreach ($events_data as $date) : ?>
                                     <?php foreach ($date as $event) : 
+                                        if (isset($event->tags)):
+                                            $_nolist = false;
+                                            foreach ($event->tags as $tag):
+                                                if ($tag->name == '_nolist_'):
+                                                    $_nolist = true;
+                                                    break;
+                                                endif;
+                                            endforeach;
+                                            if ($_nolist):
+                                                continue;
+                                            endif;
+                                        endif;
                                         if (in_array($event->endpoint_url, $multiday)):
                                             continue;
                                         endif;

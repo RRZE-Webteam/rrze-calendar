@@ -20,6 +20,18 @@ get_header(); ?>
             <?php else: ?>
                 <?php foreach ($events_data as $date) : ?>
                     <?php foreach ($date as $event) : 
+                        if (isset($event->tags)):
+                            $_nolist = false;
+                            foreach ($event->tags as $tag):
+                                if ($tag->name == '_nolist_'):
+                                    $_nolist = true;
+                                    break;
+                                endif;
+                            endforeach;
+                            if ($_nolist):
+                                continue;
+                            endif;
+                        endif;
                         if (in_array($event->endpoint_url, $multiday)):
                             continue;
                         endif;
@@ -33,8 +45,8 @@ get_header(); ?>
                             endif;
                         endif; ?>                                          
                         <div class="event-item" itemscope itemtype="http://schema.org/Event">
-			    <meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">
-			    <meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>">
+                            <meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">
+                            <meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>">
                             <div class="event-date">
                                 <div class="day-month">
                                     <div class="day"><?php echo $event->start_day . '. '; ?></div>
