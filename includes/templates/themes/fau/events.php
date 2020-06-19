@@ -121,10 +121,7 @@ get_header(); ?>
                                 <?php endforeach; ?>
                             </ul>
                             <?php endif; ?>      
-			    
-			     <div class="events-more-links">
-				<a class="events-more" href="<?php echo $event->subscribe_url; ?>"><?php _e('Abonnement', 'fau'); ?></a>
-			    </div>  
+			     
                         </div>
                       
                     </main>
