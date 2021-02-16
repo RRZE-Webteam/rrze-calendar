@@ -1,12 +1,12 @@
 <?php
 
-namespace FAU\Calendar;
+namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use FAU\Calendar\Options;
-use FAU\Calendar\Events;
-use FAU\Calendar\Themes;
+use RRZE\Calendar\Options;
+use RRZE\Calendar\Events;
+use RRZE\Calendar\Themes;
 
 class Endpoint
 {
