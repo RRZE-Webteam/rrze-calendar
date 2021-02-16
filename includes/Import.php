@@ -83,7 +83,7 @@ class Import
             );
             $this->ical->initString($icsContent);
         } catch (\Exception $exception) {
-            do_action('rrze.log.warning', ['exception' => $exception]);
+            do_action('rrze.log.error', ['exception' => $exception]);
 
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 throw $exception;
@@ -121,7 +121,7 @@ class Import
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) != 200) {
             // Unable to retrieve content from the provided iCal URL.
             do_action(
-                'rrze.log.error',
+                'rrze.log.warning',
                 /* translators: {plugin}: Plugin name. */
                 __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
                 ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl]
