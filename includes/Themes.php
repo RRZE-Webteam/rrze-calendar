@@ -1,6 +1,6 @@
 <?php
 
-namespace FAU\Calendar;
+namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
