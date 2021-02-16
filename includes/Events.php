@@ -1,11 +1,11 @@
 <?php
 
-namespace FAU\Calendar;
+namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use FAU\Calendar\DB;
-use FAU\Calendar\Util;
+use RRZE\Calendar\DB;
+use RRZE\Calendar\Util;
 
 class Events
 {
