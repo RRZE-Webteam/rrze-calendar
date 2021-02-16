@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version:         1.11.13
+Version:         1.11.14
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -29,7 +29,7 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.11.13';
+    const version = '1.11.14';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -1027,9 +1027,7 @@ class RRZE_Calendar {
         }
 
         if (is_object($feed) && $feed->active) {
-            self::flush_feed($feed->id, FALSE);
             $this->parse_ics_feed($feed);
-
             self::flush_cache();
         }
 
@@ -1044,7 +1042,6 @@ class RRZE_Calendar {
             foreach ($feed_ids as $feed_id) {
                 $feed = self::get_feed($feed_id);
                 if ($feed && $feed->active) {
-                    self::flush_feed($feed_id, FALSE);
                     $this->parse_ics_feed($feed);
                 }
             }
@@ -1117,9 +1114,10 @@ class RRZE_Calendar {
 
         if (is_object($feed)) {
             $wpdb->update(self::$db_feeds_table, array('active' => $activate), array('id' => $feed->id), array('%d'));
-            self::flush_feed($feed->id, FALSE);
             if ($activate) {
                 $this->parse_ics_feed($feed);
+            } else {
+                self::flush_feed($feed->id, false);
             }
 
             self::flush_cache();
@@ -1141,12 +1139,14 @@ class RRZE_Calendar {
         if (is_array($feed_ids)) {
             foreach ($feed_ids as $feed_id) {
                 $wpdb->update(self::$db_feeds_table, array('active' => $activate), array('id' => $feed_id), array('%d'), array('%d'));
-                self::flush_feed($feed_id, FALSE);
+                $feed = self::get_feed($feed_id);
+                if (!$feed) {
+                    continue;
+                }                
                 if ($activate) {
-                    $feed = self::get_feed($feed_id);
-                    if ($feed) {
-                        $this->parse_ics_feed($feed);
-                    }
+                    $this->parse_ics_feed($feed);
+                } else {
+                    self::flush_feed($feed_id, false);
                 }
             }
 
@@ -2187,7 +2187,6 @@ class RRZE_Calendar {
         $feeds = $wpdb->get_results($sql);
 
         foreach ($feeds as $feed) {
-            self::flush_feed($feed->id, FALSE);
             $this->parse_ics_feed($feed);
         }
 
@@ -2230,6 +2229,8 @@ class RRZE_Calendar {
         if (empty($events)) {
             return;
         }
+
+        self::flush_feed($feed->id, false);
 
         foreach ($events as $event) {
             $data = array(
