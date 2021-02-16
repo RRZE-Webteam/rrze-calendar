@@ -20,12 +20,17 @@ class Import
      * Import ical events by iCal URL
      * @param  string  $url iCal URl
      * @param  boolean $skipRecurrence
-     * @return array/boolean
+     * @return array|boolean
      */
     public function importEvents($icalUrl = '', $skipRecurrence = false)
     {
         if ($icalUrl == '') {
             // iCal URL was not provided.'
+            do_action(
+                'rrze.log.error',
+                'Plugin: {plugin} {class}::{method} Error: iCal URL was not provided.',
+                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__]
+            );
             return false;
         }
 
@@ -35,7 +40,12 @@ class Import
         $icsContent =  $this->getRemoteContent($icalUrl);
 
         if (false == $icsContent) {
-            // Unable to retrieve content from the provided URL.
+            // Unable to retrieve content from the provided iCal URL.
+            do_action(
+                'rrze.log.error',
+                'Plugin: {plugin} {class}::{method} Error: Unable to retrieve content from the provided iCal URL ({url})',
+                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__, 'url' => $icalUrl]
+            );
             return false;
         }
 
@@ -70,8 +80,14 @@ class Import
                 ]
             );
             $this->ical->initString($icsContent);
-        } catch (\Exception $e) {
-            return false;
+        } catch (\Exception $exception) {
+            do_action('rrze.log.warning', ['exception' => $exception]);
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                throw $exception;
+            } else {
+                return false;
+            }
         }
 
         if ($events = $this->ical->events()) {
@@ -89,26 +105,31 @@ class Import
     protected function getRemoteContent($icalUrl)
     {
         global $wp_version;
-        
+
         $response = null;
 
-        $args = array(
+        $args = [
             'timeout'     => static::TIMEOUT_IN_SECONDS,
             'sslverify'   => false,
             'method'      => 'GET'
-        );
+        ];
 
         $response = wp_remote_get($icalUrl, $args);
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) != 200) {
-            // Unable to retrieve content from the provided URL.
+            // Unable to retrieve content from the provided iCal URL.
+            do_action(
+                'rrze.log.error',
+                'Plugin: {plugin} {class}::{method} Error: Unable to retrieve content from the provided iCal URL. ({url})',
+                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__, 'url' => $icalUrl]
+            );
             return false;
         }
 
         return $response['body'];
     }
 
-    public function iCalDateToUnixTimestamp($icalDate) 
+    public function iCalDateToUnixTimestamp($icalDate)
     {
         return $this->ical->iCalDateToUnixTimestamp($icalDate);
     }
