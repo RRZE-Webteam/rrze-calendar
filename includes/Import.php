@@ -25,11 +25,12 @@ class Import
     public function importEvents($icalUrl = '', $skipRecurrence = false)
     {
         if ($icalUrl == '') {
-            // iCal URL was not provided.'
+            // The iCal URL was not provided.'
             do_action(
                 'rrze.log.error',
-                'Plugin: {plugin} {class}::{method} Error: iCal URL was not provided.',
-                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__]
+                /* translators: {plugin}: Plugin name. */
+                __('{plugin}: The iCal URL was not provided.', 'rrze-calendar'),
+                ['plugin' => 'rrze-calendar', 'method' => __METHOD__]
             );
             return false;
         }
@@ -43,8 +44,9 @@ class Import
             // Unable to retrieve content from the provided iCal URL.
             do_action(
                 'rrze.log.error',
-                'Plugin: {plugin} {class}::{method} Error: Unable to retrieve content from the provided iCal URL ({url})',
-                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__, 'url' => $icalUrl]
+                /* translators: {plugin}: Plugin name. */
+                __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
+                ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl]
             );
             return false;
         }
@@ -120,8 +122,9 @@ class Import
             // Unable to retrieve content from the provided iCal URL.
             do_action(
                 'rrze.log.error',
-                'Plugin: {plugin} {class}::{method} Error: Unable to retrieve content from the provided iCal URL. ({url})',
-                ['plugin' => 'rrze-calendar', 'class' => __CLASS__, 'method' => __METHOD__, 'url' => $icalUrl]
+                /* translators: {plugin}: Plugin name. */
+                __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
+                ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl]
             );
             return false;
         }
