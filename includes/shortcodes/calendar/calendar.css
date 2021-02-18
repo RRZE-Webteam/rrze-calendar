@@ -1,8 +1,4 @@
 @charset "UTF-8";
-body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
 .kalender {
   /**
      * For modern browsers
@@ -113,8 +109,6 @@ body {
 }
 
 .kalender .inhalt .monatsansicht * {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
 
