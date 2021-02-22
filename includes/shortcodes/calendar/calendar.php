@@ -58,18 +58,10 @@ class RRZE_Calendar_Shortcode
             'feed_ids' => $feed_ids
         );
 
-        $datum = '';
-
-        if (get_query_var('calendar')) {
-            $request = explode("_", get_query_var('calendar'));
-
-            $geforderte_ansicht = !empty($request[0]) ? $request[0] : '';
-            $datum = !empty($request[1]) ? $request[1] : '';
-        }
+        $datum = isset($_GET['rrze-calendar']) ? $_GET['rrze-calendar'] : '';
 
         require_once "class_Monatsansicht.php";
         
-
         $ansicht = new Monatsansicht($atts);
         
         $tage = $ansicht->lade_tage($datum);
@@ -80,5 +72,5 @@ class RRZE_Calendar_Shortcode
             
         
         return $ansicht->rendere_daten($events);
-    }
+    } 
 }
