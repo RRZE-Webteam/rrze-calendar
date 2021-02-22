@@ -104,12 +104,9 @@ class Monatsansicht extends Ansicht
         $permalink = get_permalink();
         
         $ansicht_daten = array(
-            "monat_datum_aktuell" => esc_url(add_query_arg('calendar', 'monat', $permalink)),
-            "monat_datum_vor" => esc_url(add_query_arg('calendar', 'monat_' . $this->datum_vor($tag), $permalink)),
-            "monat_datum_zurueck" => esc_url(add_query_arg('calendar', 'monat_' . $this->datum_zurueck($tag), $permalink)),
-            "tag_datum" => esc_url(add_query_arg('calendar', 'tag_' . $this->datum_aktuell($tag), $permalink)),
-            "woche_datum" => esc_url(add_query_arg('calendar', 'woche_' . $this->datum_aktuell($tag), $permalink)),
-            "liste" => esc_url(add_query_arg('calendar', 'liste', $permalink)),
+            "monat_datum_aktuell" => $permalink,
+            "monat_datum_vor" => esc_url(add_query_arg('rrze-calendar', $this->datum_vor($tag), $permalink)),
+            "monat_datum_zurueck" => esc_url(add_query_arg('rrze-calendar', $this->datum_zurueck($tag), $permalink)),
             "monat" => date_i18n(__('F Y', 'rrze-calendar'), $ts),
             "wochen" => $wochen,
             "abonnement_url" => $abonnement_url
