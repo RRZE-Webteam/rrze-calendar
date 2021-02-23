@@ -23,7 +23,7 @@ wp_enqueue_style('rrze-calendar');
                     <?php foreach ($events_data as $date): ?>
                         <?php foreach ($date as $event): ?>
                             <?php 
-                            if (isset($event->tags)):
+                            if (!empty($event->tags)):
                                 $_nolist = false;
                                 foreach ($event->tags as $tag):
                                     if ($tag->name == '_nolist_'):
