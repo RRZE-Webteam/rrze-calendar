@@ -44,6 +44,20 @@ class Event
     public $dtstamp;
 
     /**
+     * When the event starts, represented as a timezone-adjusted string
+     *
+     * @var $dtstart_tz
+     */
+    public $dtstart_tz;
+
+    /**
+     * When the event ends, represented as a timezone-adjusted string
+     *
+     * @var $dtend_tz
+     */
+    public $dtend_tz;
+
+    /**
      * https://www.kanzaki.com/docs/ical/uid.html
      *
      * @var $uid
@@ -121,11 +135,9 @@ class Event
      */
     public function __construct(array $data = array())
     {
-        if (!empty($data)) {
-            foreach ($data as $key => $value) {
-                $variable = self::snakeCase($key);
-                $this->{$variable} = self::prepareData($value);
-            }
+        foreach ($data as $key => $value) {
+            $variable = self::snakeCase($key);
+            $this->{$variable} = self::prepareData($value);
         }
     }
 
@@ -175,7 +187,9 @@ class Event
             'ATTENDEE(S)'   => $this->attendee,
         );
 
-        $data   = array_filter($data); // Remove any blank values
+        // Remove any blank values
+        $data = array_filter($data);
+
         $output = '';
 
         foreach ($data as $key => $value) {
