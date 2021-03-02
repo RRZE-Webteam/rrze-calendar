@@ -1,6 +1,7 @@
 <?php
 
 use \RRZE\Calendar\Settings;
+use \RRZE\Calendar\Util;
 
 class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
 
@@ -19,12 +20,12 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
     }
 
     public function column_default($item, $column_name) {
-        switch ($column_name) {               
-            case 'title':
-                $item[$column_name] = !empty($item[$column_name]) ? wp_trim_words($item[$column_name], 10) : '';
-                break;
+        switch ($column_name) {    
             case 'url':
-                $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%1$s</a>', $item[$column_name]) : '';
+                $item[$column_name] = !empty($item[$column_name]) ? sprintf('<a href="%1$s">%2$s</a>', $item[$column_name], Util::truncateStr($item[$column_name], 25, true)) : '';
+                break;                 
+            case 'title':
+                $item[$column_name] = !empty($item[$column_name]) ? wp_trim_words($item[$column_name], 20, true) : '';
                 break;
             case 'category':
                 if (!empty($item[$column_name]) && is_array($item[$column_name])) {
@@ -81,7 +82,7 @@ class RRZE_Calendar_Feeds_List_Table extends WP_List_Table {
         }
         // Return the title contents
         return sprintf('%1$s %2$s',
-                /* $1%s */ sprintf('<a href="%1$s">%2$s</a>', $item['url'], $item['url']),
+                /* $1%s */ sprintf('<a href="%1$s">%2$s</a>', $item['url'], Util::truncateStr($item['url'], 25, true)),
                 /* $2%s */ $this->row_actions($actions)
         );
     }
