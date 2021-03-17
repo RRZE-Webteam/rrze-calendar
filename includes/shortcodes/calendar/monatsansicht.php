@@ -1,9 +1,9 @@
-<div class="kalender">
+<div id="rrze-calendar" class="kalender">
     <div class="menue">
         <div class="zeit buttons">
-            <a href="<?php echo $daten['monat_datum_zurueck']; ?>" class="vergangenheit">&#9664;</a>
-            <a href="<?php echo $daten['monat_datum_aktuell']; ?>" class="heute"><?php _e('Heute', 'rrze-calendar'); ?></a>
-            <a href="<?php echo $daten['monat_datum_vor']; ?>" class="zukunft">&#9654;</a>
+            <a href="<?php echo $daten['monat_datum_zurueck']; ?>#rrze-calendar" class="vergangenheit">&#9664;</a>
+            <a href="<?php echo $daten['monat_datum_aktuell']; ?>#rrze-calendar" class="heute"><?php _e('Heute', 'rrze-calendar'); ?></a>
+            <a href="<?php echo $daten['monat_datum_vor']; ?>#rrze-calendar" class="zukunft">&#9654;</a>
         </div>
 
         <div class="titel"><?php echo $daten['monat']; ?></div>
