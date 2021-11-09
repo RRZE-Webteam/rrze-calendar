@@ -1,1 +1,6 @@
 /nbproject*
+/_tmp
+/bundle
+/node_modules
+/package-lock.json
+.DS_Store
