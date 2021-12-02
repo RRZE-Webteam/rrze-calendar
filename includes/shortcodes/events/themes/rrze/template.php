@@ -31,7 +31,7 @@ defined('ABSPATH') || exit;
                         <div class="year"><?php echo $event->start_year; ?></div>
                     </div>
                     <h2 class="event-title" itemprop="name">
-                        <a itemprop="url" href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>"><?php echo esc_html($event->summary); ?></a>
+                        <a itemprop="url" href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>" title="<?php echo esc_html($event->summary . ', ' . $event->long_start_date); ?>"><?php echo esc_html($event->summary . $event->long_start_date); ?></a>
                     </h2>
                     <div class="event-info">
                         <?php if ($event->allday) : ?>
