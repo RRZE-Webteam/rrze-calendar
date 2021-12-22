@@ -12,42 +12,38 @@ if(function_exists('fau_initoptions')) {
 $multiday = [];
 
 $breadcrumb = '';
-if (isset($options['breadcrumb_root'])) {
-    if ($options['breadcrumb_withtitle']) {
-        $breadcrumb .= '<h3 class="breadcrumb_sitetitle" role="presentation">'.get_bloginfo('title').'</h3>';
-        $breadcrumb .= "\n";
-    }
-    $breadcrumb .= '<nav aria-labelledby="bc-title" class="breadcrumbs">'; 
-    $breadcrumb .= '<h4 class="screen-reader-text" id="bc-title">'.__('Sie befinden sich hier:','fau').'</h4>';
-    $breadcrumb .= '<a data-wpel-link="internal" href="' . site_url('/') . '">' . $options['breadcrumb_root'] . '</a>';
-}
+   
+    $breadcrumb .= '<nav aria-label="'.__('Breadcrumb','fau').'" class="breadcrumbs">';    
+    $breadcrumb .= '<ol class="breadcrumblist" itemscope="" itemtype="https://schema.org/BreadcrumbList">';
+    $breadcrumb .= '<li itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemprop="item" href="'. site_url('/') .'"><span itemprop="name">'.__('Startseite','fau').'</span></a><meta itemprop="position" content="1"></li>';
+    $breadcrumb .= '</ol>';
+    $breadcrumb .= '</nav>';
+    
 
 get_header(); ?>
 
     <section id="hero" class="hero-small">
-        <div class="container">
+        <div class="container hero-content">
             <div class="row">
                 <div class="col-xs-12">
                     <?php echo $breadcrumb; ?>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" aria-hidden="true" role="presentation">
                 <div class="col-xs-12">
-
-                    <h1><?php echo $calendar_endpoint_name; ?></h1>
-
+                    <p class="presentationtitle"><?php echo $calendar_endpoint_name; ?></p>
                 </div>
             </div>
         </div>
     </section>
 
     <div id="content">
-        <div class="container">
-
-            <div class="row">
+        <div class="content-container">
+            <div class="content-row">
                 <div class="col-xs-12">
                     <main>                        
-
+			<h1 class="screen-reader-text"><?php echo $calendar_endpoint_name; ?></h1>    
+			
                         <div class="rrze-calendar events-list">
                             <?php if (empty($events_data)): ?>
                             <p><?php _e('Keine bevorstehenden Termine', 'rrze-calendar'); ?></p>
