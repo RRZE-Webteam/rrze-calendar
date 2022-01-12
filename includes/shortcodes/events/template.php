@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 wp_enqueue_style('rrze-calendar-shortcode-events');
 ?>
 
-<div class="events-list">
+<div class="rrze-calendar events-list">
     <?php if (empty($events_data)): ?>
     <p><?php _e('Keine bevorstehenden Termine.', 'rrze-calendar'); ?></p>
     <?php else: ?>
