@@ -51,6 +51,7 @@ class RRZE_Calendar {
         'fau' => [
             'FAU-Einrichtungen',
             'FAU-Einrichtungen-BETA',
+	    'FAU-Einrichtungen-Markendesign2021',
             'FAU-Medfak',
             'FAU-RWFak',
             'FAU-Philfak',
