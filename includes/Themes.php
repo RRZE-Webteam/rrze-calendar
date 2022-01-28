@@ -13,6 +13,7 @@ class Themes
     protected static $allowedStylesheets = [
         'fau' => [
             'FAU-Einrichtungen',
+	    'FAU-Einrichtungen-DEV',
             'FAU-Einrichtungen-BETA',
             'FAU-Medfak',
             'FAU-RWFak',
