@@ -59,7 +59,7 @@ defined('ABSPATH') || exit;
                             <a itemprop="url" href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>"><?php echo esc_html($event->summary); ?></a>
                         </div>
                         <div class="event-location" itemprop="location">
-                            <?php echo $event->location ? nl2br($event->location) : '&nbsp;'; ?>
+                            <?php echo ($location && $event->location) ? nl2br($event->location) : '&nbsp;'; ?>
                         </div>
                     </div>
                 </div>
