@@ -53,7 +53,7 @@ defined('ABSPATH') || exit;
                             </div>
                         <?php endif; ?>
                         <p class="event-location" itemprop="location">
-                        <?php if ($event->location) : ?>
+                        <?php if ($location && $event->location) : ?>
                             <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
                         <?php endif; ?>
                         </p>
