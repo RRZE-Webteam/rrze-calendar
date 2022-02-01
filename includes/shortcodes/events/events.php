@@ -28,7 +28,7 @@ class Events_Shortcode
         );
 
         $abonnement_link = empty($atts['abonnement_link']) ? 0 : 1;
-        $location = empty($atts['anzahl']) ? 0 : 1;
+        $location = empty($atts['location']) ? 0 : 1;
         $description = empty($atts['description']) ? 0 : 1;
 
         $anzahl = absint($atts['anzahl']);
