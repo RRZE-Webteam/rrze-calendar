@@ -1,4 +1,4 @@
-<div id="rrze-calendar" class="kalender">
+<div id="rrze-calendar" class="rrze-calendar kalender">
     <div class="menue">
         <div class="zeit buttons">
             <a href="<?php echo $daten['monat_datum_zurueck']; ?>#rrze-calendar" class="vergangenheit">&#9664;</a>
