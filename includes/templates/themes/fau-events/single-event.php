@@ -9,12 +9,14 @@ wp_enqueue_style('rrze-calendar');
 ?>
 
 <div id="singlepost-wrap" class="singlepost-wrap cf">
-    <div id="content" class="rrze-calendar hentry" role="main">
+    <div id="content" class="rrze-calendar hentry" role="main" itemscope itemtype="http://schema.org/Event">
         <div class="event-detail-item">
-            <h1 class="entry-title">
+            <h1 class="entry-title" itemprop="name">
                 <?php echo $event->summary; ?>
             </h1>
             <div class="event-info entry-content">
+                <meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">
+                <meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>">
                 <?php if ($event->allday) : ?>
                     <div class="event-date event-allday">
                         <?php _e('Ganztägig', 'rrze-calendar'); ?>
@@ -48,7 +50,7 @@ wp_enqueue_style('rrze-calendar');
                     </div>
                 <?php endif; ?>
                 <?php if ($event->location) : ?>
-                    <div class="event-location">
+                    <div class="event-location" itemprop="location">
                         <?php echo esc_html($event->location); ?>
                     </div>
                 <?php endif; ?>
