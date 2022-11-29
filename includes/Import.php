@@ -39,6 +39,7 @@ class Import
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
         if (!$icsContent = self::get($icalUrl)) {
+            self::delete($icalUrl);
             $icsContent = $this->getRemoteContent($icalUrl);
             self::set($icalUrl, $icsContent);
         }
@@ -59,7 +60,9 @@ class Import
 
     protected static function set($url, $ical)
     {
-        $cacheOption = 'ical_' . md5($url);
+        $prefix = parse_url($url, PHP_URL_SCHEME);
+        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
+        $cacheOption = 'ical_' . md5($key);
         $ttl = HOUR_IN_SECONDS;
         if (is_multisite()) {
             set_site_transient($cacheOption, $ical, $ttl);
@@ -68,9 +71,23 @@ class Import
         }
     }
 
+    protected static function delete($url)
+    {
+        $prefix = parse_url($url, PHP_URL_SCHEME);
+        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
+        $cacheOption = 'ical_' . md5($key);
+        if (is_multisite()) {
+            delete_site_transient($cacheOption);
+        } else {
+            delete_transient($cacheOption);
+        }
+    }
+
     protected static function get($url)
     {
-        $cacheOption = 'ical_' . md5($url);
+        $prefix = parse_url($url, PHP_URL_SCHEME);
+        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;      
+        $cacheOption = 'ical_' . md5($key);
         if (is_multisite()) {
             $ical = get_site_transient($cacheOption);
         } else {
