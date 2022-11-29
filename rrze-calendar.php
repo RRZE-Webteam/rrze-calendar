@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version:         1.11.26
+Version:         1.12.00
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -29,15 +29,15 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.11.24';
+    const version = '1.12.00';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
     const cron_hook = 'rrze_calendar';
     const option_name = 'rrze_calendar';
     const version_option_name = 'rrze_calendar_version';
-    const php_version = '7.3'; // Minimal erforderliche PHP-Version
-    const wp_version = '5.3'; // Minimal erforderliche WordPress-Version
+    const php_version = '8.0'; // Minimal erforderliche PHP-Version
+    const wp_version = '6.1'; // Minimal erforderliche WordPress-Version
     const taxonomy_cat_key = 'rrze-calendar-category';
     const taxonomy_tag_key = 'rrze-calendar-tag';
     const settings_errors_transient = 'rrze-calendar-settings-errors-';

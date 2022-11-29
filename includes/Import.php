@@ -38,9 +38,12 @@ class Import
         $icalUrl = str_replace('webcal://', 'http://', $icalUrl);
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
-        $icsContent =  $this->getRemoteContent($icalUrl);
+        if (!$icsContent = self::get($icalUrl)) {
+            $icsContent = $this->getRemoteContent($icalUrl);
+            self::set($icalUrl, $icsContent);
+        }
 
-        if (false == $icsContent) {
+        if (empty($icsContent)) {
             // Unable to retrieve content from the provided iCal URL.
             do_action(
                 'rrze.log.error',
@@ -52,6 +55,31 @@ class Import
         }
 
         return $this->importEventsFromIcsContent($icsContent, $skipRecurrence);
+    }
+
+    protected static function set($url, $ical)
+    {
+        $cacheOption = 'ical_' . md5($url);
+        $ttl = HOUR_IN_SECONDS;
+        if (is_multisite()) {
+            set_site_transient($cacheOption, $ical, $ttl);
+        } else {
+            set_transient($cacheOption, $ical, $ttl);
+        }
+    }
+
+    protected static function get($url)
+    {
+        $cacheOption = 'ical_' . md5($url);
+        if (is_multisite()) {
+            $ical = get_site_transient($cacheOption);
+        } else {
+            $ical = get_transient($cacheOption);
+        }        
+        if (!$ical) {
+            return '';
+        }
+        return $ical;
     }
 
     /**
