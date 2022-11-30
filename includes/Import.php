@@ -38,10 +38,14 @@ class Import
         $icalUrl = str_replace('webcal://', 'http://', $icalUrl);
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
-        if (!$icsContent = self::get($icalUrl)) {
-            self::delete($icalUrl);
+        $icsContent = self::get($icalUrl);
+        if ($icsContent === false) {
             $icsContent = $this->getRemoteContent($icalUrl);
-            self::set($icalUrl, $icsContent);
+            if (strpos((string) $icsContent, 'BEGIN') === 0) {
+                self::set($icalUrl, $icsContent);
+            } else {
+                $icsContent = '';
+            }
         }
 
         if (empty($icsContent)) {
@@ -92,9 +96,6 @@ class Import
             $ical = get_site_transient($cacheOption);
         } else {
             $ical = get_transient($cacheOption);
-        }        
-        if (!$ical) {
-            return '';
         }
         return $ical;
     }
@@ -198,10 +199,6 @@ class Import
      */
     protected function getRemoteContent($icalUrl)
     {
-        global $wp_version;
-
-        $response = null;
-
         $args = [
             'timeout'     => static::TIMEOUT_IN_SECONDS,
             'sslverify'   => false,
@@ -209,19 +206,10 @@ class Import
         ];
 
         $response = wp_remote_get($icalUrl, $args);
-
-        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) != 200) {
-            // Unable to retrieve content from the provided iCal URL.
-            do_action(
-                'rrze.log.warning',
-                /* translators: {plugin}: Plugin name. */
-                __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
-                ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl]
-            );
+        if (wp_remote_retrieve_response_code($response) != 200) {
             return false;
         }
-
-        return $response['body'];
+        return $response['body'] ?? '';
     }
 
     public function iCalDateToUnixTimestamp($icalDate)
