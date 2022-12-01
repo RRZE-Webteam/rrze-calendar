@@ -38,11 +38,12 @@ class Import
         $icalUrl = str_replace('webcal://', 'http://', $icalUrl);
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
-        $icsContent = self::get($icalUrl);
+        // Get ICS file contents
+        $icsContent = Transients::getIcalCache($icalUrl);
         if ($icsContent === false) {
-            $icsContent = $this->getRemoteContent($icalUrl);
-            if (strpos((string) $icsContent, 'BEGIN') === 0) {
-                self::set($icalUrl, $icsContent);
+            $icsContent = self::urlGetContent($icalUrl);
+            if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
+                Transients::setIcalCache($icalUrl, $icsContent);
             } else {
                 $icsContent = '';
             }
@@ -60,44 +61,6 @@ class Import
         }
 
         return $this->importEventsFromIcsContent($icsContent, $skipRecurrence);
-    }
-
-    protected static function set($url, $ical)
-    {
-        $prefix = parse_url($url, PHP_URL_SCHEME);
-        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
-        $cacheOption = 'ical_' . md5($key);
-        $ttl = HOUR_IN_SECONDS;
-        if (is_multisite()) {
-            set_site_transient($cacheOption, $ical, $ttl);
-        } else {
-            set_transient($cacheOption, $ical, $ttl);
-        }
-    }
-
-    protected static function delete($url)
-    {
-        $prefix = parse_url($url, PHP_URL_SCHEME);
-        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
-        $cacheOption = 'ical_' . md5($key);
-        if (is_multisite()) {
-            delete_site_transient($cacheOption);
-        } else {
-            delete_transient($cacheOption);
-        }
-    }
-
-    protected static function get($url)
-    {
-        $prefix = parse_url($url, PHP_URL_SCHEME);
-        $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;      
-        $cacheOption = 'ical_' . md5($key);
-        if (is_multisite()) {
-            $ical = get_site_transient($cacheOption);
-        } else {
-            $ical = get_transient($cacheOption);
-        }
-        return $ical;
     }
 
     /**
@@ -193,23 +156,24 @@ class Import
     }
 
     /**
-     * Load content using wp_remote_get()
-     * @param  string $icalUrl [description]
-     * @return string/boolean  [description]
+     * Retrieve file from remote server.
+     *
+     * @param string $url
+     * @return mixed
      */
-    protected function getRemoteContent($icalUrl)
+    protected static function urlGetContent(string $url)
     {
         $args = [
-            'timeout'     => static::TIMEOUT_IN_SECONDS,
-            'sslverify'   => false,
-            'method'      => 'GET'
+            'timeout' => static::TIMEOUT_IN_SECONDS,
+            'sslverify' => false,
+            'method' => 'GET'
         ];
 
-        $response = wp_remote_get($icalUrl, $args);
+        $response = wp_safe_remote_get($url, $args);
         if (wp_remote_retrieve_response_code($response) != 200) {
             return false;
         }
-        return $response['body'] ?? '';
+        return $response['body'] ?? false;
     }
 
     public function iCalDateToUnixTimestamp($icalDate)
