@@ -57,7 +57,7 @@ class Export
         $this->data[] = "CREATED:{$this->formatDate('now')}";
         $this->data[] = "DESCRIPTION:{$this->getEscapedValue($event->description)}";
         $this->data[] = "LAST-MODIFIED:{$this->getEscapedValue($event->start)}";
-        $this->data[] = "LOCATION:{$this->location}";
+        $this->data[] = "LOCATION:{$event->location}";
         $this->data[] = "SUMMARY:{$this->getEscapedValue($event->summary)}";
         $this->data[] = ($event->rrule) ? "RRULE:{$event->rrule}" : '';
         $this->data[] = ($event->exrule) ? "EXRULE:{$event->exrule}" : '';
