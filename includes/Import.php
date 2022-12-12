@@ -12,7 +12,7 @@ class Import
      * [protected description]
      * @var integer
      */
-    const TIMEOUT_IN_SECONDS = 30;
+    const TIMEOUT_IN_SECONDS = 7;
 
     protected $ical = null;
 
