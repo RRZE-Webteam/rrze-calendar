@@ -11,7 +11,7 @@ class Transients
         $prefix = parse_url($url, PHP_URL_SCHEME);
         $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
         $cacheOption = 'ical_' . md5($key);
-        $ttl = HOUR_IN_SECONDS;
+        $ttl = self::getTtl();
         if (is_multisite()) {
             set_site_transient($cacheOption, $ical, $ttl);
         } else {
@@ -43,5 +43,18 @@ class Transients
             $return = delete_transient($cacheOption);
         }
         return $return;
+    }
+
+    protected static function getTtl()
+    {
+        $today = getdate(current_time('timestamp'));
+        $weekday = $today['wday']; // 0 - 6 (0=sunday, 6=saturday)
+        $hour = $today['hours']; // 0 - 23
+        if ($weekday > 0 && $weekday < 6) {
+            $m = in_array($hour, [2, 20]) ? 6 : 3;
+        } else {
+            $m = 6;
+        }
+        return $m * HOUR_IN_SECONDS;
     }
 }

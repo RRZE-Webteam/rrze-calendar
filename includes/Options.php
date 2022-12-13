@@ -26,8 +26,7 @@ class Options
     {
         $options = [
             'endpoint_slug' => 'events',
-            'endpoint_name' => 'Events',
-            'schedule_event' => 'hourly'
+            'endpoint_name' => 'Events'
         ];
 
         return $options;

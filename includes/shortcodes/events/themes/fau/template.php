@@ -1,7 +1,8 @@
 <?php
 
-/* Quit */
 defined('ABSPATH') || exit;
+
+use RRZE\Calendar\Util;
 ?>
 <div class="rrze-calendar events-list">
     <?php if (empty($events_data)): ?>
@@ -21,13 +22,11 @@ defined('ABSPATH') || exit;
             }
     	    $bgcolorclass = '';
     	    $inline = '';
-    	    if (isset($event->category)) :
-    		if (!empty($event->category->bgcol)) :
-    		    $bgcolorclass = $event->category->bgcol;
-    		elseif (!empty($event->category->color)) :
-    		    $inline = 'style="background-color:' . $event->category->color.'"';
-    		endif;
-    	    endif; ?>
+            if (isset($event->category)):
+                // Color
+                $bgcolorclass = !empty($event->category->color) ? $event->category->color : '';
+                $inline = !empty($event->category->color) ? sprintf('style="background-color:%1$s; color:%2$s"', $event->category->color, Util::getContrastYIQ($event->category->color)) : '';
+            endif; ?>
             <li>
                 <div class="event-item" itemscope itemtype="http://schema.org/Event">
 		    <meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">

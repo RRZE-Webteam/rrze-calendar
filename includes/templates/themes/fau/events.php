@@ -1,7 +1,8 @@
 <?php
 
-/* Quit */
 defined('ABSPATH') || exit;
+
+use RRZE\Calendar\Util;
 
 if(function_exists('fau_initoptions')) {
     $options = fau_initoptions();
@@ -69,11 +70,9 @@ get_header(); ?>
 					$bgcolorclass = '';
 					$inline = '';
 					if (isset($event->category)):
-					    if (!empty($event->category->bgcol)) :
-						$bgcolorclass = $event->category->bgcol;
-					    elseif (!empty($event->category->color)) :
-						$inline = 'style="background-color:' . $event->category->color.'"';
-					    endif;
+                        // Color
+                        $bgcolorclass = !empty($event->category->color) ? $event->category->color : '';
+                        $inline = !empty($event->category->color) ? sprintf('style="background-color:%1$s; color:%2$s"', $event->category->color, Util::getContrastYIQ($event->category->color)) : '';
 					endif; ?>
                                         <li>                                           
                                             <div class="event-item" itemscope itemtype="http://schema.org/Event">

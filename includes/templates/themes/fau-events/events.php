@@ -1,6 +1,8 @@
 <?php
-/* Quit */
+
 defined('ABSPATH') || exit;
+
+use RRZE\Calendar\Util;
 
 $multiday = [];
 
@@ -42,7 +44,7 @@ wp_enqueue_style('rrze-calendar');
                                 <?php endif;
                                 $inline = '';
                                 if (isset($event->category) && !empty($event->category->color)):
-                                    $inline = 'style="border-left: 5px solid ' . $event->category->color.'; padding-left: 10px;"';
+                                    $inline = 'style="border-left: 5px solid ' . Util::getContrastYIQ($event->category->color) . '; padding-left: 10px;"';
                                 endif;
                                 ?>
                                 <li class="event-item" <?php echo $inline; ?> itemscope itemtype="http://schema.org/Event">

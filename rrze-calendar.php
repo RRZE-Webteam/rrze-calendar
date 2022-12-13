@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version:         1.12.4
+Version:         1.13.0
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -30,7 +30,7 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.12.4';
+    const version = '1.13.0';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -83,7 +83,6 @@ class RRZE_Calendar {
     public static $db_term_relationships_table;
     public static $options;
     public static $messages;
-    public static $schedule_event_recurrance;
     protected static $instance = NULL;
 
     public static function instance() {
@@ -148,12 +147,6 @@ class RRZE_Calendar {
         });
 
         add_action('init', array($this, 'export_request'));
-
-        self::$schedule_event_recurrance = [
-            'hourly' => __('Stündlich', 'rrze-calendar'),
-            'twicedaily' => __('Zweimal täglich', 'rrze-calendar'),
-            'daily' => __('Täglich', 'rrze-calendar')
-        ];
 
         if (!wp_get_schedule(self::cron_hook)) {
             self::cron_schedule_event_setup();
@@ -238,7 +231,7 @@ class RRZE_Calendar {
 
     private static function cron_schedule_event_setup() {
         wp_clear_scheduled_hook(self::cron_hook);
-        wp_schedule_event(time(), self::$options['schedule_event'], self::cron_hook);
+        wp_schedule_event(current_time('timestamp'), 'hourly', self::cron_hook);
     }
 
     private static function db_setup() {
@@ -332,8 +325,7 @@ class RRZE_Calendar {
     private static function default_options() {
         $options = [
             'endpoint_slug' => 'events',
-            'endpoint_name' => 'Events',
-            'schedule_event' => 'hourly'
+            'endpoint_name' => 'Events'
         ];
 
         return $options;
@@ -526,7 +518,6 @@ class RRZE_Calendar {
         add_settings_section('rrze-calendar-settings-section', FALSE, '__return_false', 'rrze-calendar-settings');
         add_settings_field('endpoint_slug', __('Endpoint-Titelform', 'rrze-calendar'), array($this, 'endpoint_slug_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
         add_settings_field('endpoint_name', __('Endpoint-Name', 'rrze-calendar'), array($this, 'endpoint_name_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
-        add_settings_field('schedule_event', __('Überprüfen auf neue Termine', 'rrze-calendar'), array($this, 'schedule_event_field'), 'rrze-calendar-settings', 'rrze-calendar-settings-section');
     }
 
     public function url_field() {
@@ -588,17 +579,6 @@ class RRZE_Calendar {
         $endpoint_name = isset($this->settings_errors['endpoint_name']['value']) ? $this->settings_errors['endpoint_name']['value'] : self::$options['endpoint_name'];
         ?>
         <input <?php echo (isset($this->settings_errors['endpoint_name']['value'])) ? 'class="field-invalid"' : ''; ?> type="text" value="<?php echo $endpoint_name; ?>" name="<?php printf('%s[endpoint_name]', self::option_name); ?>">
-        <?php
-    }
-
-    public function schedule_event_field() {
-        $schedule_event = isset($settings_error['schedule_event']['value']) ? $settings_error['schedule_event']['value'] : self::$options['schedule_event'];
-        ?>
-        <select name="<?php printf('%s[schedule_event]', self::option_name); ?>">
-        <?php foreach (self::$schedule_event_recurrance as $key => $value) : ?>
-                <option value="<?php echo $key; ?>" <?php selected($key, $schedule_event); ?>><?php echo $value; ?></option>
-        <?php endforeach; ?>
-        </select>
         <?php
     }
 
@@ -1335,13 +1315,6 @@ class RRZE_Calendar {
             $this->add_settings_error('endpoint_name', $endpoint_name, '', '');
         }
 
-        $schedule_event = trim($input['schedule_event']);
-        if (empty($schedule_event) || !array_key_exists($schedule_event, self::$schedule_event_recurrance)) {
-            $this->add_settings_error('schedule_event');
-        } else {
-            $this->add_settings_error('schedule_event', $schedule_event, '', '');
-        }
-
         if ($this->has_errors()) {
             return FALSE;
         }
@@ -1351,9 +1324,6 @@ class RRZE_Calendar {
         flush_rewrite_rules();
 
         self::$options['endpoint_name'] = $endpoint_name;
-        self::$options['schedule_event'] = $schedule_event;
-
-        self::cron_schedule_event_setup();
 
         update_option(self::option_name, self::$options);
 
