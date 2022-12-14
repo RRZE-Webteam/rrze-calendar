@@ -50,7 +50,7 @@ defined('ABSPATH') || exit;
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                             </div>
                         <?php endif; ?>
-                        <?php if ($location != 0 && $event->location) : ?>
+                        <?php if ($location && !empty($event->location)) : ?>
                             <p class="event-location" itemprop="location">
                                 <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
                             </p>
