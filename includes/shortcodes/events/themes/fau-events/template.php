@@ -54,12 +54,12 @@ wp_enqueue_style('rrze-calendar-shortcode-events');
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                             </div>
                         <?php endif; ?>
-                        <?php if ($location && $event->location) : ?>
+                        <?php if ($location && !empty($event->location)) : ?>
                             <div class="event-location" itemprop="location">
                                 <?php echo esc_html($event->location); ?>
                             </div>
                         <?php endif; ?>
-                        <?php if ($description && $event->description) : ?>
+                        <?php if ($description && !empty($event->description)) : ?>
                             <div class="event-summary">
                                 <?php echo make_clickable(wp_trim_words(nl2br($event->description))); ?>
                             </div>
