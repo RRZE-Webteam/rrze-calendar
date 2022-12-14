@@ -49,22 +49,14 @@
                                                         <br><span><?php echo $termin['location']; ?></span>
                                                     <?php endif; ?>
                                                     <?php if ($termin['allday']) : ?>
-                                                        <div class="event-time event-allday">
-                                                            <?php _e('Ganztägig', 'rrze-calendar'); ?>
-                                                        </div>
+                                                        <br><span class="event-time event-allday"><?php _e('Ganztägig', 'rrze-calendar'); ?></span>
                                                     <?php endif; ?>
                                                     <?php if ($termin['allday'] && $termin['multiday']) : ?>
-                                                        <div class="event-time">
-                                                            <?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_start_date'], $termin['long_end_date'])) ?>
-                                                        </div>
+                                                        <br><span class="event-time"><?php echo esc_html(sprintf(__('%1$s bis %2$s', 'rrze-calendar'), $termin['long_start_date'], $termin['long_end_date'])) ?></span>
                                                     <?php elseif (!$termin['allday'] && $termin['multiday']) : ?>
-                                                        <div class="event-time">
-                                                            <?php echo esc_html(sprintf(__('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_start_date'], $termin['short_start_time'], $termin['long_end_date'], $termin['short_end_time'])) ?>
-                                                        </div>
+                                                        <br><span class="event-time"><?php echo esc_html(sprintf(__('%1$s %2$s Uhr bis %3$s %4$s Uhr', 'rrze-calendar'), $termin['long_start_date'], $termin['short_start_time'], $termin['long_end_date'], $termin['short_end_time'])) ?></span>
                                                     <?php elseif (!$termin['allday']) : ?>
-                                                        <div class="event-time">
-                                                            <?php echo esc_html(sprintf(__('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?>
-                                                        </div>
+                                                        <br><span class="event-time"><?php echo esc_html(sprintf(__('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $termin['short_start_time'], $termin['short_end_time'])) ?></span>
                                                     <?php endif; ?>
                                                 </span>
                                             </a>
