@@ -27,9 +27,9 @@ class Events_Shortcode
             $atts
         );
 
-        $abonnement_link = empty($atts['abonnement_link']) ? 0 : 1;
-        $location = empty($atts['location']) ? 0 : 1;
-        $description = empty($atts['description']) ? 0 : 1;
+        $abonnement_link = empty($atts['abonnement_link']) ? false : true;
+        $location = empty($atts['location']) ? false : true;
+        $description = empty($atts['description']) ? false : true;
 
         $anzahl = absint($atts['anzahl']);
         if ($anzahl < 1) {

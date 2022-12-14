@@ -21,18 +21,16 @@ defined('ABSPATH') || exit;
                 }
                 ?>
                 <div class="event-item" itemscope itemtype="http://schema.org/Event">
-		    <meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>">
-		    <meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>">
-                    <div class="event-date">
+		            <div class="event-date">
                         <div class="day-month">
                             <div class="day"><?php echo $event->start_day . '. '; ?></div>
                             <div class="month"><?php echo $event->start_month; ?></div>
                         </div>
                         <div class="year"><?php echo $event->start_year; ?></div>
                     </div>
-                    <h2 class="event-title" itemprop="name">
+                    <div class="event-title" itemprop="name">
                         <a itemprop="url" href="<?php echo esc_attr(RRZE_Calendar::endpoint_url($event->slug)); ?>" title="<?php echo esc_html($event->summary . ', ' . $event->long_start_date); ?>"><?php echo esc_html($event->summary); ?></a>
-                    </h2>
+                    </div>
                     <div class="event-info">
                         <?php if ($event->allday) : ?>
                             <div class="event-time event-allday">
@@ -52,26 +50,31 @@ defined('ABSPATH') || exit;
                                 <?php echo esc_html(sprintf( __('%1$s Uhr bis %2$s Uhr', 'rrze-calendar'), $event->short_start_time, $event->short_end_time)) ?>
                             </div>
                         <?php endif; ?>
-                        <p class="event-location" itemprop="location">
-                        <?php if ($location && $event->location) : ?>
-                            <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
+                        <?php if ($location && !empty($event->location)) : ?>
+                            <p class="event-location" itemprop="location">
+                                <?php printf('<strong>%1$s: </strong>%2$s', __('Ort', 'rrze-calendar'), $event->location); ?>
+                            </p>
                         <?php endif; ?>
-                        </p>
                     </div>
-                </div>
+                    <p style="margin:0;padding:0;"><meta itemprop="startDate" content="<?php echo date_i18n('c', strtotime($event->start)); ?>"><meta itemprop="endDate" content="<?php echo date_i18n('c', strtotime($event->end)); ?>"></p></div>
                 <?php $anzahl--; ?>
             <?php endforeach; ?>
         <?php endforeach; ?>
-        <?php if ($calendar_page_url): ?>
-        <p class="events-more-links">
-            <a class="events-more" href="<?php echo $calendar_page_url; ?>"><?php _e('Mehr Veranstaltungen', 'rrze-calendar'); ?></a>
-        </p>
-        <?php endif; ?>
+        <?php if ($calendar_page_url != ''):
+            if (shortcode_exists('button')) :
+                echo do_shortcode('[button link="' . $calendar_page_url . '" size="small"]' . __('Mehr Veranstaltungen', 'rrze-calendar') . '[/button]');
+            else: ?>
+                <p class="events-more-links">
+                    <a class="events-more" href="<?php echo $calendar_page_url; ?>"><?php _e('Mehr Veranstaltungen', 'rrze-calendar'); ?></a>
+                </p>
+            <?php endif;
+        endif; ?>
     </div>
     <?php endif; ?>
-    <?php if($subscribe_url): ?>
+    <?php
+    if($subscribe_url != ''): ?>
     <p class="events-more-links">
-        <a class="events-more" href="<?php echo $calendar_subscribe_url; ?>"><?php _e('Abonnement', 'rrze-calendar'); ?></a>
+        <a class="events-more" href="<?php echo $calendar_subscribe_url; ?>"><i class="fas fa-rss" aria-hidden="true"></i> <?php _e('Abonnement', 'rrze-calendar'); ?></a>
     </p>
     <?php endif; ?>
 </div>
