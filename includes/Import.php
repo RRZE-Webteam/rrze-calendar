@@ -76,49 +76,7 @@ class Import
             ini_set('memory_limit', '512M');
         }
 
-        $startdate = 0;
-        $pastdays = 0;
         $limitdays = 365;
-
-        if ((!empty($startdate) && intval($startdate) > 20000000)) {
-            $rangeStart = date(
-                'Y/m/d',
-                gmmktime(
-                    0,
-                    0,
-                    0,
-                    substr($startdate, 4, 2),
-                    substr($startdate, 6, 2) - 1,
-                    substr($startdate, 0, 4)
-                )
-            );
-            $rangeEnd = date(
-                'Y/m/d',
-                gmmktime(
-                    0,
-                    0,
-                    0,
-                    substr($startdate, 4, 2),
-                    substr($startdate, 6, 2) + $limitdays + 7,
-                    substr($startdate, 0, 4)
-                )
-            );
-        } else {
-            if (!empty($pastdays)) {
-                // Rolling "past days" start (from beginning of current month)
-                $rangeStart = date('Y/m/d', gmmktime(0, 0, 0, date('n'), 0 - $pastdays, date('Y')));
-            } else {
-                // Middle of last month (to cover week view's "last week" option)
-                $rangeStart = date('Y/m/d', gmmktime(0, 0, 0, date('n'), -15, date('Y')));
-            }
-            // Extend by "limitdays" + one week past current date
-            $rangeEnd = date('Y/m/d', gmmktime(0, 0, 0, date('n'), date('j') + $limitdays + 7, date('Y')));
-        }
-
-        $dateTimeNow = new \DateTime();
-        $filterDaysAfter = $dateTimeNow->diff(new \DateTime($rangeEnd))->format('%a');
-        $filterDaysBefore = $dateTimeNow->diff(new \DateTime($rangeStart))->format('%a');
-
         $skipRecurrence = false;
         $tzid = get_option('timezone_string');
         $tz = Util::isValidTimezoneID($tzid) ? timezone_open($tzid) : wp_timezone();
@@ -131,8 +89,6 @@ class Import
                     'defaultTimeZone'             => $tz->getName(),
                     'defaultWeekStart'            => 'MO',
                     'disableCharacterReplacement' => true,
-                    'filterDaysAfter'             => $filterDaysAfter,
-                    'filterDaysBefore'            => $filterDaysBefore,
                     'replaceWindowsTimeZoneIds'   => true,
                     'skipRecurrence'              => $skipRecurrence
                 ]
