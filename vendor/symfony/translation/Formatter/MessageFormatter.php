@@ -14,6 +14,9 @@ namespace Symfony\Component\Translation\Formatter;
 use Symfony\Component\Translation\IdentityTranslator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+// Help opcache.preload discover always-needed symbols
+class_exists(IntlFormatter::class);
+
 /**
  * @author Abdellatif Ait boudad <a.aitboudad@gmail.com>
  */
@@ -34,7 +37,7 @@ class MessageFormatter implements MessageFormatterInterface, IntlFormatterInterf
     /**
      * {@inheritdoc}
      */
-    public function format(string $message, string $locale, array $parameters = [])
+    public function format(string $message, string $locale, array $parameters = []): string
     {
         if ($this->translator instanceof TranslatorInterface) {
             return $this->translator->trans($message, $parameters, null, $locale);

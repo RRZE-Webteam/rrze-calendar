@@ -15,6 +15,9 @@
  * - Brett Johnson
  * - balping
  */
+
+use Carbon\CarbonInterface;
+
 $huWeekEndings = ['vasárnap', 'hétfőn', 'kedden', 'szerdán', 'csütörtökön', 'pénteken', 'szombaton'];
 
 return [
@@ -84,6 +87,10 @@ return [
     'weekdays_short' => ['vas', 'hét', 'kedd', 'sze', 'csüt', 'pén', 'szo'],
     'weekdays_min' => ['v', 'h', 'k', 'sze', 'cs', 'p', 'sz'],
     'ordinal' => ':number.',
+    'diff_now' => 'most',
+    'diff_today' => 'ma',
+    'diff_yesterday' => 'tegnap',
+    'diff_tomorrow' => 'holnap',
     'formats' => [
         'LT' => 'H:mm',
         'LTS' => 'H:mm:ss',
@@ -95,11 +102,11 @@ return [
     'calendar' => [
         'sameDay' => '[ma] LT[-kor]',
         'nextDay' => '[holnap] LT[-kor]',
-        'nextWeek' => function (\Carbon\CarbonInterface $date) use ($huWeekEndings) {
+        'nextWeek' => function (CarbonInterface $date) use ($huWeekEndings) {
             return '['.$huWeekEndings[$date->dayOfWeek].'] LT[-kor]';
         },
         'lastDay' => '[tegnap] LT[-kor]',
-        'lastWeek' => function (\Carbon\CarbonInterface $date) use ($huWeekEndings) {
+        'lastWeek' => function (CarbonInterface $date) use ($huWeekEndings) {
             return '[múlt '.$huWeekEndings[$date->dayOfWeek].'] LT[-kor]';
         },
         'sameElse' => 'L',
