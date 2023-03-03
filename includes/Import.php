@@ -39,14 +39,33 @@ class Import
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
         // Get ICS file contents
+        $cache = true;
         $icsContent = Transients::getIcalCache($icalUrl);
         if ($icsContent === false) {
+            $cache = false;
             $icsContent = self::urlGetContent($icalUrl);
             if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
                 Transients::setIcalCache($icalUrl, $icsContent);
             } else {
                 $icsContent = '';
             }
+        }
+
+        if (!$cache) {
+            $currentUser = wp_get_current_user();
+            $UserLogin = $currentUser->user_login ?? '';
+            $context = ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl];
+            if ($UserLogin) {
+                $message = '{plugin}: FRU - Feed request made by a user.';
+                $context = array_merge($context, ['user' => $UserLogin]);
+            } else {
+                $message = '{plugin}: FRSE - Feed request made by a scheduled event.';
+            }
+            do_action(
+                'rrze.log.info',
+                $message,
+                $context
+            );
         }
 
         if (empty($icsContent)) {

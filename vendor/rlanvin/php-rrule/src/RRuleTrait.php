@@ -99,13 +99,15 @@ trait RRuleTrait
 		return $res;
 	}
 
-	public function getOccurrencesAfter($date, $inclusive = false,  $limit = null)
+	public function getOccurrencesAfter($date, $inclusive = false, $limit = null)
 	{
 		if ($inclusive || ! $this->occursAt($date)) {
 			return $this->getOccurrencesBetween($date, null, $limit);
 		}
 
-		$limit += 1;
+		if ($limit !== null) {
+			$limit += 1;
+		}
 		$occurrences = $this->getOccurrencesBetween($date, null, $limit);
 		return array_slice($occurrences, 1);
 	}
@@ -173,7 +175,7 @@ trait RRuleTrait
 	 * Convert any date into a DateTime object.
 	 *
 	 * @param mixed $date
-	 * @return \DateTime
+	 * @return \DateTimeInterface Returns a DateTimeImmutable if a DateTimeImmutable is passed, or DateTime otherwise
 	 *
 	 * @throws \InvalidArgumentException on error
 	 */
@@ -202,6 +204,22 @@ trait RRuleTrait
 		else {
 			$date = clone $date; // avoid reference problems
 		}
+
+		// ensure there is no microseconds in the DateTime object even if
+		// the input contained microseconds, to avoid date comparison issues
+		// (see #104)
+		if (version_compare(PHP_VERSION, '7.1.0') < 0) {
+			$date = new \DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
+		}
+		else {
+			$date->setTime(
+				$date->format('H'),
+				$date->format('i'),
+				$date->format('s'),
+				0
+			);
+		}
+
 		return $date;
 	}
 }

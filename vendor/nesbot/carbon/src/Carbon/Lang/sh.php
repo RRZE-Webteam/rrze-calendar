@@ -8,10 +8,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 // @codeCoverageIgnoreStart
+use Symfony\Component\Translation\PluralizationRules;
+
 if (class_exists('Symfony\\Component\\Translation\\PluralizationRules')) {
-    \Symfony\Component\Translation\PluralizationRules::set(function ($number) {
-        return ((1 == $number % 10) && (11 != $number % 100)) ? 0 : ((($number % 10 >= 2) && ($number % 10 <= 4) && (($number % 100 < 10) || ($number % 100 >= 20))) ? 1 : 2);
+    PluralizationRules::set(static function ($number) {
+        return (($number % 10 == 1) && ($number % 100 != 11)) ? 0 : ((($number % 10 >= 2) && ($number % 10 <= 4) && (($number % 100 < 10) || ($number % 100 >= 20))) ? 1 : 2);
     }, 'sh');
 }
 // @codeCoverageIgnoreEnd
@@ -26,6 +29,9 @@ if (class_exists('Symfony\\Component\\Translation\\PluralizationRules')) {
  * - Miroslav Matkovic (mikki021)
  */
 return [
+    'diff_now' => 'sada',
+    'diff_yesterday' => 'juče',
+    'diff_tomorrow' => 'sutra',
     'formats' => [
         'LT' => 'HH:mm',
         'LTS' => 'HH:mm:ss',
@@ -35,19 +41,19 @@ return [
         'LLLL' => 'MMMM DD, YYYY HH:mm',
     ],
     'year' => ':count godina|:count godine|:count godina',
-    'y' => ':count godina|:count godine|:count godina',
+    'y' => ':count g.',
     'month' => ':count mesec|:count meseca|:count meseci',
-    'm' => ':count mesec|:count meseca|:count meseci',
+    'm' => ':count m.',
     'week' => ':count nedelja|:count nedelje|:count nedelja',
-    'w' => ':count nedelja|:count nedelje|:count nedelja',
+    'w' => ':count n.',
     'day' => ':count dan|:count dana|:count dana',
-    'd' => ':count dan|:count dana|:count dana',
-    'hour' => ':count čas|:count časa|:count časova',
-    'h' => ':count čas|:count časa|:count časova',
+    'd' => ':count d.',
+    'hour' => ':count sat|:count sata|:count sati',
+    'h' => ':count č.',
     'minute' => ':count minut|:count minuta|:count minuta',
-    'min' => ':count minut|:count minuta|:count minuta',
+    'min' => ':count min.',
     'second' => ':count sekund|:count sekunde|:count sekundi',
-    's' => ':count sekund|:count sekunde|:count sekundi',
+    's' => ':count s.',
     'ago' => 'pre :time',
     'from_now' => 'za :time',
     'after' => 'nakon :time',
