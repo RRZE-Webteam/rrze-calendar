@@ -47,14 +47,6 @@ class Transients
 
     protected static function getTtl()
     {
-        $today = getdate(current_time('timestamp'));
-        $weekday = $today['wday']; // 0 - 6 (0=sunday, 6=saturday)
-        $hour = $today['hours']; // 0 - 23
-        if ($weekday > 0 && $weekday < 6) {
-            $m = in_array($hour, [2, 20]) ? 6 : 3;
-        } else {
-            $m = 6;
-        }
-        return $m * HOUR_IN_SECONDS;
+        return random_int(86400, 90000);
     }
 }

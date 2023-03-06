@@ -56,10 +56,10 @@ class Import
             $UserLogin = $currentUser->user_login ?? '';
             $context = ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl];
             if ($UserLogin) {
-                $message = '{plugin}: FRU - Feed request made by a user.';
+                $message = '{plugin}: FRMBU - Feed request made by a user.';
                 $context = array_merge($context, ['user' => $UserLogin]);
             } else {
-                $message = '{plugin}: FRSE - Feed request made by a scheduled event.';
+                $message = '{plugin}: FRMBSE - Feed request made by a scheduled event.';
             }
             do_action(
                 'rrze.log.info',
