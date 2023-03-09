@@ -16,15 +16,18 @@ class Import
 
     protected $ical = null;
 
+    const FEEDS_TABLE = 'rrze_calendar_feeds';
+    const EVENTS_TABLE = 'rrze_calendar_events';
+
     /**
      * Import ical events by iCal URL
      * @param  string  $url iCal URl
      * @param  boolean $skipRecurrence
      * @return array|boolean
      */
-    public function importEvents($icalUrl = '', $skipRecurrence = false)
+    public function importEvents($url = '', $skipRecurrence = false)
     {
-        if ($icalUrl == '') {
+        if ($url == '') {
             // The iCal URL was not provided.'
             do_action(
                 'rrze.log.error',
@@ -35,17 +38,18 @@ class Import
             return false;
         }
 
-        $icalUrl = str_replace('webcal://', 'http://', $icalUrl);
+        $icsUrl = str_replace('webcal://', 'http://', $url);
         $skipRecurrence = (bool) $skipRecurrence ? true : false;
 
         // Get ICS file contents
         $cache = true;
-        $icsContent = Transients::getIcalCache($icalUrl);
+        $icsContent = Transients::getIcalCache($icsUrl);
+
         if ($icsContent === false) {
             $cache = false;
-            $icsContent = self::urlGetContent($icalUrl);
+            $icsContent = self::urlGetContent($icsUrl);
             if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
-                Transients::setIcalCache($icalUrl, $icsContent);
+                Transients::setIcalCache($icsUrl, $icsContent);
             } else {
                 $icsContent = '';
             }
@@ -54,7 +58,7 @@ class Import
         if (!$cache) {
             $currentUser = wp_get_current_user();
             $UserLogin = $currentUser->user_login ?? '';
-            $context = ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl];
+            $context = ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icsUrl' => $url];
             if ($UserLogin) {
                 $message = '{plugin}: FRMBU - Feed request made by a user.';
                 $context = array_merge($context, ['user' => $UserLogin]);
@@ -74,8 +78,11 @@ class Import
                 'rrze.log.error',
                 /* translators: {plugin}: Plugin name. */
                 __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
-                ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icalUrl' => $icalUrl]
+                ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icsUrl' => $url]
             );
+            if (!$UserLogin) {
+                self::deactivateFeed($url);
+            }
             return false;
         }
 
@@ -193,6 +200,24 @@ class Import
             return false;
         }
         return $response['body'] ?? false;
+    }
+
+    protected static function getFeed($url)
+    {
+        global $wpdb;
+        $sql = "SELECT * FROM " . $wpdb->prefix . self::FEEDS_TABLE . " WHERE url = %s";
+        return $wpdb->get_row($wpdb->prepare($sql, $url), 'OBJECT');
+    }
+
+    protected function deactivateFeed($url)
+    {
+        global $wpdb;
+        $feed = self::getFeed($url);
+        if (is_object($feed)) {
+            $wpdb->update($wpdb->prefix . self::FEEDS_TABLE, ['active' => 0], ['id' => $feed->id], ['%d']);
+            $wpdb->delete($wpdb->prefix . self::EVENTS_TABLE, ['ical_feed_id' => $feed->id], ['%d']);
+            $wpdb->query("DELETE e FROM " . $wpdb->prefix . self::EVENTS_TABLE . " e LEFT JOIN " . $wpdb->prefix . self::FEEDS_TABLE . " f ON e.ical_feed_id = f.id WHERE f.id IS NULL");
+        }
     }
 
     public function iCalDateToUnixTimestamp($icalDate)
