@@ -51,7 +51,7 @@ class Endpoint
             if ($template = locate_template('404.php')) {
                 load_template($template);
             } else {
-                wp_die(__('Event not found.', 'rrze-calendar'));
+                wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
             }
         }
 

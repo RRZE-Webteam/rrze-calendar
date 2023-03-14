@@ -12,7 +12,7 @@ class Import
      * [protected description]
      * @var integer
      */
-    const TIMEOUT_IN_SECONDS = 7;
+    const TIMEOUT_IN_SECONDS = 14;
 
     protected $ical = null;
 
@@ -31,8 +31,7 @@ class Import
             // The iCal URL was not provided.'
             do_action(
                 'rrze.log.error',
-                /* translators: {plugin}: Plugin name. */
-                __('{plugin}: The iCal URL was not provided.', 'rrze-calendar'),
+                '{plugin}: The iCal URL was not provided.',
                 ['plugin' => 'rrze-calendar', 'method' => __METHOD__]
             );
             return false;
@@ -76,13 +75,12 @@ class Import
             // Unable to retrieve content from the provided iCal URL.
             do_action(
                 'rrze.log.error',
-                /* translators: {plugin}: Plugin name. */
-                __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
+                '{plugin}: Unable to retrieve content from the provided iCal URL.',
                 ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icsUrl' => $url]
             );
-            //if (!$UserLogin) {
-            //    self::deactivateFeed($url);
-            //}
+            if (!$UserLogin) {
+                //self::deactivateFeed($url);
+            }
             return false;
         }
 
@@ -195,11 +193,11 @@ class Import
             'method' => 'GET'
         ];
 
-        $response = wp_safe_remote_get($url, $args);
-        if (wp_remote_retrieve_response_code($response) != 200) {
+        $request = wp_safe_remote_get($url, $args);
+        if (wp_remote_retrieve_response_code($request) != 200) {
             return false;
         }
-        return $response['body'] ?? false;
+        return $request['body'] ?? false;
     }
 
     protected static function getFeed($url)

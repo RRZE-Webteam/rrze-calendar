@@ -1004,13 +1004,19 @@ class RRZE_Calendar {
             wp_die(self::$messages['invalid-permissions']);
         }
 
+        $result = false;
         if (is_object($feed) && $feed->active) {
             Transients::deleteIcalCache($feed->url);
-            $this->parse_ics_feed($feed);
+            $result = $this->parse_ics_feed($feed);
             self::flush_cache();
         }
 
-        $this->add_admin_notice(__('Der Feed wurde aktualisiert.', 'rrze-calendar'));
+        if ($result) {
+            $this->add_admin_notice( __('Der Feed wurde aktualisiert.', 'rrze-calendar'));
+        } else {
+            $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
+            $this->add_admin_notice($message, 'error');
+        }
 
         wp_redirect(Settings::optionsUrl());
         exit();
@@ -1019,9 +1025,18 @@ class RRZE_Calendar {
     public function feed_bulk_update($feed_ids) {
         if (is_array($feed_ids)) {
             foreach ($feed_ids as $feed_id) {
-                $feed = self::get_feed($feed_id);
-                if ($feed && $feed->active) {
-                    $this->parse_ics_feed($feed);
+                if(!$feed = self::get_feed($feed_id)) {
+                    continue;
+                }
+                $result = false;
+                if (is_object($feed) && $feed->active) {
+                    Transients::deleteIcalCache($feed->url);
+                    $result = $this->parse_ics_feed($feed);
+                    self::flush_cache();
+                }
+                if (!$result) {
+                    $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
+                    $this->add_admin_notice($message, 'error');
                 }
             }
 
@@ -1092,16 +1107,20 @@ class RRZE_Calendar {
         }
 
         if (is_object($feed)) {
+            if($activate && !$this->parse_ics_feed($feed)) {
+                $activate = 0;
+                $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
+                $this->add_admin_notice($message, 'error');    
+            }            
             $wpdb->update(self::$db_feeds_table, array('active' => $activate), array('id' => $feed->id), array('%d'));
-            if ($activate) {
-                $this->parse_ics_feed($feed);
-            } else {
+            if (!$activate) {
+                Transients::deleteIcalCache($feed->url);
                 self::flush_feed($feed->id, false);
             }
 
             self::flush_cache();
         }
-
+        
         if ($activate) {
             $this->add_admin_notice(__('Der Feed wurde aktiviert.'));
         } else {
@@ -1117,14 +1136,17 @@ class RRZE_Calendar {
 
         if (is_array($feed_ids)) {
             foreach ($feed_ids as $feed_id) {
-                $wpdb->update(self::$db_feeds_table, array('active' => $activate), array('id' => $feed_id), array('%d'), array('%d'));
-                $feed = self::get_feed($feed_id);
-                if (!$feed) {
+                if (!$feed = self::get_feed($feed_id)) {
                     continue;
-                }                
-                if ($activate) {
-                    $this->parse_ics_feed($feed);
-                } else {
+                }
+                if($activate && !$this->parse_ics_feed($feed)) {
+                    $activate = 0;
+                    $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
+                    $this->add_admin_notice($message, 'error');    
+                }                  
+                $wpdb->update(self::$db_feeds_table, array('active' => $activate), array('id' => $feed_id), array('%d'), array('%d'));                
+                if (!$activate) {
+                    Transients::deleteIcalCache($feed->url);
                     self::flush_feed($feed_id, false);
                 }
             }
@@ -2196,7 +2218,7 @@ class RRZE_Calendar {
         $import = new Import;
         $events = $import->importEvents($feed->url, false);
         if (empty($events)) {
-            return;
+            return false;
         }
 
         self::flush_feed($feed->id, false);
@@ -2260,6 +2282,7 @@ class RRZE_Calendar {
           
         }
 
+        return true;
     }
     
     protected function isAllDay(&$event) {
