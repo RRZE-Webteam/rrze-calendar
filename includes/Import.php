@@ -80,9 +80,9 @@ class Import
                 __('{plugin}: Unable to retrieve content from the provided iCal URL.', 'rrze-calendar'),
                 ['plugin' => 'rrze-calendar', 'method' => __METHOD__, 'icsUrl' => $url]
             );
-            if (!$UserLogin) {
-                self::deactivateFeed($url);
-            }
+            //if (!$UserLogin) {
+            //    self::deactivateFeed($url);
+            //}
             return false;
         }
 
