@@ -47,10 +47,10 @@ class Import
         if ($icsContent === false) {
             $cache = false;
             $icsContent = self::urlGetContent($icsUrl);
-            if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
+            if ($icsContent !== false && strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
                 Transients::setIcalCache($icsUrl, $icsContent);
             } else {
-                $icsContent = '';
+                $icsContent = false;
             }
         }
 
@@ -71,7 +71,7 @@ class Import
             );
         }
 
-        if (empty($icsContent)) {
+        if ($icsContent === false) {
             // Unable to retrieve content from the provided iCal URL.
             do_action(
                 'rrze.log.error',
@@ -164,19 +164,11 @@ class Import
             $this->ical->initString($icsContent);
         } catch (\Exception $exception) {
             do_action('rrze.log.error', ['exception' => $exception]);
-
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                throw $exception;
-            } else {
-                return false;
-            }
+            return false;
         }
 
-        if ($events = $this->ical->events()) {
-            return $events;
-        }
-
-        return false;
+        $events = $this->ical->events();
+        return !empty($events) ? $events : [];
     }
 
     /**
