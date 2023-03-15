@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import und Ausgabe der öffentlicher Veranstaltungen der FAU.
-Version:         1.13.6
+Version:         1.13.7
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -30,7 +30,7 @@ register_deactivation_hook(__FILE__, array('RRZE_Calendar', 'deactivation'));
 
 class RRZE_Calendar {
 
-    const version = '1.13.6';
+    const version = '1.13.7';
     const feeds_table_name = 'rrze_calendar_feeds';
     const events_table_name = 'rrze_calendar_events';
     const events_cache_table_name = 'rrze_calendar_events_cache';
@@ -1011,7 +1011,7 @@ class RRZE_Calendar {
             self::flush_cache();
         }
 
-        if ($result) {
+        if ($result !== false) {
             $this->add_admin_notice( __('Der Feed wurde aktualisiert.', 'rrze-calendar'));
         } else {
             $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
@@ -1034,7 +1034,7 @@ class RRZE_Calendar {
                     $result = $this->parse_ics_feed($feed);
                     self::flush_cache();
                 }
-                if (!$result) {
+                if ($result === false) {
                     $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
                     $this->add_admin_notice($message, 'error');
                 }
@@ -1107,7 +1107,7 @@ class RRZE_Calendar {
         }
 
         if (is_object($feed)) {
-            if($activate && !$this->parse_ics_feed($feed)) {
+            if($activate && $this->parse_ics_feed($feed) === false) {
                 $activate = 0;
                 $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
                 $this->add_admin_notice($message, 'error');    
@@ -1139,7 +1139,7 @@ class RRZE_Calendar {
                 if (!$feed = self::get_feed($feed_id)) {
                     continue;
                 }
-                if($activate && !$this->parse_ics_feed($feed)) {
+                if($activate && $this->parse_ics_feed($feed) === false) {
                     $activate = 0;
                     $message = sprintf(__('Inhalt kann nicht von der URL %s abgerufen werden.', 'rrze-calendar'), $feed->url);
                     $this->add_admin_notice($message, 'error');    
@@ -2218,7 +2218,7 @@ class RRZE_Calendar {
         $import = new Import;
         $events = $import->importEvents($feed->url, false);
         if (empty($events)) {
-            return false;
+            return $events;
         }
 
         self::flush_feed($feed->id, false);
