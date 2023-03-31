@@ -13,23 +13,29 @@ if(function_exists('fau_initoptions')) {
 $event = &$events_data;
 $bgcolorclass = '';
 $inline = '';
+
+
+
 if (isset($event->category)) {
     // Color
     $bgcolorclass = !empty($event->category->color) ? $event->category->color : '';
     $inline = !empty($event->category->color) ? sprintf('style="background-color:%1$s; color:%2$s"', $event->category->color, Util::getContrastYIQ($event->category->color)) : '';
 }
-					
-$breadcrumb = '';
+ $currentTheme = wp_get_theme();		
+$vers = $currentTheme->get( 'Version' );
+ 
+
+
+get_header(); 
+  if (version_compare($vers, "2.3", '<')) {  
+    $breadcrumb = '';
     $breadcrumb .= '<nav aria-label="'.__('Breadcrumb','fau').'" class="breadcrumbs">';    
     $breadcrumb .= '<ol class="breadcrumblist" itemscope="" itemtype="https://schema.org/BreadcrumbList">';
     $breadcrumb .= '<li itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemprop="item" href="'. site_url('/') .'"><span itemprop="name">'.__('Startseite','fau').'</span></a><meta itemprop="position" content="1"></li>';
     $breadcrumb .= '<li itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemprop="item" href="' . $calendar_endpoint_url . '"><span itemprop="name">' . $calendar_endpoint_name . '</span></a><meta itemprop="position" content="2"></li>';
     $breadcrumb .= '</ol>';
-    $breadcrumb .= '</nav>';
-
-get_header(); ?>
-
-
+    $breadcrumb .= '</nav>'; 
+?>
     <section id="hero" class="hero-small">
         <div class="container hero-content">
             <div class="row">
@@ -44,6 +50,8 @@ get_header(); ?>
             </div>
         </div>
     </section>
+
+  <?php } ?>
     <div id="content">
         <div class="content-container">
             <div class="content-row">

@@ -12,17 +12,19 @@ if (function_exists('fau_initoptions')) {
 
 $multiday = [];
 
-$breadcrumb = '';
 
-$breadcrumb .= '<nav aria-label="' . __('Breadcrumb', 'fau') . '" class="breadcrumbs">';
-$breadcrumb .= '<ol class="breadcrumblist" itemscope="" itemtype="https://schema.org/BreadcrumbList">';
-$breadcrumb .= '<li itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemprop="item" href="' . site_url('/') . '"><span itemprop="name">' . __('Startseite', 'fau') . '</span></a><meta itemprop="position" content="1"></li>';
-$breadcrumb .= '</ol>';
-$breadcrumb .= '</nav>';
-
-
-get_header(); ?>
-
+$currentTheme = wp_get_theme();		
+$vers = $currentTheme->get( 'Version' );
+ 
+get_header(); 
+  if (version_compare($vers, "2.3", '<')) {  
+    $breadcrumb = '';
+    $breadcrumb .= '<nav aria-label="' . __('Breadcrumb', 'fau') . '" class="breadcrumbs">';
+    $breadcrumb .= '<ol class="breadcrumblist" itemscope="" itemtype="https://schema.org/BreadcrumbList">';
+    $breadcrumb .= '<li itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemprop="item" href="' . site_url('/') . '"><span itemprop="name">' . __('Startseite', 'fau') . '</span></a><meta itemprop="position" content="1"></li>';
+    $breadcrumb .= '</ol>';
+    $breadcrumb .= '</nav>';
+?>
 <section id="hero" class="hero-small">
     <div class="container hero-content">
         <div class="row">
@@ -37,6 +39,7 @@ get_header(); ?>
         </div>
     </div>
 </section>
+  <?php } ?>
 
 <div id="content">
     <div class="content-container">
