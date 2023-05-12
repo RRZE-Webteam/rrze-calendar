@@ -14,8 +14,8 @@ $event = &$events_data;
 $bgcolorclass = '';
 $inline = '';
 
-global $post;
-   $post->post_title = $event->summary;
+$post = get_post();
+$post->post_title = $event->summary;
                 
 if (isset($event->category)) {
     // Color
