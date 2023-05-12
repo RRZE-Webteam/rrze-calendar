@@ -11,7 +11,7 @@ class Themes
      * @var array
      */
     protected static $allowedStylesheets = [
-        'fau' => [
+      'fau' => [
             'FAU-Einrichtungen',
 	    'FAU-Einrichtungen-DEV',
             'FAU-Einrichtungen-BETA',
@@ -20,7 +20,7 @@ class Themes
             'FAU-Philfak',
             'FAU-Techfak',
             'FAU-Natfak'
-        ],
+        ], 
         'rrze' => [
             'rrze-2015'
         ],
