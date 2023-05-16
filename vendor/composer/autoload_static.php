@@ -4,54 +4,17 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit404749f16bb6493d66426172a562b88d
+class ComposerStaticInit7473071636baa055ef038dccdfa39987
 {
-    public static $files = array (
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
-        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
-        'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
-        'S' => 
-        array (
-            'Symfony\\Polyfill\\Php80\\' => 23,
-            'Symfony\\Polyfill\\Mbstring\\' => 26,
-            'Symfony\\Contracts\\Translation\\' => 30,
-            'Symfony\\Component\\Translation\\' => 30,
-        ),
         'R' => 
         array (
             'RRule\\' => 6,
             'RRZE\\Calendar\\' => 14,
         ),
-        'I' => 
-        array (
-            'ICal\\' => 5,
-        ),
-        'C' => 
-        array (
-            'Carbon\\' => 7,
-        ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Symfony\\Polyfill\\Php80\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
-        ),
-        'Symfony\\Polyfill\\Mbstring\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
-        ),
-        'Symfony\\Contracts\\Translation\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/translation-contracts',
-        ),
-        'Symfony\\Component\\Translation\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/translation',
-        ),
         'RRule\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
@@ -61,31 +24,30 @@ class ComposerStaticInit404749f16bb6493d66426172a562b88d
         array (
             0 => __DIR__ . '/../..' . '/includes',
         ),
-        'ICal\\' => 
+    );
+
+    public static $prefixesPsr0 = array (
+        'I' => 
         array (
-            0 => __DIR__ . '/../..' . '/includes/ICal',
-        ),
-        'Carbon\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
+            'ICal' => 
+            array (
+                0 => __DIR__ . '/../..' . '/src',
+                1 => __DIR__ . '/..' . '/johngrogg/ics-parser/src',
+            ),
         ),
     );
 
     public static $classMap = array (
-        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
-        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
-        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
-        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit404749f16bb6493d66426172a562b88d::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit404749f16bb6493d66426172a562b88d::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit404749f16bb6493d66426172a562b88d::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit7473071636baa055ef038dccdfa39987::$classMap;
 
         }, null, ClassLoader::class);
     }
