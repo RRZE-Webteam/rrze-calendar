@@ -6,14 +6,15 @@
     "license": "GPL",
     "require": {
         "php": "^8.0.0",
-        "ext-mbstring": "*",
-        "nesbot/carbon": "^2.66.0",
+        "johngrogg/ics-parser": "^3.2.1",
         "rlanvin/php-rrule": "^2.4.0"
     },
     "autoload": {
+        "psr-0": {
+            "ICal": "src/"
+        },
         "psr-4": {
             "RRZE\\Calendar\\": "includes/",
-            "ICal\\": "includes/ICal/",
             "RRule\\": "src/"
         }
     }
