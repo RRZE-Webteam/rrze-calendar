@@ -10,8 +10,9 @@ if (function_exists('fau_initoptions')) {
     $options = array();
 }
 $post = get_post();
-$post->post_title = $calendar_endpoint_name;
-
+if (isset($post)) {
+    $post->post_title = $calendar_endpoint_name;
+}
 $multiday = [];
 
 
