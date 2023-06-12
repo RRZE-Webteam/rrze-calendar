@@ -1,13 +1,19 @@
 {
     "name": "rrze/rrze-calendar",
     "description": "RRZE WordPress Plugin",
-    "version": "1.13.8",
+    "version": "2.0.1",
     "type": "wordpress-plugin",
     "license": "GPL",
     "require": {
         "php": "^8.0.0",
         "johngrogg/ics-parser": "^3.2.1",
-        "rlanvin/php-rrule": "^2.4.0"
+        "rlanvin/php-rrule": "^2.4.0",
+        "jsvrcek/ics": "^0.8.4",
+        "cmb2/cmb2": "^2.10"
+    },
+    "suggest": {
+        "ext-mbstring": "*",
+        "ext-intl": "*"
     },
     "autoload": {
         "psr-0": {
@@ -16,6 +22,13 @@
         "psr-4": {
             "RRZE\\Calendar\\": "includes/",
             "RRule\\": "src/"
+        }
+    },
+    "extra": {
+        "installer-paths": {
+            "vendor/cmb2/cmb2": [
+                "cmb2/cmb2"
+            ]
         }
     }
 }

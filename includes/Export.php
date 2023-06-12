@@ -4,186 +4,103 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use DateTime;
+use RRZE\Calendar\CPT\CalendarFeed;
+
+use Jsvrcek\ICS\Model\Calendar;
+use Jsvrcek\ICS\Model\CalendarEvent;
+use Jsvrcek\ICS\Model\Relationship\Attendee;
+use Jsvrcek\ICS\Model\Relationship\Organizer;
+
+use Jsvrcek\ICS\Utility\Formatter;
+use Jsvrcek\ICS\CalendarStream;
+use Jsvrcek\ICS\CalendarExport;
 
 class Export
 {
-    /**
-     * [$urlHost description]
-     * @var string
-     */
-    protected $urlHost;
-
-    /**
-     * [protected description]
-     * @var string
-     */
-    protected $urlPath;
-
-    /**
-     * [protected description]
-     * @var array
-     */
-    protected $data;
-
-    /**
-     * [__construct description]
-     */
-    public function __construct() {
-        $this->data = [];
-        $this->urlHost = parse_url(site_url(), PHP_URL_HOST);
-        $this->urlPath = parse_url(site_url(), PHP_URL_PATH);
-    }
-
-    public function createCalendar() {
-        $prodId= sprintf(
-            '%1$s%2$s',
-            $this->urlHost,
-            $this->urlPath ? '/' . $this->urlPath : ''
-        );
-
-        $this->data[] = "BEGIN:VCALENDAR";
-        $this->data[] = "VERSION:2.0";
-        $this->data[] = "PRODID:{$prodId}";        
-    }
-
-    public function addVevent($event)
+    public static function getData(array $args)
     {
-        $this->data[] = "BEGIN:VEVENT";
-        $this->data[] = "UID:{$event->uid}";
-        $this->data[] = "DTSTART:{$this->formatDate($event->start)}";
-        $this->data[] = "DTEND:{$this->formatDate($event->end)}";
-        $this->data[] = "DTSTAMP:{$this->formatDate($event->start)}";
-        $this->data[] = "CREATED:{$this->formatDate('now')}";
-        $this->data[] = "DESCRIPTION:{$this->getEscapedValue($event->description)}";
-        $this->data[] = "LAST-MODIFIED:{$this->getEscapedValue($event->start)}";
-        $this->data[] = "LOCATION:{$event->location}";
-        $this->data[] = "SUMMARY:{$this->getEscapedValue($event->summary)}";
-        $this->data[] = ($event->rrule) ? "RRULE:{$event->rrule}" : '';
-        $this->data[] = ($event->exrule) ? "EXRULE:{$event->exrule}" : '';
-        $this->data[] = ($event->rdate) ? "RDATE:{$event->rdate}" : '';
-        $this->data[] = ($event->exdate) ? "EXDATE:{$event->exdate}" : '';
-        $this->data[] = "SEQUENCE:0";
-        $this->data[] = "STATUS:CONFIRMED";
-        $this->data[] = "TRANSP:OPAQUE";
-        $this->data[] = "END:VEVENT";
+        $postIds = $rags['postIds'] ?? null;
+        $categories = $rags['categories'] ?? null;
+        $tags = $rags['tags'] ?? null;
+        $taxQuery = null;
+
+        if (!empty($categories)) {
+            $taxQuery = [
+                [
+                    'taxonomy' => CalendarFeed::TAX_CATEGORY,
+                    'field'    => 'slug',
+                    'terms'    => $categories
+                ]
+            ];
+        }
+
+        if (!empty($tags)) {
+            $taxQuery = array_merge(
+                $taxQuery,
+                [
+                    [
+                        'taxonomy' => CalendarFeed::TAX_TAG,
+                        'field'    => 'slug',
+                        'terms'    => $tags
+                    ]
+                ]
+            );
+        }
+
+        $args = [
+            'fields'      => 'ids',
+            'numberposts' => -1,
+            'post_type'   => CalendarFeed::POST_TYPE,
+            'post_status' => 'publish'
+        ];
+
+        if (!empty($taxQuery)) {
+            $taxQuery = array_merge(['relation' => 'AND'], $taxQuery);
+            $args = array_merge($args, ['tax_query' => $taxQuery]);
+        }
+
+        $postIds = get_posts($args);
+
+        return Events::getItemsFromFeedIds($postIds, true);
     }
 
-    /**
-     * Get the start time set for the even
-     * @return string
-     */
-    protected function formatDate($value)
+    // Export::stream(['postIds' => $postIds]);
+    public static function stream(array $args)
     {
-        $date = new DateTime($value);
-        return $date->format('Ymd\THis\Z');
-    }
-    
-    public function output() {
-        $filename = sprintf(
-            '%1$s%2$s.ics',
-            $this->urlHost,
-            $this->urlPath ? '-' . $this->urlPath : ''
-        );
-
-        header('Content-Description: ICS');
-        header('Content-Disposition: attachment; filename=' . $filename);
-        header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
-        echo $this->render();
-        exit;
-    }
-
-    /**
-     * Renders an array containing the lines of the iCal file.
-     *
-     * @return array
-     */
-    protected function build()
-    {
-        $ret = [];
-
-        $this->data[] = "END:VCALENDAR";
-
-        foreach ($this->data as $line) {
-            foreach ($this->fold($line) as $l) {
-                $ret[] = $l;
+        $data = self::getData($args);
+        $data2 = [];
+        foreach ($data as $row) {
+            if (isset($row['uid']) && !isset($data2[$row['uid']])) {
+                $data2[$row['uid']] = $row;
             }
         }
 
-        return $ret;
-    }
+        // Setup calendar.
+        $calendar = new Calendar();
+        $calendar->setProdId('-//My Company//Cool Calendar App//EN');
 
-    /**
-     * Renders the output.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        return implode("\r\n", $this->build());
-    }
+        foreach ($data2 as $row) {
+            $event = new CalendarEvent();
+            $event->setUid($row['uid'])
+                ->setStart(new \DateTime($row['start_date']))
+                ->setStart(new \DateTime($row['end_date']))
+                ->setSummary($row['title'])
+                ->setDescription($row['eventdesc']);
 
-    /**
-     * Folds a single line.
-     *
-     * According to RFC 5545, all lines longer than 75 characters should be folded
-     *
-     * @see https://tools.ietf.org/html/rfc5545#section-5
-     * @see https://tools.ietf.org/html/rfc5545#section-3.1
-     *
-     * @param string $string
-     * @return array
-     */
-    public static function fold($string)
-    {
-        $lines = [];
-
-        if (function_exists('mb_strcut')) {
-            while (strlen($string) > 0) {
-                if (strlen($string) > 75) {
-                    $lines[] = mb_strcut($string, 0, 75, 'utf-8');
-                    $string = ' ' . mb_strcut($string, 75, strlen($string), 'utf-8');
-                } else {
-                    $lines[] = $string;
-                    $string = '';
-                    break;
-                }
+            if ($row['end_date']) {
+                $event->setEnd(new \DateTime($row['end_date']));
             }
-        } else {
-            $array = preg_split('/(?<!^)(?!$)/u', $string);
-            $line = '';
-            $lineNo = 0;
-            foreach ($array as $char) {
-                $charLen = strlen($char);
-                $lineLen = strlen($line);
-                if ($lineLen + $charLen > 75) {
-                    $line = ' ' . $char;
-                    ++$lineNo;
-                } else {
-                    $line .= $char;
-                }
-                $lines[$lineNo] = $line;
-            }
+            if ($row['rrule']) {
+                $event->setCustomProperties(['RRULE' => $row['rrule']]);
+            }            
+            $calendar->addEvent($event);
         }
 
-        return $lines;
+        //setup exporter
+        $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
+        $calendarExport->addCalendar($calendar);
+
+        //output .ics formatted text
+        //Utils::debug($calendarExport->getStream());
     }
-
-    public function getEscapedValue($value): string
-    {
-        $value = str_replace('\\', '\\\\', $value);
-        $value = str_replace('"', '\\"', $value);
-        $value = str_replace(',', '\\,', $value);
-        $value = str_replace(';', '\\;', $value);
-        $value = str_replace("\n", '\\n', $value);
-        $value = str_replace([
-            "\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07",
-            "\x08", "\x09", /* \n*/ "\x0B", "\x0C", "\x0D", "\x0E", "\x0F",
-            "\x10", "\x11", "\x12", "\x13", "\x14", "\x15", "\x16", "\x17",
-            "\x18", "\x19", "\x1A", "\x1B", "\x1C", "\x1D", "\x1E", "\x1F",
-            "\x7F",
-        ], '', $value);
-
-        return $value;
-    }    
 }

@@ -1,0 +1,47 @@
+// calculate using the YIQ color space:
+// https://en.wikipedia.org/wiki/YIQ
+@mixin text-color($color) {
+    $red: red($color);
+    $green: green($color);
+    $blue: blue($color);
+    $yiq: (($red * 299) + ($green * 587) + ($blue * 114)) / 1000;
+    @if ($yiq >= 128) {
+        color: #000000;
+    } @else {
+        color: #ffffff;
+    }
+}
+
+.fixed .column-events,
+.fixed .column-updated {
+    width: 14%;
+}
+
+.column-description,
+.form-field.term-parent-wrap,
+.form-field.term-description-wrap {
+    display: none;
+}
+
+.category-bgcolor {
+    padding: 0.2rem !important;
+    background-color: var(--category-bgcolor) !important;
+}
+
+.category-color {
+    color: var(--category-color) !important;
+}
+
+form#addtag {
+    .wp-picker-container {
+        margin-bottom: 2rem;
+    }
+}
+
+.wp-picker-open + .wp-picker-input-wrap {
+    display: inline-flex;
+}
+
+.wp-color-result-text {
+    color: white;
+}

@@ -4,13 +4,17 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit7473071636baa055ef038dccdfa39987
+class ComposerStaticInit8f74ab42fb65a309c859aed01d09fcf2
 {
     public static $prefixLengthsPsr4 = array (
         'R' => 
         array (
             'RRule\\' => 6,
             'RRZE\\Calendar\\' => 14,
+        ),
+        'J' => 
+        array (
+            'Jsvrcek\\ICS\\' => 12,
         ),
     );
 
@@ -23,6 +27,10 @@ class ComposerStaticInit7473071636baa055ef038dccdfa39987
         'RRZE\\Calendar\\' => 
         array (
             0 => __DIR__ . '/../..' . '/includes',
+        ),
+        'Jsvrcek\\ICS\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jsvrcek/ics/src',
         ),
     );
 
@@ -44,10 +52,10 @@ class ComposerStaticInit7473071636baa055ef038dccdfa39987
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit7473071636baa055ef038dccdfa39987::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit7473071636baa055ef038dccdfa39987::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8f74ab42fb65a309c859aed01d09fcf2::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8f74ab42fb65a309c859aed01d09fcf2::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit8f74ab42fb65a309c859aed01d09fcf2::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit8f74ab42fb65a309c859aed01d09fcf2::$classMap;
 
         }, null, ClassLoader::class);
     }

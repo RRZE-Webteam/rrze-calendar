@@ -1,0 +1,1 @@
+{"version":3,"file":"events.css","mappings":"AAAA,YACI,iBAGJ,cACI,yBAGJ,aACI,gBACA","sources":["webpack://rrze-calendar/./src/events/style.scss"],"sourcesContent":[".event-item {\n    margin: 0 0 1.5em;\n}\n\n.event-allday {\n    text-transform: uppercase;\n}\n\n.event-label {\n    font-weight: 700;\n    margin: 0.5rem 0 0.2rem;\n}\n"],"names":[],"sourceRoot":""}

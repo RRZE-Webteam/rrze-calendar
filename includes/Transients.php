@@ -11,7 +11,7 @@ class Transients
         $prefix = parse_url($url, PHP_URL_SCHEME);
         $key = (strpos($url, $prefix) === 0) ? substr($url, strlen($prefix)) : $url;
         $cacheOption = 'ical_' . md5($key);
-        $ttl = self::getTtl();
+        $ttl = HOUR_IN_SECONDS;
         if (is_multisite()) {
             set_site_transient($cacheOption, $ical, $ttl);
         } else {
@@ -43,10 +43,5 @@ class Transients
             $return = delete_transient($cacheOption);
         }
         return $return;
-    }
-
-    protected static function getTtl()
-    {
-        return random_int(86400, 90000);
     }
 }

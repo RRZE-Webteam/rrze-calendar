@@ -8,4 +8,5 @@ $baseDir = dirname($vendorDir);
 return array(
     'RRule\\' => array($baseDir . '/src', $vendorDir . '/rlanvin/php-rrule/src'),
     'RRZE\\Calendar\\' => array($baseDir . '/includes'),
+    'Jsvrcek\\ICS\\' => array($vendorDir . '/jsvrcek/ics/src'),
 );

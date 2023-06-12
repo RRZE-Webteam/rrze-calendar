@@ -1,6 +1,17 @@
-/nbproject*
-/_tmp
-/bundle
-/node_modules
-/package-lock.json
+### vscode ###
+.vscode/
+### NetBeans ###
+**/nbproject/
+### PhpStorm ###
+.idea/
+### macOS ###
 .DS_Store
+### Node ###
+node_modules/
+package-lock.json
+### Composer ###
+composer.lock
+### WordPress ###
+*.pot
+### Tmp ###
+_tmp/

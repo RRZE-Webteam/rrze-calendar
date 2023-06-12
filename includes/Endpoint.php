@@ -4,83 +4,91 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\Options;
-use RRZE\Calendar\Events;
-use RRZE\Calendar\Themes;
-
 class Endpoint
 {
     /**
-     * [protected description]
-     * @var object
+     * init
      */
-    protected $options;
-
-    /**
-     * [__construct description]
-     */
-    public function __construct()
+    public static function init()
     {
-        $this->options = Options::getOptions();
-        add_action('init', [$this, 'addEndpoint']);
-        add_action('template_redirect', [$this, 'endpointTemplateRedirect']);
+        $options = (object) Settings::getOptions();
+        if ($options->endpoint_enabled == 'on') {
+            add_action('init', [__CLASS__, 'addEndpoint']);
+            add_action('template_redirect', [__CLASS__, 'endpointTemplateRedirect']);
+        }
     }
 
-    public function addEndpoint() {
-        add_rewrite_endpoint($this->options->endpoint_slug, EP_ROOT);
+    public static function addEndpoint()
+    {
+        $options = (object) Settings::getOptions();
+        add_rewrite_endpoint($options->endpoint_slug, EP_ROOT);
     }
 
-    public function endpointTemplateRedirect() {
+    public static function endpointTemplateRedirect()
+    {
         global $wp_query;
-
-        if (!isset($wp_query->query_vars[$this->options->endpoint_slug])) {
+        $options = (object) Settings::getOptions();
+        if (!isset($wp_query->query_vars[$options->endpoint_slug])) {
             return;
         }
 
-        $slug = $wp_query->query_vars[$this->options['endpoint_slug']];
+        $data = null;
+        $slug = $wp_query->query_vars[$options->endpoint_slug];
 
         if (empty($slug)) {
-            $currentLocalTimestamp = current_time('timestamp');
-            $eventsResult = Events::getEventsRelativeTo($currentLocalTimestamp);
-            $eventsData = Util::getCalendarDates($eventsResult);
+            $data = Events::getAllItems();
         } else {
-            $eventsData = Events::getEventBySlug($slug);
+            $data = Events::getEventBySlug($slug);
         }
 
-        if (empty($eventsData)) {
+        if (empty($data)) {
             if ($template = locate_template('404.php')) {
                 load_template($template);
+                exit;
             } else {
-                wp_die(__('Termin nicht gefunden.', 'rrze-calendar'));
+                wp_die(__('Event not found.', 'rrze-calendar'));
             }
         }
 
-        $styleDir = $this->getStyleDir();
-
         if (empty($slug)) {
-            include $styleDir . 'events.php';
+            if ($template = locate_template(Templates::endpointEventsTpl())) {
+                load_template($template);
+            } else {
+                include Templates::getEndpointEventsTpl();
+            }
         } else {
-            include $styleDir . 'single-event.php';
+            if ($template = locate_template(Templates::endpointSingleEventsTpl())) {
+                load_template($template);
+            } else {
+                include Templates::getEndpointSingleEventsTpl();
+            }
         }
 
-        exit();
+        exit;
     }
 
-    public function isEndpoint() {
+    public static function isEndpoint()
+    {
         global $wp_query;
-
-        return isset($wp_query->query_vars[$this->options->endpoint_slug]);
+        $options = (object) Settings::getOptions();
+        return isset($wp_query->query_vars[$options->endpoint_slug]);
     }
 
-    public function endpointUrl($slug = '') {
-        return site_url($this->options->endpoint_slug . '/' . $slug);
+    public static function endpointUrl($slug = '')
+    {
+        $options = (object) Settings::getOptions();
+        return site_url($options->endpoint_slug . '/' . $slug);
     }
 
-    public function endpointSlug() {
-        return $this->options->endpoint_slug;
+    public static function endpointSlug()
+    {
+        $options = (object) Settings::getOptions();
+        return $options->endpoint_slug;
     }
 
-    protected function getStyleDir() {
-        return Themes::getStyleDir();
+    public static function endpointTitle()
+    {
+        $options = (object) Settings::getOptions();
+        return $options->endpoint_title;
     }
 }
