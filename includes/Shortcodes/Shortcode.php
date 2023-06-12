@@ -54,7 +54,7 @@ class Shortcode
         $description = str_replace(']]>', ']]&gt;', $description);
 ?>
         <div class="rrze-calendar" itemscope itemtype="http://schema.org/Event">
-            <h1 class="screen-reader-text" itemprop="name"><?php echo $data->title; ?></h1>
+            <h1 class="screen-reader-text" itemprop="name"><?php echo $data->label; ?></h1>
             <div class="event-detail-item">
                 <div class="event-date" <?php echo $inline; ?>>
                     <span class="event-date-month"><?php echo date('M', $startDate < $currentTime ? $currentTime : $startDate); ?></span>
@@ -159,7 +159,7 @@ class Shortcode
         }
     ?>
         <div class="rrze-calendar" itemscope itemtype="http://schema.org/Event">
-            <h1 class="screen-reader-text" itemprop="name"><?php echo $data->title; ?></h1>
+            <h1 class="screen-reader-text" itemprop="name"><?php echo $data->label; ?></h1>
             <div class="event-detail-item">
                 <div class="event-date" <?php echo $inline; ?>>
                     <span class="event-date-month"><?php echo date('M', $startDate < $currentTime ? $currentTime : $startDate); ?></span>
@@ -169,7 +169,7 @@ class Shortcode
                     <meta itemprop="startDate" content="<?php echo date('c', $startDate); ?>">
                     <meta itemprop="endDate" content="<?php echo date('c', $endDate); ?>">
                     <div class="event-title" itemprop="name">
-                        <a itemprop="url" href="<?php echo $endpointUrl . '/' . $data->slug; ?>"><?php echo $data->title; ?></a>
+                        <a itemprop="url" href="<?php echo $endpointUrl . '/' . $data->slug; ?>"><?php echo $data->label; ?></a>
                     </div>
                     <?php if ($isAllday) : ?>
                         <div class="event-time event-allday">
