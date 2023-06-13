@@ -16,10 +16,6 @@ class CalendarFeed
 {
     const POST_TYPE = 'calendar_feed';
 
-    const TAX_CATEGORY = 'rrze-calendar-category';
-
-    const TAX_TAG = 'rrze-calendar-tag';
-
     const FEED_URL = 'rrze_calendar_feed_url';
 
     const FEED_DATETIME = 'rrze_calendar_feed_datetime';
@@ -40,17 +36,14 @@ class CalendarFeed
         add_filter('manage_edit-' . self::POST_TYPE . '_sortable_columns', [__CLASS__, 'postSortableColumns']);
         // Register Metadata.
         add_action('init', [__CLASS__, 'registerMeta']);
-        // Register Taxonomies.
-        add_action('init', [__CLASS__, 'registerCategory']);
-        add_action('init', [__CLASS__, 'registerTag']);
         // Taxonomy Terms Fields.
-        add_action(self::TAX_CATEGORY . '_add_form_fields', [__CLASS__, 'addFormFields']);
-        add_action(self::TAX_CATEGORY . '_edit_form_fields', [__CLASS__, 'editFormFields'], 10, 2);
-        add_action('created_' . self::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
-        add_action('edited_' . self::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
+        add_action(CalendarEvent::TAX_CATEGORY . '_add_form_fields', [__CLASS__, 'addFormFields']);
+        add_action(CalendarEvent::TAX_CATEGORY . '_edit_form_fields', [__CLASS__, 'editFormFields'], 10, 2);
+        add_action('created_' . CalendarEvent::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
+        add_action('edited_' . CalendarEvent::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
         // Taxonomy Terms Custom Columns.
-        add_filter('manage_edit-' . self::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
-        add_filter('manage_' . self::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
+        add_filter('manage_edit-' . CalendarEvent::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
+        add_filter('manage_' . CalendarEvent::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
         // List Table Stuff.  
         add_action('pre_get_posts', [__CLASS__, 'maybeDisplayPublicArchivePosts']);
         add_action('template_redirect', [__CLASS__, 'maybeDisplayPublicPost']);
@@ -71,35 +64,38 @@ class CalendarFeed
     public static function registerPostType()
     {
         $labels = [
-            'name'               => _x('Feeds', 'post type general name', 'rrze-calendar'),
-            'singular_name'      => _x('Feed', 'post type singular name', 'rrze-calendar'),
-            'menu_name'          => _x('Calendar', 'admin menu', 'rrze-calendar'),
-            'name_admin_bar'     => _x('Calendar Feed', 'add new on admin bar', 'rrze-calendar'),
+            'name'               => _x('ICS Feeds', 'post type general name', 'rrze-calendar'),
+            'singular_name'      => _x('ICS Feed', 'post type singular name', 'rrze-calendar'),
+            'menu_name'          => _x('ICS Feeds', 'admin menu', 'rrze-calendar'),
+            'name_admin_bar'     => _x('ICS Feed', 'add new on admin bar', 'rrze-calendar'),
             'add_new'            => _x('Add New', 'popup', 'rrze-calendar'),
-            'add_new_item'       => __('Add New Feed', 'rrze-calendar'),
-            'new_item'           => __('New Feed', 'rrze-calendar'),
-            'edit_item'          => __('Edit Feed', 'rrze-calendar'),
-            'view_item'          => __('View Feed', 'rrze-calendar'),
-            'all_items'          => __('All Feeds', 'rrze-calendar'),
+            'add_new_item'       => __('Add New ICS Feed', 'rrze-calendar'),
+            'new_item'           => __('New ICS Feed', 'rrze-calendar'),
+            'edit_item'          => __('Edit ICS Feed', 'rrze-calendar'),
+            'view_item'          => __('View ICS Feed', 'rrze-calendar'),
+            'all_items'          => __('ICS Feeds', 'rrze-calendar'),
             'search_items'       => __('Search Feeds', 'rrze-calendar'),
             'parent_item_colon'  => __('Parent Feeds:', 'rrze-calendar'),
-            'not_found'          => __('No feeds found.', 'rrze-calendar'),
-            'not_found_in_trash' => __('No feeds found in Trash.', 'rrze-calendar')
+            'not_found'          => __('No ics feeds found.', 'rrze-calendar'),
+            'not_found_in_trash' => __('No ics feeds found in Trash.', 'rrze-calendar')
         ];
 
         $args = [
             'labels'              => $labels,
+            'label'              => __('ICS Feeds', 'rrze-calendar'),
             'hierarchical'        => false,
             'public'              => false,
             'show_ui'             => true,
             'show_in_rest'        => true,
-            'show_in_menu'        => true,
-            'show_in_nav_menus'   => false,
-            'show_in_admin_bar'   => false,
-            'can_export'          => false,
-            'has_archive'         => false,
+            //'show_in_menu'        => true,
+            'show_in_menu'        => 'edit.php?post_type=' . CalendarEvent::POST_TYPE,
+            'show_in_nav_menus'   => true,
+            'show_in_admin_bar'   => true,
+            'can_export'          => true,
+            'has_archive'         => true,
             'exclude_from_search' => true,
             'publicly_queryable'  => false,
+            'delete_with_user'    => false,
             'supports'            => ['title'],
             'menu_icon'           => 'dashicons-calendar-alt',
             'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
@@ -174,42 +170,6 @@ class CalendarFeed
         );
     }
 
-    public static function registerCategory()
-    {
-        $labels = [
-            'name'              => _x('Feeds Categories', 'Taxonomy general name', 'rrze-calendar'),
-            'singular_name'     => _x('Feed Category', 'Taxonomy singular name', 'rrze-calendar')
-        ];
-        $args = [
-            'labels'            => $labels,
-            'public'            => true,
-            'hierarchical'      => true,
-            'show_admin_column' => true,
-            'show_in_rest'      => true,
-            'rewrite'           => ['slug' => 'calendars', 'with_front' => false]
-        ];
-        register_taxonomy(self::TAX_CATEGORY, self::POST_TYPE, $args);
-    }
-
-    public static function registerTag()
-    {
-        $labels = [
-            'name'              => _x('Feed Tags', 'Taxonomy general name', 'rrze-calendar'),
-            'singular_name'     => _x('Feed Tag', 'Taxonomy singular name', 'rrze-calendar')
-        ];
-        $args = [
-            'labels'            => $labels,
-            'public'            => false,
-            'hierarchical'      => true,
-            'show_ui'           => true,
-            'show_admin_column' => true,
-            'show_in_rest'      => true
-        ];
-        if (!apply_filters('rrze_calendar_disable_tag', false)) {
-            register_taxonomy(self::TAX_TAG, self::POST_TYPE, $args);
-        }
-    }
-
     public static function addFormFields($taxonomy)
     {
         echo '<div class="form-field">',
@@ -256,7 +216,7 @@ class CalendarFeed
 
     public static function categoryCustomColumns($content, $columnName, $termId)
     {
-        $term = get_term($termId, self::TAX_CATEGORY);
+        $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
         switch ($columnName) {
             case 'color':
                 $color = Utils::sanitizeHexColor((get_term_meta($term->term_id, 'color', true)));
@@ -306,7 +266,7 @@ class CalendarFeed
 
         $data['title'] = $post->post_title;
 
-        $data['tag_terms'] = self::getTermsTag($postId, self::TAX_TAG);
+        $data['tag_terms'] = self::getTermsTag($postId, CalendarEvent::TAX_TAG);
 
         $data['post_status'] = $post->post_status;
 
@@ -327,13 +287,13 @@ class CalendarFeed
         if (
             is_admin() ||
             !$query->is_main_query() ||
-            (!is_tax(self::TAX_CATEGORY) &&
+            (!is_tax(CalendarEvent::TAX_CATEGORY) &&
                 !is_post_type_archive(self::POST_TYPE))
         ) {
             return;
         }
 
-        if (is_tax(self::TAX_CATEGORY) || empty($query->get('post_type'))) {
+        if (is_tax(CalendarEvent::TAX_CATEGORY) || empty($query->get('post_type'))) {
             $query->set('post_type', ['post', self::POST_TYPE]);
         }
 
@@ -346,7 +306,7 @@ class CalendarFeed
             ],
         ];
 
-        if (is_tax(self::TAX_CATEGORY)) {
+        if (is_tax(CalendarEvent::TAX_CATEGORY)) {
             $metaQueryParams['relation'] = 'OR';
             $metaQueryParams[] = [
                 'key'     => 'rrze_calendar_is_public',
