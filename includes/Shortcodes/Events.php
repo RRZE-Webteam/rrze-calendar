@@ -81,7 +81,7 @@ class Events
         if ($categories) {
             $taxQuery = [
                 [
-                    'taxonomy' => CalendarFeed::TAX_CATEGORY,
+                    'taxonomy' => CalendarEvent::TAX_CATEGORY,
                     'field'    => 'slug',
                     'terms'    => $categories
                 ]
@@ -93,7 +93,7 @@ class Events
                 $taxQuery,
                 [
                     [
-                        'taxonomy' => CalendarFeed::TAX_TAG,
+                        'taxonomy' => CalendarEvent::TAX_TAG,
                         'field'    => 'slug',
                         'terms'    => $tags
                     ]
