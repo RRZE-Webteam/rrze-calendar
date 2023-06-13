@@ -27,7 +27,7 @@ class Export
         if (!empty($categories)) {
             $taxQuery = [
                 [
-                    'taxonomy' => CalendarFeed::TAX_CATEGORY,
+                    'taxonomy' => CalendarEvent::TAX_CATEGORY,
                     'field'    => 'slug',
                     'terms'    => $categories
                 ]
@@ -39,7 +39,7 @@ class Export
                 $taxQuery,
                 [
                     [
-                        'taxonomy' => CalendarFeed::TAX_TAG,
+                        'taxonomy' => CalendarEvent::TAX_TAG,
                         'field'    => 'slug',
                         'terms'    => $tags
                     ]
