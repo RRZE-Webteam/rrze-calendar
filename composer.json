@@ -22,7 +22,10 @@
         "psr-4": {
             "RRZE\\Calendar\\": "includes/",
             "RRule\\": "src/"
-        }
+        },
+        "files": [
+            "vendor/cmb2/cmb2/init.php"
+        ]
     },
     "extra": {
         "installer-paths": {
