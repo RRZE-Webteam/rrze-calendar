@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-07 12:43+0200\n"
+"PO-Revision-Date: 2023-06-13 10:44+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -24,7 +24,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 msgid "RRZE Calendar"
-msgstr "RRZE-Kalender"
+msgstr "RRZE Kalender"
 
 #. Plugin URI of the plugin
 msgid "https://github.com/RRZE-Webteam/rrze-calendar"
