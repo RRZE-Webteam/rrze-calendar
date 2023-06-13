@@ -54,7 +54,7 @@ class Calendar
         if (!empty($categories)) {
             $taxQuery = [
                 [
-                    'taxonomy' => CalendarFeed::TAX_CATEGORY,
+                    'taxonomy' => CalendarEvent::TAX_CATEGORY,
                     'field'    => 'slug',
                     'terms'    => $categories
                 ]
@@ -66,7 +66,7 @@ class Calendar
                 $taxQuery,
                 [
                     [
-                        'taxonomy' => CalendarFeed::TAX_TAG,
+                        'taxonomy' => CalendarEvent::TAX_TAG,
                         'field'    => 'slug',
                         'terms'    => $tags
                     ]
