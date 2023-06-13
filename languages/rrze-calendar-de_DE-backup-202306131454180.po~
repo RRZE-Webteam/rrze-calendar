@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-13 14:57+0000\n"
+"PO-Revision-Date: 2023-06-13 14:35+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -61,11 +61,11 @@ msgstr "%1$s %2$s Uhr bis %3$s %4$s Uhr"
 msgid "%1$s - %2$s"
 msgstr "%1$s bis %2$s"
 
-#: includes/CPT/Event.php:235
+#: includes/CPT/Event.php:231
 msgid "(optional)"
 msgstr "(optional)"
 
-#: includes/CPT/Event.php:303
+#: includes/CPT/Event.php:299
 msgid ""
 "Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line."
 msgstr ""
@@ -94,7 +94,7 @@ msgctxt "Add New on Toolbar"
 msgid "Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/Event.php:302
+#: includes/CPT/Event.php:298
 msgid "Additions"
 msgstr "Zusatztermine"
 
@@ -123,10 +123,6 @@ msgstr "Veranstaltungen"
 #: templates/endpoint/themes/vendor/events.php:146
 #: templates/endpoint/themes/vendor/single-event.php:158
 msgid "All Day"
-msgstr "Ganztägig"
-
-#: includes/CPT/Event.php:145
-msgid "All day event"
 msgstr "Ganztägig"
 
 #. parent slug
@@ -166,23 +162,23 @@ msgstr "Farbe"
 msgid "Daily"
 msgstr "Täglich"
 
-#: includes/EventsListTable.php:63 includes/CPT/Event.php:315
+#: includes/EventsListTable.php:63 includes/CPT/Event.php:311
 msgid "Date"
 msgstr "Datum"
 
-#: includes/EventsListTable.php:65 includes/CPT/Event.php:150
+#: includes/EventsListTable.php:65 includes/CPT/Event.php:101
 msgid "Description"
 msgstr "Beschreibung"
 
-#: includes/CPT/Event.php:193
+#: includes/CPT/Event.php:144
 msgid "Downloads"
 msgstr "Downloads"
 
-#: includes/CPT/Event.php:310
+#: includes/CPT/Event.php:306
 msgid "Each"
 msgstr "Jeder"
 
-#: includes/CPT/Event.php:330 includes/CPT/Event.php:339
+#: includes/CPT/Event.php:326 includes/CPT/Event.php:335
 msgid "each"
 msgstr "jedem"
 
@@ -202,7 +198,7 @@ msgstr "Aktivieren"
 msgid "Enables the endpoint url"
 msgstr "Aktiviert die Endpoint-URL"
 
-#: includes/CPT/Event.php:123
+#: includes/CPT/Event.php:201
 msgid "End"
 msgstr "Ende"
 
@@ -210,7 +206,7 @@ msgstr "Ende"
 msgid "Endpoint"
 msgstr "Endpoint"
 
-#: includes/CPT/Event.php:295
+#: includes/CPT/Event.php:291
 msgid ""
 "Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per "
 "line."
@@ -238,11 +234,11 @@ msgstr "Termin nicht gefunden."
 msgid "Events"
 msgstr "Termine"
 
-#: includes/CPT/Event.php:273
+#: includes/CPT/Event.php:269
 msgid "every"
 msgstr "alle"
 
-#: includes/CPT/Event.php:294
+#: includes/CPT/Event.php:290
 msgid "Exceptions"
 msgstr "Ausnahmen"
 
@@ -252,7 +248,7 @@ msgstr "Ausnahmen"
 msgid "F Y"
 msgstr "F Y"
 
-#: includes/CPT/Event.php:212
+#: includes/CPT/Event.php:163
 msgid "Featured Event"
 msgstr "Hervorgehobene Veranstaltung"
 
@@ -268,15 +264,15 @@ msgstr "Die Feed-URL ist ungültig."
 msgid "Feed URL."
 msgstr "Feed-URL."
 
-#: includes/CPT/Event.php:426
+#: includes/CPT/Event.php:420
 msgid "fifth"
 msgstr "fünften"
 
-#: includes/CPT/Event.php:422
+#: includes/CPT/Event.php:416
 msgid "first"
 msgstr "ersten"
 
-#: includes/CPT/Event.php:425
+#: includes/CPT/Event.php:419
 msgid "fourth"
 msgstr "vierten"
 
@@ -326,7 +322,7 @@ msgstr "l, j. F Y"
 msgid "Last Updated"
 msgstr "Letzte Aktualisierung"
 
-#: includes/EventsListTable.php:66 includes/CPT/Event.php:159
+#: includes/EventsListTable.php:66 includes/CPT/Event.php:110
 #: templates/shortcodes/themes/rrze/events.php:80
 #: templates/endpoint/themes/rrze/single-event.php:108
 msgid "Location"
@@ -345,7 +341,7 @@ msgstr "Ort:"
 msgid "m-d-Y"
 msgstr "m.d.Y"
 
-#: includes/CPT/Event.php:259
+#: includes/CPT/Event.php:255
 msgid "Monthly"
 msgstr "Monatlich"
 
@@ -389,7 +385,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 msgid "No Events found."
 msgstr "Keine Veranstaltungen gefunden."
 
-#: includes/Events.php:121 includes/CPT/Event.php:476
+#: includes/Events.php:121 includes/CPT/Event.php:470
 #: templates/shortcodes/calendar.php:237 templates/endpoint/events.php:16
 #: templates/shortcodes/themes/vendor/calendar.php:237
 #: templates/endpoint/themes/vendor/events.php:15
@@ -413,11 +409,11 @@ msgstr "Keine Feeds gefunden."
 msgid "No upcoming events."
 msgstr "Keine bevorstehenden Termine."
 
-#: includes/CPT/Event.php:331 includes/CPT/Event.php:340
+#: includes/CPT/Event.php:327 includes/CPT/Event.php:336
 msgid "of month"
 msgstr "des Monats"
 
-#: includes/CPT/Event.php:474
+#: includes/CPT/Event.php:468
 msgid "Only event items of one year are listed, even if no end date is set."
 msgstr ""
 "Es werden nur Termine innerhalb des kommenden Jahres aufgelistet, auch wenn "
@@ -503,7 +499,7 @@ msgstr "Feed"
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/CPT/Event.php:176
+#: includes/CPT/Event.php:127
 msgid "Prices"
 msgstr "Preise"
 
@@ -511,36 +507,28 @@ msgstr "Preise"
 msgid "Recurrence"
 msgstr "Wiederholung"
 
-#: includes/CPT/Event.php:187
-msgid "Registration URL"
-msgstr "Link zur Anmeldung"
-
-#: includes/CPT/Event.php:228
+#: includes/CPT/Event.php:224
 msgid "Repeat"
 msgstr "Wiederholen"
 
-#: includes/CPT/Event.php:252
+#: includes/CPT/Event.php:248
 msgid "Repeat Interval"
 msgstr "Wiederholungsintervall"
 
-#: includes/CPT/Event.php:234
+#: includes/CPT/Event.php:230
 msgid "Repeat until"
 msgstr "Wiederholen bis"
 
-#: includes/CPT/Event.php:221
-msgid "Repeating Event"
-msgstr "Wiederholungen"
-
-#: includes/CPT/Event.php:265
+#: includes/CPT/Event.php:261
 msgid "Repeats"
 msgstr "Wiederholt sich"
 
-#: includes/CPT/Event.php:358
+#: includes/CPT/Event.php:340
 msgid "Repeats in"
 msgstr "Wiederholt sich im"
 
-#: includes/CPT/Event.php:278 includes/CPT/Event.php:325
-#: includes/CPT/Event.php:335
+#: includes/CPT/Event.php:274 includes/CPT/Event.php:321
+#: includes/CPT/Event.php:331
 msgid "Repeats on"
 msgstr "Wiederholt sich an"
 
@@ -552,7 +540,7 @@ msgstr "RRZE Kalender"
 msgid "RRZE Webteam"
 msgstr "RRZE-Webteam"
 
-#: config/settings.php:40
+#: config/settings.php:40 includes/CPT/Event.php:172
 msgid "Schedule"
 msgstr "Zeitplan"
 
@@ -585,7 +573,7 @@ msgstr "Termine durchsuchen"
 msgid "Search Feeds"
 msgstr "Feed durchsuchen"
 
-#: includes/CPT/Event.php:423
+#: includes/CPT/Event.php:417
 msgid "second"
 msgstr "zweiten"
 
@@ -602,7 +590,7 @@ msgstr "Vergangene Termine anzeigen"
 msgid "Slug"
 msgstr "Titelform"
 
-#: includes/CPT/Event.php:101
+#: includes/CPT/Event.php:179
 msgid "Start"
 msgstr "Start"
 
@@ -683,9 +671,13 @@ msgstr "Das Titelform des Endpoints."
 msgid "The title of the endpoint."
 msgstr "Der Titel des Endpoints."
 
-#: includes/CPT/Event.php:424
+#: includes/CPT/Event.php:418
 msgid "third"
 msgstr "dritten"
+
+#: includes/CPT/Event.php:138
+msgid "Tickets URL"
+msgstr "URL Ticketshop"
 
 #: config/settings.php:89 includes/EventsListTable.php:62
 msgid "Title"
@@ -695,11 +687,11 @@ msgstr "Titel"
 msgid "Twice daily"
 msgstr "Zweimal täglich"
 
-#: includes/CPT/Event.php:367
+#: includes/CPT/Event.php:361
 msgid "Upcoming Event Items"
 msgstr "Kommende Termine"
 
-#: includes/CPT/Event.php:170
+#: includes/CPT/Event.php:121
 msgid "VC URL"
 msgstr ""
 "Videokonferenz-URL\n"
@@ -722,14 +714,14 @@ msgstr "Feed ansehen"
 msgid "View the calendar"
 msgstr "Kalender ansehen"
 
-#: includes/CPT/Event.php:274
+#: includes/CPT/Event.php:270
 msgid "week(s)"
 msgstr "Woche(n)"
 
-#: includes/CPT/Event.php:316
+#: includes/CPT/Event.php:312
 msgid "Weekday"
 msgstr "Wochentag"
 
-#: includes/CPT/Event.php:258
+#: includes/CPT/Event.php:254
 msgid "Weekly"
 msgstr "Wöchentlich"

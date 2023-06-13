@@ -97,6 +97,55 @@ class Event {
             'priority' => 'high',
             'show_names' => true,
         ]);
+        $cmb_info->add_field([
+            'name' => __('Start', 'rrze-calendar'),
+            //'desc'    => __('Date / Time', 'rrze-calendar'),
+            'id' => 'start',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => 'd.m.Y',
+            'time_format' => 'H:i',
+            'attributes' => array(
+                // CMB2 checks for datepicker override data here:
+                'data-datepicker' => json_encode( array(
+                    'firstDay' => 1,
+                    'dayNames' => Utils::getDaysOfWeek('short'),
+                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                    'monthNamesShort' => Utils::getMonthNames('short'),
+                    'yearRange' => '-1:+10',
+                    'dateFormat'=> 'dd.mm.yy',
+                ) ),
+                'data-timepicker' => json_encode( array(
+                    'timeFormat' => 'HH:mm',
+                ) ),
+            ),
+        ]);
+        $cmb_info->add_field([
+            'name' => __('End', 'rrze-calendar'),
+            //'desc'    => __('Date / Time', 'rrze-calendar'),
+            'id' => 'end',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => 'd.m.Y',
+            'time_format' => 'H:i',
+            'attributes' => array(
+                // CMB2 checks for datepicker override data here:
+                'data-datepicker' => json_encode( array(
+                    'firstDay' => 1,
+                    'dayNames' => Utils::getDaysOfWeek('short'),
+                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                    'monthNamesShort' => Utils::getMonthNames('short'),
+                    'yearRange' => '-1:+10',
+                    'dateFormat'=> 'dd.mm.yy',
+                ) ),
+                'data-timepicker' => json_encode( array(
+                    'timeFormat' => 'HH:mm',
+                ) ),
+            ),
+        ]);
+        $cmb_info->add_field([
+            'name' => __('All day event', 'rrze-calendar'),
+            'id' => 'all-day',
+            'type' => 'checkbox',
+        ]);
         $cmb_info->add_field( array(
             'name'    => esc_html__( 'Description', 'rrze-calendar' ),
             //'desc'    => __('', 'rrze-calendar'),
@@ -135,9 +184,9 @@ class Event {
             ),
         ]);
         $cmb_info->add_field( array(
-            'name' => esc_html__( 'Tickets URL', 'rrze-calendar' ),
+            'name' => esc_html__( 'Registration URL', 'rrze-calendar' ),
             //'desc' => esc_html__( '', 'rrze-calendar' ),
-            'id'   => 'tickets-url',
+            'id'   => 'registration-url',
             'type' => 'text_url',
         ) );
         $cmb_info->add_field( array(
@@ -169,57 +218,12 @@ class Event {
         // Schedule
         $cmb_schedule = new_cmb2_box([
             'id' => 'my-event-calendar-event-schedule',
-            'title' => __('Schedule', 'rrze-calendar'),
+            'title' => __('Repeating Event', 'rrze-calendar'),
             'object_types' => ['event'],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true,
         ]);
-        $cmb_schedule->add_field([
-            'name' => __('Start', 'rrze-calendar'),
-            //'desc'    => __('Date / Time', 'rrze-calendar'),
-            'id' => 'start',
-            'type' => 'text_datetime_timestamp',
-            'date_format' => 'd.m.Y',
-            'time_format' => 'H:i',
-            'attributes' => array(
-                // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode( array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                    'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                    'dateFormat'=> 'dd.mm.yy',
-                ) ),
-                'data-timepicker' => json_encode( array(
-                    'timeFormat' => 'HH:mm',
-                ) ),
-            ),
-        ]);
-        $cmb_schedule->add_field([
-            'name' => __('End', 'rrze-calendar'),
-            //'desc'    => __('Date / Time', 'rrze-calendar'),
-            'id' => 'end',
-            'type' => 'text_datetime_timestamp',
-            'date_format' => 'd.m.Y',
-            'time_format' => 'H:i',
-            'attributes' => array(
-                // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode( array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                    'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                    'dateFormat'=> 'dd.mm.yy',
-                ) ),
-                'data-timepicker' => json_encode( array(
-                    'timeFormat' => 'HH:mm',
-                ) ),
-            ),
-        ]);
-
         $cmb_schedule->add_field([
             'name' => __('Repeat', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -336,25 +340,27 @@ class Event {
             'after_field' =>  ' ' . __('of month', 'rrze-calendar'),
             'classes'   => ['repeat', 'repeat-monthly', 'repeat-monthly-dow'],
         ]);
+        $monthOptions = [
+            'jan' => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
+            'feb' => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
+            'mar' => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
+            'apr' => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
+            'may' => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
+            'jun' => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
+            'jul' => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
+            'aug' => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
+            'sep' => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
+            'oct' => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
+            'nov' => $wp_locale->get_month_abbrev($wp_locale->get_month('11')),
+            'dec' => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
+        ];
         $cmb_schedule->add_field([
-            'name' => __('Repeats on', 'rrze-calendar'),
+            'name' => __('Repeats in', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
             'id' => 'repeat-monthly-month',
             'type' => 'multicheck_inline',
-            'options' => [
-                'jan' => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
-                'feb' => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
-                'mar' => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
-                'apr' => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
-                'may' => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
-                'jun' => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
-                'jul' => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
-                'aug' => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
-                'sep' => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
-                'oct' => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
-                'nov' => $wp_locale->get_month_abbrev($wp_locale->get_month('11')),
-                'dec' => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
-            ],
+            'options' => $monthOptions,
+            'default' => array_keys($monthOptions),
             'classes'   => ['repeat', 'repeat-monthly'],
         ]);
         $cmb_schedule->add_field([

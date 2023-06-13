@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-13 14:57+0000\n"
+"PO-Revision-Date: 2023-06-13 14:54+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -127,7 +127,7 @@ msgstr "Ganztägig"
 
 #: includes/CPT/Event.php:145
 msgid "All day event"
-msgstr "Ganztägig"
+msgstr ""
 
 #. parent slug
 #. page title
@@ -511,10 +511,6 @@ msgstr "Preise"
 msgid "Recurrence"
 msgstr "Wiederholung"
 
-#: includes/CPT/Event.php:187
-msgid "Registration URL"
-msgstr "Link zur Anmeldung"
-
 #: includes/CPT/Event.php:228
 msgid "Repeat"
 msgstr "Wiederholen"
@@ -529,7 +525,7 @@ msgstr "Wiederholen bis"
 
 #: includes/CPT/Event.php:221
 msgid "Repeating Event"
-msgstr "Wiederholungen"
+msgstr ""
 
 #: includes/CPT/Event.php:265
 msgid "Repeats"
@@ -686,6 +682,10 @@ msgstr "Der Titel des Endpoints."
 #: includes/CPT/Event.php:424
 msgid "third"
 msgstr "dritten"
+
+#: includes/CPT/Event.php:187
+msgid "Tickets URL"
+msgstr "URL Ticketshop"
 
 #: config/settings.php:89 includes/EventsListTable.php:62
 msgid "Title"
