@@ -1,6 +1,10 @@
 jQuery(document).ready(function ($) {
     "use strict";
 
+    /*
+     * CPT CalendarFeed Edit Screen
+     */
+
     let defaultColor = "#041E42";
     let linkColor = $(".color-picker");
 
@@ -28,7 +32,9 @@ jQuery(document).ready(function ($) {
 
     linkColor.click(toggleText);
 
-    toggleText();
+    if (linkColor.length > 0) {
+        toggleText();
+    }
 
     linkColor.iris({
         palettes: [
@@ -40,4 +46,63 @@ jQuery(document).ready(function ($) {
             "#204251", // TF
         ],
     });
+
+    /*
+     * CPT Event Edit Screen
+     */
+
+    let repeatCheck = $('input#repeat');
+    let repeatIntervalSelect = $('select#repeat-interval');
+    let repeatMonthlyTypeInput = $("input[name='repeat-monthly-type']");
+
+    if (repeatCheck.length > 0) {
+        triggerRepeatFields();
+    }
+
+    repeatCheck.on('change', function() {
+        triggerRepeatFields();
+    });
+
+    repeatIntervalSelect.on('change', function() {
+        triggerIntervalFields();
+    });
+
+    repeatMonthlyTypeInput.on('change', function() {
+        triggerMonthlyTypeFields();
+    });
+
+    function triggerRepeatFields() {
+        if (repeatCheck.is(':checked')) {
+            $('div.repeat').slideDown();
+            triggerIntervalFields();
+        } else {
+            $('div.repeat').slideUp();
+        }
+    }
+
+    function triggerIntervalFields() {
+        var repeatInterval = $('option:selected',repeatIntervalSelect).val();
+        if (repeatInterval === 'week') {
+            $('div.repeat-weekly').slideDown();
+            $('div.repeat-monthly').slideUp();
+        } else if (repeatInterval === 'month') {
+            $('div.repeat-monthly').slideDown();
+            $('div.repeat-weekly').slideUp();
+            triggerMonthlyTypeFields();
+        }
+    }
+
+    function triggerMonthlyTypeFields() {
+        var repeatMonthlyType = $("input[name='repeat-monthly-type']:checked").val();
+        if (typeof(repeatMonthlyType) == 'undefined') {
+            $('div.repeat-monthly-date').hide();
+            $('div.repeat-monthly-dow').hide();
+        } else if (repeatMonthlyType === 'dow') {
+            $('div.repeat-monthly-dow').slideDown();
+            $('div.repeat-monthly-date').slideUp();
+        } else if (repeatMonthlyType === 'date') {
+            $('div.repeat-monthly-date').slideDown();
+            $('div.repeat-monthly-dow').slideUp();
+        }
+    }
 });

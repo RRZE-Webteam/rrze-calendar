@@ -18,6 +18,7 @@ namespace RRZE\Calendar;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\Event;
 
 const RRZE_PHP_VERSION = '8.0';
 const RRZE_WP_VERSION = '6.1';
@@ -96,6 +97,7 @@ function activation()
         'init',
         function () {
             CalendarFeed::registerPostType();
+            Event::registerPostType();
             flush_rewrite_rules(false);
         }
     );
