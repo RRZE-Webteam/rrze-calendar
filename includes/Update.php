@@ -66,8 +66,8 @@ class Update
                     'post_date'     => $row->created,
                     'post_modified' => $row->modified,
                     'tax_input'     => [
-                        CalendarFeed::TAX_CATEGORY => $hierarchicalTax,
-                        CalendarFeed::TAX_TAG      => $nonHierarchicalTerms,
+                        CalendarEvent::TAX_CATEGORY => $hierarchicalTax,
+                        CalendarEvent::TAX_TAG      => $nonHierarchicalTerms,
                     ],
                     'meta_input'    => [
                         'rrze_calendar_feed_url' => $row->url,
