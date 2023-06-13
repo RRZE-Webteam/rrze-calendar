@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 
 class Metaboxes
 {
@@ -13,31 +13,39 @@ class Metaboxes
         add_action('admin_menu', [__CLASS__, 'removeMetaboxes']);
         add_action('add_meta_boxes', [__CLASS__, 'addMetaboxes']);
         add_filter('wp_terms_checklist_args', [__CLASS__, 'filterTermsCkecklistArgs']);
-        add_action('wp_ajax_add-' . CalendarFeed::TAX_CATEGORY, [__CLASS__, 'addTerm'], 5);
+        add_action('wp_ajax_add-' . CalendarEvent::TAX_CATEGORY, [__CLASS__, 'addTerm'], 5);
         add_action('save_post', [__CLASS__, 'saveSingleTerm']);
     }
 
     public static function removeMetaboxes()
     {
-        remove_meta_box('rrze-calendar-categorydiv', CalendarFeed::POST_TYPE, 'normal');
+        remove_meta_box(CalendarEvent::TAX_CATEGORY . 'div', CalendarEvent::POST_TYPE, 'side');
+        remove_meta_box(CalendarEvent::TAX_CATEGORY . 'div', CalendarFeed::POST_TYPE, 'side');
     }
 
     public static function addMetaboxes()
     {
-        $taxonomy = get_taxonomy(CalendarFeed::TAX_CATEGORY);
+        $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
         add_meta_box(
-            'rrze-calendar-categorydiv',
+            CalendarEvent::TAX_CATEGORY . 'div',
+            $taxonomy->label,
+            [__CLASS__, 'renderCategoryMetabox'],
+            CalendarEvent::POST_TYPE,
+            'side'
+        );
+        add_meta_box(
+            CalendarEvent::TAX_CATEGORY . 'div',
             $taxonomy->label,
             [__CLASS__, 'renderCategoryMetabox'],
             CalendarFeed::POST_TYPE,
-            'normal'
+            'side'
         );
     }
 
     public static function renderCategoryMetabox($post)
     {
-        $taxName = esc_attr(CalendarFeed::TAX_CATEGORY);
-        $taxonomy = get_taxonomy(CalendarFeed::TAX_CATEGORY);
+        $taxName = esc_attr(CalendarEvent::TAX_CATEGORY);
+        $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
 ?>
         <div id="taxonomy-<?php echo $taxName; ?>" class="categorydiv">
             <div id="<?php echo $taxName; ?>-all" class="tabs-panel">
@@ -82,7 +90,7 @@ class Metaboxes
 
     public static function filterTermsCkecklistArgs($args)
     {
-        if (isset($args['taxonomy']) && CalendarFeed::TAX_CATEGORY == $args['taxonomy']) {
+        if (isset($args['taxonomy']) && CalendarEvent::TAX_CATEGORY == $args['taxonomy']) {
             $args['walker'] = new CategoryRadiolistWalker;
         }
         return $args;
@@ -198,33 +206,33 @@ class Metaboxes
         if (current_user_can($taxonomy->cap->edit_terms)) {
             $names = explode(',', $_POST['new' . $taxonomy->name]);
 
-            foreach ($names as $cat_name) {
-                $cat_name = trim($cat_name);
-                $category_nicename = sanitize_title($cat_name);
+            foreach ($names as $catName) {
+                $catName = trim($catName);
+                $category_nicename = sanitize_title($catName);
                 if ('' === $category_nicename) {
                     continue;
                 }
 
-                if (!$cat_id = term_exists($cat_name, $taxonomy->name)) {
-                    $cat_id = wp_insert_term($cat_name, $taxonomy->name);
+                if (!$catId = term_exists($catName, $taxonomy->name)) {
+                    $catId = wp_insert_term($catName, $taxonomy->name);
                 }
 
-                if (is_wp_error($cat_id)) {
+                if (is_wp_error($catId)) {
                     continue;
-                } else if (is_array($cat_id)) {
-                    $cat_id = $cat_id['term_id'];
+                } else if (is_array($catId)) {
+                    $catId = $catId['term_id'];
                 }
 
                 $data = sprintf(
                     '<li id="%1$s-%2$s" class="category-bgcolor"><label class="selectit"><input id="in-%1$s-%2$s" type="radio" name="tax_input[%1$s][]" value="%2$s"> %3$s</label></li>',
                     esc_attr($taxonomy->name),
-                    intval($cat_id),
-                    esc_html($cat_name)
+                    intval($catId),
+                    esc_html($catName)
                 );
 
                 $add = array(
                     'what' => $taxonomy->name,
-                    'id' => $cat_id,
+                    'id' => $catId,
                     'data' => str_replace(array("\n", "\t"), '', $data),
                     'position' => -1
                 );
@@ -255,32 +263,32 @@ class Metaboxes
         }
 
         // Check capabilities.
-        $taxonomy = get_taxonomy(CalendarFeed::TAX_CATEGORY);
+        $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
         if (!current_user_can($taxonomy->cap->edit_terms)) {
             return $post_id;
         }
 
         // If posts are being bulk edited, and no term is selected, do nothing.
-        if (!empty($_GET['bulk_edit']) && empty($_REQUEST['tax_input'][CalendarFeed::TAX_CATEGORY])) {
+        if (!empty($_GET['bulk_edit']) && empty($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY])) {
             return $post_id;
         }
 
         // Verify nonce.
-        if (!isset($_REQUEST['_radio_nonce-' . CalendarFeed::TAX_CATEGORY]) || !wp_verify_nonce($_REQUEST['_radio_nonce-' . CalendarFeed::TAX_CATEGORY], 'radio_nonce-' . CalendarFeed::TAX_CATEGORY)) {
+        if (!isset($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY]) || !wp_verify_nonce($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY], 'radio_nonce-' . CalendarEvent::TAX_CATEGORY)) {
             return $post_id;
         }
 
         // OK, we need to make sure we're only saving 1 term.
-        if (!empty($_REQUEST['tax_input'][CalendarFeed::TAX_CATEGORY])) {
-            $terms = (array) $_REQUEST['tax_input'][CalendarFeed::TAX_CATEGORY];
+        if (!empty($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY])) {
+            $terms = (array) $_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY];
             $singleTerm = intval($terms[array_key_last($terms)]);
         } else {
             // If not saving any terms, set to default (if exist).
-            $singleTerm = intval(get_option('default_' . CalendarFeed::TAX_CATEGORY, 0));
+            $singleTerm = intval(get_option('default_' . CalendarEvent::TAX_CATEGORY, 0));
         }
 
         // Set the single terms.
-        wp_set_object_terms($post_id, $singleTerm, CalendarFeed::TAX_CATEGORY);
+        wp_set_object_terms($post_id, $singleTerm, CalendarEvent::TAX_CATEGORY);
 
         return $post_id;
     }
