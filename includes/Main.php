@@ -4,8 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\CalendarFeed;
-use RRZE\Calendar\CPT\Event;
+use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 use RRZE\Calendar\Shortcodes\Shortcode;
 
 class Main
@@ -25,9 +24,8 @@ class Main
         $settings = new Settings;
         $settings->onLoaded();
 
+        CalendarEvent::init();
         CalendarFeed::init();
-
-        Event::init();
 
         Metaboxes::init();
 
@@ -63,7 +61,7 @@ class Main
         if (is_null($screen)) {
             return;
         }
-        if (in_array($screen->post_type, [CalendarFeed::POST_TYPE, Event::POST_TYPE])) {
+        if (in_array($screen->post_type, [CalendarEvent::POST_TYPE, CalendarFeed::POST_TYPE])) {
             wp_enqueue_style(
                 'rrze-calendar-admin',
                 plugins_url('build/admin.css', plugin()->getBasename()),
