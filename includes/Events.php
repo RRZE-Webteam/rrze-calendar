@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 use RRule\RRule;
 
 class Events
@@ -382,7 +382,7 @@ class Events
         $catName = '';
         $terms = wp_get_post_terms(
             $postId,
-            CalendarFeed::TAX_CATEGORY,
+            CalendarEvent::TAX_CATEGORY,
             [
                 'fields' => 'ids',
                 'parent' => 0
@@ -390,7 +390,7 @@ class Events
         );
         if (!empty($terms) && !is_wp_error($terms)) {
             $termId = $terms[0];
-            $term = get_term($termId, CalendarFeed::TAX_CATEGORY);
+            $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
             $catName = $term->name;
         }
         $catBgColor = $termId ? Utils::sanitizeHexColor(get_term_meta($termId, 'color', true)) : '';
@@ -400,7 +400,7 @@ class Events
         $tags = [];
         $terms = wp_get_post_terms(
             $postId,
-            CalendarFeed::TAX_TAG
+            CalendarEvent::TAX_TAG
         );
         if (!empty($terms) && !is_wp_error($terms)) {
             foreach ($terms as $term) {
@@ -610,7 +610,7 @@ class Events
                                 $catName = '';
                                 $terms = wp_get_post_terms(
                                     $data[$i]['post_id'],
-                                    CalendarFeed::TAX_CATEGORY,
+                                    CalendarEvent::TAX_CATEGORY,
                                     [
                                         'fields' => 'ids',
                                         'parent' => 0
@@ -618,7 +618,7 @@ class Events
                                 );
                                 if (!empty($terms) && !is_wp_error($terms)) {
                                     $termId = $terms[0];
-                                    $term = get_term($termId, CalendarFeed::TAX_CATEGORY);
+                                    $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
                                     $catName = $term->name;
                                 }
                                 $data[$i]['cat_name'] = $catName;
@@ -724,7 +724,7 @@ class Events
                                 $catName = '';
                                 $terms = wp_get_post_terms(
                                     $data[$i]['post_id'],
-                                    CalendarFeed::TAX_CATEGORY,
+                                    CalendarEvent::TAX_CATEGORY,
                                     [
                                         'fields' => 'ids',
                                         'parent' => 0
@@ -732,7 +732,7 @@ class Events
                                 );
                                 if (!empty($terms) && !is_wp_error($terms)) {
                                     $termId = $terms[0];
-                                    $term = get_term($termId, CalendarFeed::TAX_CATEGORY);
+                                    $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
                                     $catName = $term->name;
                                 }
                                 $data[$i]['cat_name'] = $catName;
