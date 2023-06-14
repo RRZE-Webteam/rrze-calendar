@@ -37,6 +37,7 @@ class CalendarEvent
         add_action('updated_post_meta', [__CLASS__, 'updatedMeta'], 10, 4);
         // Templates
         add_filter('single_template', [__CLASS__, 'includeSingleTemplate']);
+        add_filter('archive_template', [__CLASS__, 'includeArchiveTemplate']);
 
     }
 
@@ -511,5 +512,13 @@ class CalendarEvent
             return $singleTemplate;
 
         return Templates::getCptCalendarEventSingleTpl();
+    }
+
+    public static function includeArchiveTemplate($archiveTemplate) {
+        global $post;
+        if ($post->post_type != 'calendar_event')
+            return $archiveTemplate;
+
+        return Templates::getCptCalendarEventTpl();
     }
 }

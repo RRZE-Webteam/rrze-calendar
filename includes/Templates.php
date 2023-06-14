@@ -211,7 +211,7 @@ class Templates
      * getCptEventsTemplate
      * @return string Shortcode events template
      */
-    public static function getCptCalendarEventsTpl()
+    public static function getCptCalendarEventTpl()
     {
         return self::getCptTplPath() . self::$cptCalendarEventTpl;
     }
