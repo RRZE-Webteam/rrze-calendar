@@ -8,7 +8,10 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\Templates;
 use RRZE\Calendar\Utils;
+
+use function RRZE\Calendar\plugin;
 
 class CalendarEvent
 {
@@ -27,11 +30,14 @@ class CalendarEvent
         add_action('init', [__CLASS__, 'registerTag']);
         // CMB2 Fields
         add_action('cmb2_admin_init', [__CLASS__, 'eventFields']);
-        // add_filter('cmb2_render_select_weekdayofmonth', [__CLASS__, 'renderMonthDayField'], 10, 5);
-        // add_filter('cmb2_render_event_items', [__CLASS__, 'renderEventItemsField'], 10, 5);
+        add_filter('cmb2_render_select_weekdayofmonth', [__CLASS__, 'renderMonthDayField'], 10, 5);
+        add_filter('cmb2_render_event_items', [__CLASS__, 'renderEventItemsField'], 10, 5);
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
         add_action('updated_post_meta', [__CLASS__, 'updatedMeta'], 10, 4);
+        // Templates
+        add_filter('single_template', [__CLASS__, 'includeSingleTemplate']);
+
     }
 
     public static function registerPostType()
@@ -238,7 +244,7 @@ class CalendarEvent
         $cmb_schedule = new_cmb2_box([
             'id' => 'my-event-calendar-event-schedule',
             'title' => __('Repeating Event', 'rrze-calendar'),
-            'object_types' => ['event'],
+            'object_types' => [self::POST_TYPE],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true,
@@ -383,7 +389,7 @@ class CalendarEvent
             'classes'   => ['repeat', 'repeat-monthly'],
         ]);
         $cmb_schedule->add_field([
-            'name' => __('Upcoming Event Items', 'rrze-calendar'),
+            'name' => __('Event Items', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
             'id' => 'event-items',
             'type' => 'event_items',
@@ -397,9 +403,9 @@ class CalendarEvent
             return $post_id;
         }
 
-        //$eventList = Utils::buildEventsList([get_post($post_id)], false);
+        $eventList = Utils::buildEventsList([get_post($post_id)], false);
         //var_dump($eventList);
-        //update_post_meta($post_id, 'event-items', $eventList);
+        update_post_meta($post_id, 'event-items', $eventList);
 
         // unhook this function to prevent infinite looping
         /* remove_action( 'save_post', 'saveEvent' );
@@ -485,16 +491,25 @@ class CalendarEvent
     {
         $eventItems = get_post_meta($object_id, 'event-items', true);
         if (is_array($eventItems)) {
-            echo '<ul style="columns: 4 150px;">';
+            echo '<ul class="event-items">';
             foreach ($eventItems as $TSstart_ID => $TSend) {
                 $start = explode('#', $TSstart_ID)[0];
-                echo '<li>' . date_i18n(get_option('date_format'), $start) . '</li>';
+                $class = $start < time() ? 'past' : 'future';
+                echo '<li class="'.$class.'">' . date_i18n(get_option('date_format'), $start) . '</li>';
                 //echo '<li>' . date('Y-m-d', $start) . '</li>';
             }
             echo '</ul>';
-            echo '<p class="description">' . __('Only event items of one year are listed, even if no end date is set.', 'rrze-calendar') . '</p>';
+            echo '<p class="description">' . __('Maximum +/- 1 year.', 'rrze-calendar') . '</p>';
         } else {
             _e('No events found.', 'rrze-calendar');
         }
+    }
+
+    public static function includeSingleTemplate($singleTemplate) {
+        global $post;
+        if ($post->post_type != 'calendar_event')
+            return $singleTemplate;
+
+        return Templates::getCptCalendarEventSingleTpl();
     }
 }

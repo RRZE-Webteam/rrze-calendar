@@ -611,6 +611,9 @@ class Utils
                 $eventsArray[$startTS.'#'.$event->ID] = $startTS + $duration;
             } else {
                 // repeating event
+                if ($startTS < strtotime("-1 years")) {
+                    $startTS = strtotime("-1 years");
+                }
                 $repeatInterval = self::getMeta($meta, 'repeat-interval');
                 $startDate = DateTime::createFromFormat( 'U', $startTS );
                 $todayDate = new DateTime('today');

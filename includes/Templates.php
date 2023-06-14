@@ -24,7 +24,7 @@ class Templates
             'FAU-Events'
         ],
         'rrze' => [
-            'rrze-2015'
+            'rrze-2019'
         ],
         'vendor' => [
             'Francesca-Child'
@@ -81,12 +81,40 @@ class Templates
     protected static $shortcodeCalendarTpl = 'calendar.php';
 
     /**
+     * CPT Template Path
+     * @var string
+     */
+    protected static $cptTplPath = 'templates/cpt';
+
+    /**
+     * CPT CalendarEvent Template
+     * @var string
+     */
+    protected static $cptCalendarEventTpl = 'archive-event.php';
+
+    /**
+     * CPT CalendarEvent Single Template
+     * @var string
+     */
+    protected static $cptCalendarEventSingleTpl = 'single-event.php';
+
+    /**
      * Get Template Path
      * @var string
      */
     protected static function getTplPath(string $tpl): string
     {
-        $tpl = $tpl != 'endpoint' ? self::$shortcodesTplPath : self::$endpointTplPath;
+        switch ($tpl) {
+            case 'endpoint':
+                $tpl = self::$endpointTplPath;
+                break;
+            case 'cpt':
+                $tpl = self::$cptTplPath;
+                break;
+            case 'shortcode':
+            default:
+                $tpl = self::$shortcodesTplPath;
+        }
         $currentTheme = wp_get_theme();
         $tplPath = '';
         foreach (self::getThemes() as $path => $theme) {
@@ -114,6 +142,15 @@ class Templates
     public static function getShortcodesTplPath()
     {
         return self::getTplPath('shortcodes');
+    }
+
+    /**
+     * getCptTplPath
+     * @return string Shortcodes templates path
+     */
+    public static function getCptTplPath()
+    {
+        return self::getTplPath('cpt');
     }
 
     /**
@@ -168,6 +205,24 @@ class Templates
     public static function getShortcodeCalendarTpl()
     {
         return self::getShortcodesTplPath() . self::$shortcodeCalendarTpl;
+    }
+
+    /**
+     * getCptEventsTemplate
+     * @return string Shortcode events template
+     */
+    public static function getCptCalendarEventsTpl()
+    {
+        return self::getCptTplPath() . self::$cptCalendarEventTpl;
+    }
+
+    /**
+     * getCptEventsSingleTemplate
+     * @return string Shortcode events template
+     */
+    public static function getCptCalendarEventSingleTpl()
+    {
+        return self::getCptTplPath() . self::$cptCalendarEventSingleTpl;
     }
 
     /**
