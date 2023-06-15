@@ -21,8 +21,7 @@ class Main
 
         Update::init();
 
-        $settings = new Settings;
-        $settings->onLoaded();
+        Settings::init();
 
         CalendarEvent::init();
         CalendarFeed::init();
@@ -31,9 +30,9 @@ class Main
 
         Events::init();
 
-        Endpoint::init();
+        //Endpoint::init();
 
-        Shortcode::init();
+        //Shortcode::init();
 
         Cron::init();
     }
