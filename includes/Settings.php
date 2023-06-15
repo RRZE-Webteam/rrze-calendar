@@ -35,6 +35,16 @@ class Settings
             ]
         ]);
 
+        $settings->addTab(__('Endpoint', 'rrze-calendar'));
+
+        $settings->addSection(__('Endpoint', 'rrze-calendar'));
+
+        $settings->addOption('checkbox', [
+            'name' => 'endpoint_enabled',
+            'label' => __('Enable', 'rrze-calendar'),
+            'description'  => __('Enables the endpoint url', 'rrze-calendar'),
+        ]);
+
         $settings->build();
     }
 }
