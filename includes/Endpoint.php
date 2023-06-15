@@ -11,7 +11,7 @@ class Endpoint
      */
     public static function init()
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         if ($options->endpoint_enabled == 'on') {
             add_action('init', [__CLASS__, 'addEndpoint']);
             add_action('template_redirect', [__CLASS__, 'endpointTemplateRedirect']);
@@ -20,14 +20,14 @@ class Endpoint
 
     public static function addEndpoint()
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         add_rewrite_endpoint($options->endpoint_slug, EP_ROOT);
     }
 
     public static function endpointTemplateRedirect()
     {
         global $wp_query;
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         if (!isset($wp_query->query_vars[$options->endpoint_slug])) {
             return;
         }
@@ -70,25 +70,25 @@ class Endpoint
     public static function isEndpoint()
     {
         global $wp_query;
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         return isset($wp_query->query_vars[$options->endpoint_slug]);
     }
 
     public static function endpointUrl($slug = '')
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         return site_url($options->endpoint_slug . '/' . $slug);
     }
 
     public static function endpointSlug()
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         return $options->endpoint_slug;
     }
 
     public static function endpointTitle()
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         return $options->endpoint_title;
     }
 }
