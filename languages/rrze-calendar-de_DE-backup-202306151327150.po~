@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-15 13:28+0000\n"
-"Last-Translator: Barbara Bothe\n"
+"PO-Revision-Date: 2023-06-15 13:26+0000\n"
+"Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.6.4; wp-6.2.2\n"
+"X-Loco-Version: 2.4.0; wp-5.4.2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
@@ -300,7 +300,7 @@ msgstr "https://github.com/RRZE-Webteam/rrze-calendar"
 
 #: includes/Settings.php:23
 msgid "ICS Feed"
-msgstr "ICS-Feed"
+msgstr ""
 
 #: includes/CPT/CalendarFeed.php:76 includes/CPT/CalendarFeed.php:85
 msgid "ICS Feeds"
@@ -393,6 +393,7 @@ msgid "No event found."
 msgstr "Kein Termin gefunden."
 
 #: includes/CPT/CalendarEvent.php:60
+#, fuzzy
 #| msgid "No Events found in Trash."
 msgid "No events found in Trash."
 msgstr "Keine Veranstaltungen im Papierkorb gefunden."
@@ -406,11 +407,13 @@ msgid "No events found."
 msgstr "Keine Termine gefunden."
 
 #: includes/CPT/CalendarFeed.php:80
+#, fuzzy
 #| msgid "No feeds found in Trash."
 msgid "No ics feeds found in Trash."
 msgstr "Keine Feeds im Papierkorb gefunden."
 
 #: includes/CPT/CalendarFeed.php:79
+#, fuzzy
 #| msgid "No feeds found."
 msgid "No ics feeds found."
 msgstr "Keine Feeds gefunden."
@@ -451,26 +454,30 @@ msgid "Add New"
 msgstr "Erstellen"
 
 #: includes/CPT/CalendarEvent.php:47
+#, fuzzy
 msgctxt "post type general name"
 msgid "Events"
 msgstr "Veranstaltungen"
 
 #: includes/CPT/CalendarFeed.php:67
+#, fuzzy
 #| msgid "Feeds"
 msgctxt "post type general name"
 msgid "ICS Feeds"
-msgstr "ICS-Feeds"
+msgstr "Feeds"
 
 #: includes/CPT/CalendarEvent.php:48
+#, fuzzy
 msgctxt "post type singular name"
 msgid "Event"
 msgstr "Veranstaltung"
 
 #: includes/CPT/CalendarFeed.php:68
+#, fuzzy
 #| msgid "Feed"
 msgctxt "post type singular name"
 msgid "ICS Feed"
-msgstr "ICS-Feed"
+msgstr "Feed"
 
 #: includes/CPT/CalendarFeed.php:359
 msgid "Preview"
@@ -584,28 +591,32 @@ msgid "Tags"
 msgstr "Schlagwörter"
 
 #: includes/CPT/CalendarEvent.php:81
+#, fuzzy
 #| msgid "Feeds Categories"
 msgctxt "Taxonomy general name"
 msgid "Event Categories"
-msgstr "Veranstaltungs-Kategorien"
+msgstr "Feed-Kategorien"
 
 #: includes/CPT/CalendarEvent.php:98
+#, fuzzy
 #| msgid "Feed Tags"
 msgctxt "Taxonomy general name"
 msgid "Event Tags"
-msgstr "Veranstaltungs-Schlagwörter"
+msgstr "Feed-Schlagwörter"
 
 #: includes/CPT/CalendarEvent.php:82
+#, fuzzy
 #| msgid "Feed Category"
 msgctxt "Taxonomy singular name"
 msgid "Event Category"
-msgstr "Veranstaltungs-Kategorie"
+msgstr "Feed-Kategorie"
 
 #: includes/CPT/CalendarEvent.php:99
+#, fuzzy
 #| msgid "Feed Tag"
 msgctxt "Taxonomy singular name"
 msgid "Event Tag"
-msgstr "Veranstaltungs-Schlagwort"
+msgstr "Feed-Schlagwort"
 
 #. 1: Server PHP version number, 2: Required PHP version number.
 #: rrze-calendar.php:61
@@ -631,7 +642,7 @@ msgstr "dritten"
 
 #: templates/cpt/single-event.php:76 templates/cpt/single-event.php:149
 msgid "Time"
-msgstr "Zeit"
+msgstr ""
 
 #: includes/EventsListTable.php:62
 msgid "Title"

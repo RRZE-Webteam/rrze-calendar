@@ -69,6 +69,7 @@ class CalendarEvent
             'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
             'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
             'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE),
+            'has_archive'        => true,
         ];
 
         register_post_type(self::POST_TYPE, $args);

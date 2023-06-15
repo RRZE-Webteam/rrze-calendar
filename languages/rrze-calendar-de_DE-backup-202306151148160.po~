@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-15 13:28+0000\n"
-"Last-Translator: Barbara Bothe\n"
+"PO-Revision-Date: 2023-06-13 14:57+0000\n"
+"Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.6.4; wp-6.2.2\n"
+"X-Loco-Version: 2.4.0; wp-5.4.2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
@@ -61,50 +61,52 @@ msgstr "%1$s %2$s Uhr bis %3$s %4$s Uhr"
 msgid "%1$s - %2$s"
 msgstr "%1$s bis %2$s"
 
-#: includes/CPT/CalendarEvent.php:262
+#: includes/CPT/Event.php:235
 msgid "(optional)"
 msgstr "(optional)"
 
-#: includes/CPT/CalendarEvent.php:330
+#: includes/CPT/Event.php:303
 msgid ""
 "Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line."
 msgstr ""
 "Zusätzliche Termine hinzufügen (Format YYYY-MM-DD, z.B. 2023-12-31). Ein "
 "Datum pro Zeile."
 
-#: includes/CPT/CalendarEvent.php:52
+#: includes/CPT/Event.php:62
+msgid "Add and edit event informations"
+msgstr "Informationen zur Veranstaltung hinzufügen und bearbeiten"
+
+#: includes/CPT/Event.php:38 includes/CPT/Event.php:39
 msgid "Add New Event"
 msgstr "Veranstaltung hinzufügen"
 
-#: includes/CPT/CalendarFeed.php:72
-#| msgid "Add New Feed"
-msgid "Add New ICS Feed"
+#: includes/CPT/CalendarFeed.php:79
+msgid "Add New Feed"
 msgstr "Neuen Feed erstellen"
 
-#: includes/CPT/CalendarEvent.php:50
-#| msgid "Calendar Feed"
+#: includes/CPT/CalendarFeed.php:77
 msgctxt "add new on admin bar"
-msgid "Calendar Event"
+msgid "Calendar Feed"
+msgstr "Kalender-Feed"
+
+#: includes/CPT/Event.php:37
+msgctxt "Add New on Toolbar"
+msgid "Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:70
-msgctxt "add new on admin bar"
-msgid "ICS Feed"
-msgstr "ICS-Feed"
-
-#: includes/CPT/CalendarEvent.php:329
+#: includes/CPT/Event.php:302
 msgid "Additions"
 msgstr "Zusatztermine"
 
-#: includes/CPT/CalendarEvent.php:49
+#: includes/CPT/CalendarFeed.php:76
 msgctxt "admin menu"
 msgid "Calendar"
 msgstr "Kalender"
 
-#: includes/CPT/CalendarFeed.php:69
-msgctxt "admin menu"
-msgid "ICS Feeds"
-msgstr "ICS-Feeds"
+#: includes/CPT/Event.php:36
+msgctxt "Admin Menu text"
+msgid "Events"
+msgstr "Veranstaltungen"
 
 #: includes/Shortcodes/Shortcode.php:69 includes/Shortcodes/Shortcode.php:176
 #: templates/shortcodes/events.php:124 templates/shortcodes/calendar.php:138
@@ -123,81 +125,92 @@ msgstr "ICS-Feeds"
 msgid "All Day"
 msgstr "Ganztägig"
 
-#: includes/CPT/CalendarEvent.php:172
+#: includes/CPT/Event.php:145
 msgid "All day event"
 msgstr "Ganztägig"
 
 #. parent slug
 #. page title
-#: includes/Events.php:21 includes/Events.php:22
-#: includes/CPT/CalendarEvent.php:56 templates/endpoint/events.php:11
+#: includes/Events.php:21 includes/Events.php:22 includes/CPT/Event.php:43
+#: templates/endpoint/events.php:11
 #: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
 msgstr "Alle Termine"
 
-#: includes/CPT/CalendarFeed.php:112
+#: includes/CPT/CalendarFeed.php:83
+msgid "All Feeds"
+msgstr "Alle"
+
+#: config/settings.php:23 config/settings.php:24
+msgid "Calendar"
+msgstr "Kalender"
+
+#: config/settings.php:27
+msgid "Calendar Settings"
+msgstr "Einstellungen &rsaquo; Kalender"
+
+#: includes/CPT/CalendarFeed.php:116
 msgid "Categories"
 msgstr "Kategorien"
 
-#: includes/Settings.php:30
+#: config/settings.php:62
 msgid "Choose the recurrence to check for new events."
 msgstr "Wiederholung auswählen, um nach neuen Termine zu suchen."
 
-#: includes/CPT/CalendarFeed.php:176 includes/CPT/CalendarFeed.php:186
-#: includes/CPT/CalendarFeed.php:209
+#: includes/CPT/CalendarFeed.php:216 includes/CPT/CalendarFeed.php:226
+#: includes/CPT/CalendarFeed.php:249
 msgid "Color"
 msgstr "Farbe"
 
-#: includes/Settings.php:34
+#: config/settings.php:68
 msgid "Daily"
 msgstr "Täglich"
 
-#: includes/EventsListTable.php:63 includes/CPT/CalendarEvent.php:342
-#: templates/cpt/single-event.php:73 templates/cpt/single-event.php:146
+#: includes/EventsListTable.php:63 includes/CPT/Event.php:315
 msgid "Date"
 msgstr "Datum"
 
-#: includes/EventsListTable.php:65 includes/CPT/CalendarEvent.php:177
+#: includes/EventsListTable.php:65 includes/CPT/Event.php:150
 msgid "Description"
 msgstr "Beschreibung"
 
-#: includes/CPT/CalendarEvent.php:220 templates/cpt/single-event.php:172
+#: includes/CPT/Event.php:193
 msgid "Downloads"
 msgstr "Downloads"
 
-#: includes/CPT/CalendarEvent.php:337
+#: includes/CPT/Event.php:310
 msgid "Each"
 msgstr "Jeder"
 
-#: includes/CPT/CalendarEvent.php:357 includes/CPT/CalendarEvent.php:366
+#: includes/CPT/Event.php:330 includes/CPT/Event.php:339
 msgid "each"
 msgstr "jedem"
 
-#: includes/CPT/CalendarEvent.php:54
+#: includes/CPT/Event.php:41
 msgid "Edit Event"
 msgstr "Veranstaltung bearbeiten"
 
-#: includes/CPT/CalendarFeed.php:74
-msgid "Edit ICS Feed"
-msgstr "ICS-Feed bearbeiten"
+#: includes/CPT/CalendarFeed.php:81
+msgid "Edit Feed"
+msgstr "Feed bearbeiten"
 
-#: includes/Settings.php:44
+#: config/settings.php:75
 msgid "Enable"
 msgstr "Aktivieren"
 
-#: includes/Settings.php:45
+#: config/settings.php:76
 msgid "Enables the endpoint url"
 msgstr "Aktiviert die Endpoint-URL"
 
-#: includes/CPT/CalendarEvent.php:150
+#: includes/CPT/Event.php:123
 msgid "End"
 msgstr "Ende"
 
-#: includes/Settings.php:38 includes/Settings.php:40
+#: config/settings.php:45
 msgid "Endpoint"
 msgstr "Endpoint"
 
-#: includes/CPT/CalendarEvent.php:322
+#: includes/CPT/Event.php:295
 msgid ""
 "Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per "
 "line."
@@ -209,38 +222,27 @@ msgstr ""
 msgid "Enter the url of the ICS feed. This field is required."
 msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 
-#: includes/EventsListTable.php:15 templates/endpoint/single-event.php:11
+#: includes/EventsListTable.php:15 includes/CPT/Event.php:61
+#: templates/endpoint/single-event.php:11
 #: templates/endpoint/themes/vendor/single-event.php:11
 msgid "Event"
 msgstr "Termin"
-
-#: templates/cpt/single-event.php:191
-msgid "Event Categories"
-msgstr "Veranstaltungskategorien"
-
-#: templates/cpt/single-event.php:143
-msgid "Event Details"
-msgstr "Details"
-
-#: includes/CPT/CalendarEvent.php:394
-msgid "Event Items"
-msgstr "Termine"
 
 #: includes/Endpoint.php:49 templates/endpoint/themes/fau/single-event.php:29
 msgid "Event not found."
 msgstr "Termin nicht gefunden."
 
 #: includes/Metabox.php:33 includes/EventsListTable.php:16
-#: includes/CPT/CalendarFeed.php:114
+#: includes/CPT/CalendarFeed.php:118
 #: templates/endpoint/themes/fau-events/events.php:16
 msgid "Events"
 msgstr "Termine"
 
-#: includes/CPT/CalendarEvent.php:300
+#: includes/CPT/Event.php:273
 msgid "every"
 msgstr "alle"
 
-#: includes/CPT/CalendarEvent.php:321
+#: includes/CPT/Event.php:294
 msgid "Exceptions"
 msgstr "Ausnahmen"
 
@@ -250,7 +252,7 @@ msgstr "Ausnahmen"
 msgid "F Y"
 msgstr "F Y"
 
-#: includes/CPT/CalendarEvent.php:239
+#: includes/CPT/Event.php:212
 msgid "Featured Event"
 msgstr "Hervorgehobene Veranstaltung"
 
@@ -262,31 +264,31 @@ msgstr "Feed"
 msgid "Feed URL is not valid."
 msgstr "Die Feed-URL ist ungültig."
 
-#: includes/CPT/CalendarFeed.php:166
+#: includes/CPT/CalendarFeed.php:170
 msgid "Feed URL."
 msgstr "Feed-URL."
 
-#: includes/CPT/CalendarEvent.php:454
+#: includes/CPT/Event.php:426
 msgid "fifth"
 msgstr "fünften"
 
-#: includes/CPT/CalendarEvent.php:450
+#: includes/CPT/Event.php:422
 msgid "first"
 msgstr "ersten"
 
-#: includes/CPT/CalendarEvent.php:453
+#: includes/CPT/Event.php:425
 msgid "fourth"
 msgstr "vierten"
 
-#: includes/CPT/CalendarEvent.php:121
+#: includes/CPT/Event.php:94
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
-#: includes/Main.php:94
+#: includes/Main.php:97
 msgid "Hide past events"
 msgstr "Vergangene Termine ausblenden"
 
-#: includes/Settings.php:32
+#: config/settings.php:66
 msgid "Hourly"
 msgstr "Stündlich"
 
@@ -297,14 +299,6 @@ msgstr "https://blogs.fau.de/webworking/"
 #. URI of the plugin
 msgid "https://github.com/RRZE-Webteam/rrze-calendar"
 msgstr "https://github.com/RRZE-Webteam/rrze-calendar"
-
-#: includes/Settings.php:23
-msgid "ICS Feed"
-msgstr "ICS-Feed"
-
-#: includes/CPT/CalendarFeed.php:76 includes/CPT/CalendarFeed.php:85
-msgid "ICS Feeds"
-msgstr "ICS-Feeds"
 
 #. Description of the plugin
 msgid "Import and output of FAU public events."
@@ -328,12 +322,11 @@ msgstr "j. F"
 msgid "l F jS, Y"
 msgstr "l, j. F Y"
 
-#: includes/CPT/CalendarFeed.php:115
+#: includes/CPT/CalendarFeed.php:119
 msgid "Last Updated"
 msgstr "Letzte Aktualisierung"
 
-#: includes/EventsListTable.php:66 includes/CPT/CalendarEvent.php:186
-#: templates/cpt/single-event.php:77 templates/cpt/single-event.php:153
+#: includes/EventsListTable.php:66 includes/CPT/Event.php:159
 #: templates/shortcodes/themes/rrze/events.php:80
 #: templates/endpoint/themes/rrze/single-event.php:108
 msgid "Location"
@@ -352,11 +345,7 @@ msgstr "Ort:"
 msgid "m-d-Y"
 msgstr "m.d.Y"
 
-#: includes/CPT/CalendarEvent.php:504
-msgid "Maximum +/- 1 year."
-msgstr "Maximal +/- 1 Jahr."
-
-#: includes/CPT/CalendarEvent.php:286
+#: includes/CPT/Event.php:259
 msgid "Monthly"
 msgstr "Monatlich"
 
@@ -365,13 +354,13 @@ msgstr "Monatlich"
 msgid "More events"
 msgstr "Weitere Termine"
 
-#: includes/CPT/CalendarEvent.php:53
+#: includes/CPT/Event.php:40
 msgid "New Event"
 msgstr "Neue Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:73
-msgid "New ICS Feed"
-msgstr "Neuer ICS-Feed"
+#: includes/CPT/CalendarFeed.php:80
+msgid "New Feed"
+msgstr "Erstellen"
 
 #: templates/shortcodes/calendar.php:243
 #: templates/shortcodes/themes/vendor/calendar.php:243
@@ -392,27 +381,27 @@ msgstr "Keine Beschreibung"
 msgid "No event found."
 msgstr "Kein Termin gefunden."
 
-#: includes/CPT/CalendarEvent.php:60
-#| msgid "No Events found in Trash."
-msgid "No events found in Trash."
+#: includes/CPT/Event.php:46
+msgid "No Events found in Trash."
 msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 
-#: includes/Events.php:121 includes/CPT/CalendarEvent.php:59
-#: includes/CPT/CalendarEvent.php:506 templates/shortcodes/calendar.php:237
-#: templates/endpoint/events.php:16
+#: includes/CPT/Event.php:45
+msgid "No Events found."
+msgstr "Keine Veranstaltungen gefunden."
+
+#: includes/Events.php:121 includes/CPT/Event.php:476
+#: templates/shortcodes/calendar.php:237 templates/endpoint/events.php:16
 #: templates/shortcodes/themes/vendor/calendar.php:237
 #: templates/endpoint/themes/vendor/events.php:15
 msgid "No events found."
 msgstr "Keine Termine gefunden."
 
-#: includes/CPT/CalendarFeed.php:80
-#| msgid "No feeds found in Trash."
-msgid "No ics feeds found in Trash."
+#: includes/CPT/CalendarFeed.php:87
+msgid "No feeds found in Trash."
 msgstr "Keine Feeds im Papierkorb gefunden."
 
-#: includes/CPT/CalendarFeed.php:79
-#| msgid "No feeds found."
-msgid "No ics feeds found."
+#: includes/CPT/CalendarFeed.php:86
+msgid "No feeds found."
 msgstr "Keine Feeds gefunden."
 
 #: templates/shortcodes/themes/fau-events/events.php:12
@@ -424,100 +413,134 @@ msgstr "Keine Feeds gefunden."
 msgid "No upcoming events."
 msgstr "Keine bevorstehenden Termine."
 
-#: includes/CPT/CalendarEvent.php:358 includes/CPT/CalendarEvent.php:367
+#: includes/CPT/Event.php:331 includes/CPT/Event.php:340
 msgid "of month"
 msgstr "des Monats"
 
-#: includes/CPT/CalendarFeed.php:335
+#: includes/CPT/Event.php:474
+msgid "Only event items of one year are listed, even if no end date is set."
+msgstr ""
+"Es werden nur Termine innerhalb des kommenden Jahres aufgelistet, auch wenn "
+"kein Enddatum gesetzt ist."
+
+#: includes/CPT/Event.php:47
+msgctxt ""
+"Overrides the “Featured Image” phrase for this post type. Added in 4.3"
+msgid "Event Logo"
+msgstr "Veranstaltungsbild"
+
+#: includes/CPT/Event.php:52
+msgctxt ""
+"Overrides the “Insert into post”/”Insert into page” phrase (used when "
+"inserting media into a post). Added in 4.4"
+msgid "Insert into event"
+msgstr "In die Veranstaltung einfügen"
+
+#: includes/CPT/Event.php:49
+msgctxt ""
+"Overrides the “Remove featured image” phrase for this post type. Added in 4.3"
+msgid "Remove event logo"
+msgstr "Veranstaltungsbild entfernen"
+
+#: includes/CPT/Event.php:48
+msgctxt ""
+"Overrides the “Set featured image” phrase for this post type. Added in 4.3"
+msgid "Set event logo"
+msgstr "Veranstaltungsbild festlegen"
+
+#: includes/CPT/Event.php:53
+msgctxt ""
+"Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used "
+"when viewing media attached to a post). Added in 4.4"
+msgid "Uploaded to this event"
+msgstr "Zu dieser Veranstaltung hochgeladen"
+
+#: includes/CPT/Event.php:50
+msgctxt ""
+"Overrides the “Use as featured image” phrase for this post type. Added in 4.3"
+msgid "Use as event logo"
+msgstr "Als Veranstaltungsbild verwenden"
+
+#: includes/CPT/CalendarFeed.php:375
 msgid "Page not found"
 msgstr "Seite nicht gefunden"
 
-#: includes/CPT/CalendarEvent.php:58
-msgid "Parent Events:"
-msgstr "Übergeordnete Veranstaltungen:"
-
-#: includes/CPT/CalendarFeed.php:78
+#: includes/CPT/CalendarFeed.php:85
 msgid "Parent Feeds:"
 msgstr "Eltern-Feeds:"
 
 #. 1: The plugin name, 2: The error string.
-#: rrze-calendar.php:87 rrze-calendar.php:146
+#: rrze-calendar.php:89 rrze-calendar.php:148
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/CPT/CalendarEvent.php:51 includes/CPT/CalendarFeed.php:71
+#: includes/CPT/CalendarFeed.php:78
 msgctxt "popup"
 msgid "Add New"
 msgstr "Erstellen"
 
-#: includes/CPT/CalendarEvent.php:47
-msgctxt "post type general name"
+#: includes/CPT/Event.php:34
+msgctxt "Post type general name"
 msgid "Events"
 msgstr "Veranstaltungen"
 
-#: includes/CPT/CalendarFeed.php:67
-#| msgid "Feeds"
+#: includes/CPT/CalendarFeed.php:74
 msgctxt "post type general name"
-msgid "ICS Feeds"
-msgstr "ICS-Feeds"
+msgid "Feeds"
+msgstr "Feeds"
 
-#: includes/CPT/CalendarEvent.php:48
-msgctxt "post type singular name"
+#: includes/CPT/Event.php:35
+msgctxt "Post type singular name"
 msgid "Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:68
-#| msgid "Feed"
+#: includes/CPT/CalendarFeed.php:75
 msgctxt "post type singular name"
-msgid "ICS Feed"
-msgstr "ICS-Feed"
+msgid "Feed"
+msgstr "Feed"
 
-#: includes/CPT/CalendarFeed.php:359
+#: includes/CPT/CalendarFeed.php:399
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/CPT/CalendarEvent.php:203 templates/cpt/single-event.php:162
+#: includes/CPT/Event.php:176
 msgid "Prices"
 msgstr "Preise"
 
-#: includes/Settings.php:29 includes/EventsListTable.php:64
+#: config/settings.php:61 includes/EventsListTable.php:64
 msgid "Recurrence"
 msgstr "Wiederholung"
 
-#: templates/cpt/single-event.php:167
-msgid "Registration"
-msgstr "Anmeldung"
-
-#: includes/CPT/CalendarEvent.php:214
+#: includes/CPT/Event.php:187
 msgid "Registration URL"
 msgstr "Link zur Anmeldung"
 
-#: includes/CPT/CalendarEvent.php:255
+#: includes/CPT/Event.php:228
 msgid "Repeat"
 msgstr "Wiederholen"
 
-#: includes/CPT/CalendarEvent.php:279
+#: includes/CPT/Event.php:252
 msgid "Repeat Interval"
 msgstr "Wiederholungsintervall"
 
-#: includes/CPT/CalendarEvent.php:261
+#: includes/CPT/Event.php:234
 msgid "Repeat until"
 msgstr "Wiederholen bis"
 
-#: includes/CPT/CalendarEvent.php:248
+#: includes/CPT/Event.php:221
 msgid "Repeating Event"
 msgstr "Wiederholungen"
 
-#: includes/CPT/CalendarEvent.php:292
+#: includes/CPT/Event.php:265
 msgid "Repeats"
 msgstr "Wiederholt sich"
 
-#: includes/CPT/CalendarEvent.php:385
+#: includes/CPT/Event.php:358
 msgid "Repeats in"
 msgstr "Wiederholt sich im"
 
-#: includes/CPT/CalendarEvent.php:305 includes/CPT/CalendarEvent.php:352
-#: includes/CPT/CalendarEvent.php:362
+#: includes/CPT/Event.php:278 includes/CPT/Event.php:325
+#: includes/CPT/Event.php:335
 msgid "Repeats on"
 msgstr "Wiederholt sich an"
 
@@ -529,33 +552,57 @@ msgstr "RRZE Kalender"
 msgid "RRZE Webteam"
 msgstr "RRZE-Webteam"
 
-#: includes/Settings.php:25
+#: config/settings.php:40
 msgid "Schedule"
 msgstr "Zeitplan"
 
-#: includes/Metabox.php:142 includes/Events.php:41
-#: includes/CPT/CalendarEvent.php:57
+#: includes/CPT/Event.php:54
+msgctxt ""
+"Screen reader text for the filter links heading on the post type listing "
+"screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4"
+msgid "Filter events list"
+msgstr "Veranstaltungen filtern"
+
+#: includes/CPT/Event.php:56
+msgctxt ""
+"Screen reader text for the items list heading on the post type listing "
+"screen. Default “Posts list”/”Pages list”. Added in 4.4"
+msgid "Events list"
+msgstr "Liste der Veranstaltungen"
+
+#: includes/CPT/Event.php:55
+msgctxt ""
+"Screen reader text for the pagination heading on the post type listing "
+"screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4"
+msgid "Events list navigation"
+msgstr "Navigation für Veranstalterliste"
+
+#: includes/Metabox.php:142 includes/Events.php:41 includes/CPT/Event.php:44
 msgid "Search Events"
 msgstr "Termine durchsuchen"
 
-#: includes/CPT/CalendarFeed.php:77
+#: includes/CPT/CalendarFeed.php:84
 msgid "Search Feeds"
 msgstr "Feed durchsuchen"
 
-#: includes/CPT/CalendarEvent.php:451
+#: includes/CPT/Event.php:423
 msgid "second"
 msgstr "zweiten"
 
-#: includes/Main.php:51
+#: includes/Main.php:54
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: includes/Main.php:95 templates/shortcodes/calendar.php:42
+#: includes/Main.php:98 templates/shortcodes/calendar.php:42
 #: templates/shortcodes/themes/vendor/calendar.php:42
 msgid "Show past events"
 msgstr "Vergangene Termine anzeigen"
 
-#: includes/CPT/CalendarEvent.php:128
+#: config/settings.php:81
+msgid "Slug"
+msgstr "Titelform"
+
+#: includes/CPT/Event.php:101
 msgid "Start"
 msgstr "Start"
 
@@ -579,36 +626,39 @@ msgstr "Termin abonnieren"
 msgid "Subscription"
 msgstr "Abonnement"
 
-#: includes/CPT/CalendarFeed.php:113
+#: includes/CPT/CalendarFeed.php:117
 msgid "Tags"
 msgstr "Schlagwörter"
 
-#: includes/CPT/CalendarEvent.php:81
-#| msgid "Feeds Categories"
+#: includes/CPT/CalendarFeed.php:197
 msgctxt "Taxonomy general name"
-msgid "Event Categories"
-msgstr "Veranstaltungs-Kategorien"
+msgid "Feed Tags"
+msgstr "Feed-Schlagwörter"
 
-#: includes/CPT/CalendarEvent.php:98
-#| msgid "Feed Tags"
+#: includes/CPT/CalendarFeed.php:180
 msgctxt "Taxonomy general name"
-msgid "Event Tags"
-msgstr "Veranstaltungs-Schlagwörter"
+msgid "Feeds Categories"
+msgstr "Feed-Kategorien"
 
-#: includes/CPT/CalendarEvent.php:82
-#| msgid "Feed Category"
+#: includes/CPT/CalendarFeed.php:181
 msgctxt "Taxonomy singular name"
-msgid "Event Category"
-msgstr "Veranstaltungs-Kategorie"
+msgid "Feed Category"
+msgstr "Feed-Kategorie"
 
-#: includes/CPT/CalendarEvent.php:99
-#| msgid "Feed Tag"
+#: includes/CPT/CalendarFeed.php:198
 msgctxt "Taxonomy singular name"
-msgid "Event Tag"
-msgstr "Veranstaltungs-Schlagwort"
+msgid "Feed Tag"
+msgstr "Feed-Schlagwort"
+
+#: includes/CPT/Event.php:51
+msgctxt ""
+"The post type archive label used in nav menus. Default “Post Archives”. "
+"Added in 4.4"
+msgid "Event archives"
+msgstr "Alle Veranstaltungen"
 
 #. 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-calendar.php:61
+#: rrze-calendar.php:63
 msgid ""
 "The server is running PHP version %1$s. The Plugin requires at least PHP "
 "version %2$s."
@@ -617,7 +667,7 @@ msgstr ""
 "Version %2$s."
 
 #. 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-calendar.php:68
+#: rrze-calendar.php:70
 msgid ""
 "The server is running WordPress version %1$s. The Plugin requires at least "
 "WordPress version %2$s."
@@ -625,38 +675,42 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
 
-#: includes/CPT/CalendarEvent.php:452
+#: config/settings.php:82
+msgid "The slug of the endpoint."
+msgstr "Das Titelform des Endpoints."
+
+#: config/settings.php:90
+msgid "The title of the endpoint."
+msgstr "Der Titel des Endpoints."
+
+#: includes/CPT/Event.php:424
 msgid "third"
 msgstr "dritten"
 
-#: templates/cpt/single-event.php:76 templates/cpt/single-event.php:149
-msgid "Time"
-msgstr "Zeit"
-
-#: includes/EventsListTable.php:62
+#: config/settings.php:89 includes/EventsListTable.php:62
 msgid "Title"
 msgstr "Titel"
 
-#: includes/Settings.php:33
+#: config/settings.php:67
 msgid "Twice daily"
 msgstr "Zweimal täglich"
 
-#: includes/CPT/CalendarEvent.php:197
+#: includes/CPT/Event.php:367
+msgid "Upcoming Event Items"
+msgstr "Kommende Termine"
+
+#: includes/CPT/Event.php:170
 msgid "VC URL"
 msgstr ""
 "Videokonferenz-URL\n"
 
-#: templates/cpt/single-event.php:157
-msgid "Video Conference Link"
-msgstr "Link zur Videokonferenz"
-
-#: includes/CPT/CalendarEvent.php:55
+#: includes/CPT/Event.php:42
 msgid "View Event"
 msgstr "Veranstaltung ansehen"
 
-#: includes/CPT/CalendarFeed.php:75
-msgid "View ICS Feed"
-msgstr "ICS-Feed ansehen"
+#: includes/CPT/CalendarFeed.php:82
+msgid "View Feed"
+msgstr "Feed ansehen"
 
 #: includes/Shortcodes/Shortcode.php:120
 #: templates/endpoint/single-event.php:102
@@ -668,14 +722,14 @@ msgstr "ICS-Feed ansehen"
 msgid "View the calendar"
 msgstr "Kalender ansehen"
 
-#: includes/CPT/CalendarEvent.php:301
+#: includes/CPT/Event.php:274
 msgid "week(s)"
 msgstr "Woche(n)"
 
-#: includes/CPT/CalendarEvent.php:343
+#: includes/CPT/Event.php:316
 msgid "Weekday"
 msgstr "Wochentag"
 
-#: includes/CPT/CalendarEvent.php:285
+#: includes/CPT/Event.php:258
 msgid "Weekly"
 msgstr "Wöchentlich"
