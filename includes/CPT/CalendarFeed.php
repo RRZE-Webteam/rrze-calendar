@@ -58,9 +58,6 @@ class CalendarFeed
 
         // Add Metabox.
         Metabox::init();
-
-        // Category Radio List Metabox.
-        CategoryMetabox::init();
     }
 
     public static function registerPostType()
