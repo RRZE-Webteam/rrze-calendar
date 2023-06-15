@@ -20,7 +20,7 @@ class Cron
      */
     public static function activateScheduledEvents()
     {
-        $options = (object) Settings::getOptions();
+        $options = (object) get_option(Settings::OPTION_NAME);
         if (false === wp_next_scheduled(self::ACTION_HOOK)) {
             wp_schedule_event(
                 time(),
