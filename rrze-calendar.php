@@ -24,9 +24,6 @@ use RRZE\WP\Plugin;
 const RRZE_PHP_VERSION = '8.0';
 const RRZE_WP_VERSION = '6.1';
 
-// Load the settings config file.
-require_once 'config/settings.php';
-
 // Autoloader
 require_once 'vendor/autoload.php';
 
