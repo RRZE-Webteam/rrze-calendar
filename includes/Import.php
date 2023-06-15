@@ -10,10 +10,6 @@ use DateTime;
 
 class Import
 {
-    /**
-     * [protected description]
-     * @var integer
-     */
     const TIMEOUT_IN_SECONDS = 15;
 
     /**
