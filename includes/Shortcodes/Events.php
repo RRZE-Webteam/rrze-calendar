@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\Templates;
-use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\CalendarEvent;
 use RRZE\Calendar\Events as MainEvents;
 
 class Events
@@ -104,7 +104,7 @@ class Events
         $args = [
             'fields'      => 'ids',
             'numberposts' => -1,
-            'post_type'   => CalendarFeed::POST_TYPE,
+            'post_type'   => CalendarEvent::POST_TYPE,
             'post_status' => 'publish'
         ];
 
