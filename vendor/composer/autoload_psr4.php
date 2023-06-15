@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'RRule\\' => array($baseDir . '/src', $vendorDir . '/rlanvin/php-rrule/src'),
+    'RRZE\\WP\\' => array($vendorDir . '/rrze/wp/src'),
     'RRZE\\Calendar\\' => array($baseDir . '/includes'),
     'Jsvrcek\\ICS\\' => array($vendorDir . '/jsvrcek/ics/src'),
 );

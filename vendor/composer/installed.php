@@ -55,5 +55,14 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'rrze/wp' => array(
+            'pretty_version' => '1.1.1',
+            'version' => '1.1.1.0',
+            'reference' => '5a488d82908309965f04b011d06b180e58a0f7ce',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../rrze/wp',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
     ),
 );

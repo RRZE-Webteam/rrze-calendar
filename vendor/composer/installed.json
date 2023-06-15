@@ -235,6 +235,59 @@
                 "source": "https://github.com/rlanvin/php-rrule/tree/v2.4.1"
             },
             "install-path": "../rlanvin/php-rrule"
+        },
+        {
+            "name": "rrze/wp",
+            "version": "1.1.1",
+            "version_normalized": "1.1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/RRZE-Webteam/rrze-wp.git",
+                "reference": "5a488d82908309965f04b011d06b180e58a0f7ce"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/RRZE-Webteam/rrze-wp/zipball/5a488d82908309965f04b011d06b180e58a0f7ce",
+                "reference": "5a488d82908309965f04b011d06b180e58a0f7ce",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "time": "2023-06-15T10:13:59+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "RRZE\\WP\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Rolf v. d. Forst",
+                    "email": "rolf.v.d.forst@fau.de",
+                    "homepage": "https://www.rrze.fau.de"
+                },
+                {
+                    "name": "Benjamin Klemencic",
+                    "email": "benjamin.klemencic@fau.de",
+                    "homepage": "https://www.rrze.fau.de"
+                }
+            ],
+            "description": "A general purpose library for WordPress.",
+            "homepage": "https://github.com/RRZE-Webteam/rrze-wp",
+            "keywords": [
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/RRZE-Webteam/rrze-wp/issues",
+                "source": "https://github.com/RRZE-Webteam/rrze-wp/tree/1.1.1"
+            },
+            "install-path": "../rrze/wp"
         }
     ],
     "dev": true,
