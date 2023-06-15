@@ -4,7 +4,8 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\CalendarEvent as Event;
+use RRZE\Calendar\CPT\CalendarFeed as Feed;
 
 use Jsvrcek\ICS\Model\Calendar;
 use Jsvrcek\ICS\Model\CalendarEvent;
@@ -27,7 +28,7 @@ class Export
         if (!empty($categories)) {
             $taxQuery = [
                 [
-                    'taxonomy' => CalendarEvent::TAX_CATEGORY,
+                    'taxonomy' => Event::TAX_CATEGORY,
                     'field'    => 'slug',
                     'terms'    => $categories
                 ]
@@ -39,7 +40,7 @@ class Export
                 $taxQuery,
                 [
                     [
-                        'taxonomy' => CalendarEvent::TAX_TAG,
+                        'taxonomy' => Event::TAX_TAG,
                         'field'    => 'slug',
                         'terms'    => $tags
                     ]
@@ -50,7 +51,7 @@ class Export
         $args = [
             'fields'      => 'ids',
             'numberposts' => -1,
-            'post_type'   => CalendarFeed::POST_TYPE,
+            'post_type'   => Feed::POST_TYPE,
             'post_status' => 'publish'
         ];
 
