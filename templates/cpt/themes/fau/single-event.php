@@ -1,0 +1,205 @@
+<?php
+
+/**
+ * The template for displaying a single post.
+ *
+ *
+ * @package WordPress
+ * @subpackage FAU
+ * @since FAU 1.0
+ */
+
+global $pagebreakargs;
+
+use RRZE\Calendar\Utils;
+
+if (is_active_sidebar('news-sidebar')) {
+	fau_use_sidebar(true);
+}
+
+get_header();
+wp_enqueue_style('rrze-calendar-sc-events');
+
+while (have_posts()) : the_post(); ?>
+	
+	<div id="content">
+		<div class="content-container">
+			<div class="content-row">
+                <main>
+                    <article  class="rrze-event" itemscope itemtype="http://schema.org/Event">
+                        <h1 id="maintop" class="mobiletitle" itemprop="name"><?php the_title(); ?></h1>
+                        <?php
+                        $id = get_the_ID();
+                        $meta = get_post_meta($id);
+                        $eventItems = Utils::getMeta($meta, 'event-items');
+                        $allDay = Utils::getMeta($meta, 'all-day');
+                        $firstItemTSstart_ID = array_key_first($eventItems);
+                        $firstItemTSstart = explode('#', $firstItemTSstart_ID)[0];
+                        $firstItemEnd = reset($eventItems);
+                        $scheduleClass = count($eventItems) > 3 ? 'cols-3' : '';
+                        $location = Utils::getMeta($meta, 'location');
+                        $prices = Utils::getMeta($meta, 'prices');
+                        $registrationUrl = Utils::getMeta($meta, 'registration-url');
+                        $downloads = Utils::getMeta($meta, 'downloads');
+                        $categoryObjects = wp_get_object_terms($id, 'rrze-calendar-category');
+
+                        $eventItemsFormatted = [];
+                        foreach ($eventItems as $TSstart_ID => $TSend) {
+                            $TSstart = explode('#', $TSstart_ID)[0];
+                            if ($TSstart < time()) continue;
+                            $startDay = date('Y-m-d', $TSstart);
+                            $endDay = date('Y-m-d', $TSend);
+                            if ($allDay == 'on' || $startDay != $endDay) {
+                                $eventItemsFormatted[] = [
+                                    'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $TSstart)
+                                        . ' &ndash; '
+                                        . date_i18n(get_option('date_format'), $TSend)),
+                                    'time' => '',
+                                    'startISO' => $startDay,
+                                    'endISO' => $endDay,
+                                ];
+                            } else {
+                                $eventItemsFormatted[] = [
+                                    'date' => date_i18n(get_option('date_format'), $TSstart),
+                                    'time' => date_i18n(get_option('time_format'), $TSstart) . ' &ndash; ' . date_i18n(get_option('time_format'), $TSend),
+                                    'startISO' => date_i18n('c', $TSstart),
+                                    'endISO' => date_i18n('c', $TSend),
+                                ];
+                            }
+                        }
+
+                        // Schedule
+                        echo '<div class="rrze-event-schedule">'
+                            . '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $eventItemsFormatted[0]['date'] . '</span>'
+                            . '<meta itemprop="startDate" content="'. $eventItemsFormatted[0]['startISO'] . '">'
+                            . '<meta itemprop="endDate" content="'. $eventItemsFormatted[0]['endISO'] . '">'
+                            . (($allDay != 'on' && !strpos($eventItemsFormatted[0]['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $eventItemsFormatted[0]['time'] . '</span>' : '')
+                            . ($location != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $location . '</span>' : '')
+                            . '</p>';
+                        if (count($eventItemsFormatted) > 1) {
+                            $upcomingItems = '';
+                            foreach ($eventItemsFormatted as $k => $eventItemFormatted) {
+                                if ($k == 0 ) continue;
+                                $upcomingItems .= '<li><span class="dashicons dashicons-calendar"></span><span class="rrze--event-date">' . $eventItemFormatted['date'] . '</span>'
+                                    . '<meta itemprop="startDate" content="'. $eventItemFormatted['startISO'] . '">'
+                                    . '<meta itemprop="endDate" content="'. $eventItemFormatted['endISO'] . '">'
+                                    .'</li>';
+                            }
+                            echo do_shortcode('[collapsibles][collapse title="Weitere Termine"]<ul class="' . $scheduleClass . '">'.$upcomingItems . '</ul>[/collapse][/collapsibles]');
+                        }
+                        echo '</div>';
+
+                        // Thumbnail
+                        if (has_post_thumbnail() && !post_password_required()) {
+                            $post_thumbnail_id = get_post_thumbnail_id();
+                            if ($post_thumbnail_id && !metadata_exists('post', $post->ID, 'vidpod_url')) {
+                                $value = get_post_meta( $post->ID, '_hide_featured_image', true );
+                                $imgdata = fau_get_image_attributs($post_thumbnail_id);
+                                $full_image_attributes = wp_get_attachment_image_src($post_thumbnail_id, 'full');
+                                if ($full_image_attributes) {
+                                    $altattr = trim(strip_tags($imgdata['alt']));
+                                    if ((fau_empty($altattr)) && (get_theme_mod("advanced_display_postthumb_alt-from-desc"))) {
+                                        $altattr = trim(strip_tags($imgdata['description']));
+                                    }
+                                    if (fau_empty($altattr)) {
+                                        // falls es noch immer leer ist, geben wir an, dass dieses Bild ein Symbolbild ist und
+                                        // der Klick das Bild größer macht.
+                                        $altattr = __('Symbolbild zum Artikel. Der Link öffnet das Bild in einer großen Anzeige.', 'fau');
+                                    }
+                                    if ($value) {
+                                        $post_thumbnail_id = get_post_thumbnail_id($post->ID);
+                                        $post_thumbnail_url = wp_get_attachment_image_src($post_thumbnail_id, 'full')[0];
+                                        echo '<style type="text/css">.post-image { display: none; }</style>';
+                                        echo '<img src="' . esc_url($post_thumbnail_url) . '" class="post-image" />';
+                                    }
+                                    echo '<div class="post-image">';
+                                    echo '<figure>';
+                                    echo '<a class="lightbox" href="' . fau_esc_url($full_image_attributes[0]) . '">';
+                                    echo fau_get_image_htmlcode($post_thumbnail_id, 'rwd-480-3-2', $altattr);
+                                    echo '</a>';
+
+                                    $bildunterschrift = get_post_meta($post->ID, 'fauval_overwrite_thumbdesc', true);
+                                    if (isset($bildunterschrift) && strlen($bildunterschrift) > 1) {
+                                        $imgdata['fauval_overwrite_thumbdesc'] = $bildunterschrift;
+                                    }
+                                    echo fau_get_image_figcaption($imgdata);
+                                    echo '</figure>';
+                                    echo '</div>';
+                                }
+                            }
+                        }
+
+                        // Description
+                        echo '<div class="rrze-event-description" itemprop="description">';
+                        $description = Utils::getMeta($meta, 'description');
+                        echo wpautop($description);
+                        echo '</div>';
+                        ?>
+                    </article>
+
+                    <?php if (strlen($location . $prices . $registrationUrl . $downloads) > 0 || (!is_wp_error($categoryObjects) && !empty($categoryObjects))) { ?>
+                    <aside class="rrze-event-details">
+                        <?php
+                        echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
+
+                        // Date
+                        echo '<p><span class="label">' . __('Date', 'rrze-calendar') . ':</span> ' . $eventItemsFormatted[0]['date'] . '</p>';
+
+                        // Time
+                        if ($allDay != 'on' && !strpos($eventItemsFormatted[0]['date'], '&ndash;')) {
+                            echo '<p><span class="label">' . __('Time', 'rrze-calendar') . ':</span> ' . $eventItemsFormatted[0]['time'] . '</p>';
+                        }
+
+                        // Location
+                        if ($location != '') {
+                            echo '<p itemprop="location" itemscope><span class="label">' . __('Location', 'rrze-calendar') . ':</span> ' . $location . '</p>';
+                        }
+                        $vc_url = Utils::getMeta($meta, 'vc-url');
+                        if ($vc_url != '') {
+                            echo '<p itemprop="location" itemscope itemtype="http://schema.org/VirtualLocation"><span class="label">' . __('Video Conference Link', 'rrze-calendar') . ':</span> <a itemprop="url" href="'. $vc_url . '">' . $vc_url . '</a>';
+                        }
+
+                        // Prices + Tickets
+                        if ($prices != '') {
+                            echo '<div itemprop="offers" itemscope itemtype="https://schema.org/Offer"><span class="label" style="float:left;">' . __('Prices', 'rrze-calendar') . ':</span><div class="prices">' . wpautop($prices) . '</div></div>';
+                        }
+
+                        // Registration
+                        if ($registrationUrl != '') {
+                            echo '<p><span class="label">' . __('Registration', 'rrze-calendar') . ':</span> <a href="'. $registrationUrl . '">' . $registrationUrl . '</a>';
+                        }
+
+                        //Downloads
+                        if ($downloads != '') {
+                            echo '<div><span class="label" style="float:left;">' . __('Downloads', 'rrze-calendar') . ':</span><ul class="downloads"><li>';
+                            $downloadList = [];
+                            foreach ($downloads as $attachmentID => $attachmentURL ) {
+                                $caption = wp_get_attachment_caption($attachmentID);
+                                if ($caption == '') {
+                                    $caption = basename(get_attached_file($attachmentID));
+                                }
+                                $downloadList[] = '<a href="' . $attachmentURL . '">' . $caption . '</a>';
+                            }
+                            echo  implode('</li><li>', $downloadList);
+                            echo  '</li></ul></div>';
+                        }
+
+                        // Categories
+                        if (!is_wp_error($categoryObjects) && !empty($categoryObjects)) {
+                            $categories = [];
+                            foreach ($categoryObjects as $categoryObject) {
+                                $categories[] = '<a href="' . get_term_link($categoryObject->term_id) . '">' . $categoryObject->name . '</a>';
+                            }
+                            echo '<p><span class="label">' . __('Event Categories', 'rrze-calendar') . ':</span> ' . implode(', ', $categories);
+                        }
+
+                        ?>
+                    </aside>
+                    <?php } ?>
+                </main>
+			</div>
+		</div>
+	</div>
+<?php endwhile;
+
+get_footer();

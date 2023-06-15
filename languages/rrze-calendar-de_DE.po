@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-15 13:28+0000\n"
+"PO-Revision-Date: 2023-06-15 13:52+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -133,7 +133,7 @@ msgstr "Ganztägig"
 #: includes/CPT/CalendarEvent.php:56 templates/endpoint/events.php:11
 #: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
-msgstr "Alle Termine"
+msgstr "Alle Veranstaltungen"
 
 #: includes/CPT/CalendarFeed.php:112
 msgid "Categories"
@@ -141,7 +141,7 @@ msgstr "Kategorien"
 
 #: includes/Settings.php:30
 msgid "Choose the recurrence to check for new events."
-msgstr "Wiederholung auswählen, um nach neuen Termine zu suchen."
+msgstr "Wiederholung auswählen, um nach neuen Veranstaltungen zu suchen."
 
 #: includes/CPT/CalendarFeed.php:176 includes/CPT/CalendarFeed.php:186
 #: includes/CPT/CalendarFeed.php:209
@@ -212,7 +212,7 @@ msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 #: includes/EventsListTable.php:15 templates/endpoint/single-event.php:11
 #: templates/endpoint/themes/vendor/single-event.php:11
 msgid "Event"
-msgstr "Termin"
+msgstr "Veranstaltung"
 
 #: templates/cpt/single-event.php:191
 msgid "Event Categories"
@@ -228,13 +228,13 @@ msgstr "Termine"
 
 #: includes/Endpoint.php:49 templates/endpoint/themes/fau/single-event.php:29
 msgid "Event not found."
-msgstr "Termin nicht gefunden."
+msgstr "Veranstaltung nicht gefunden."
 
 #: includes/Metabox.php:33 includes/EventsListTable.php:16
 #: includes/CPT/CalendarFeed.php:114
 #: templates/endpoint/themes/fau-events/events.php:16
 msgid "Events"
-msgstr "Termine"
+msgstr "Veranstaltungen"
 
 #: includes/CPT/CalendarEvent.php:300
 msgid "every"
@@ -363,7 +363,7 @@ msgstr "Monatlich"
 #: templates/shortcodes/themes/fau-events/events.php:98
 #: templates/shortcodes/themes/rrze/events.php:90
 msgid "More events"
-msgstr "Weitere Termine"
+msgstr "Weitere Veranstaltungen"
 
 #: includes/CPT/CalendarEvent.php:53
 msgid "New Event"
@@ -376,7 +376,7 @@ msgstr "Neuer ICS-Feed"
 #: templates/shortcodes/calendar.php:243
 #: templates/shortcodes/themes/vendor/calendar.php:243
 msgid "No additional events this month."
-msgstr "Keine weiteren Termine in diesem Monat."
+msgstr "Keine weiteren Veranstaltungen in diesem Monat."
 
 #: includes/Shortcodes/Shortcode.php:51 templates/endpoint/single-event.php:95
 #: templates/endpoint/single-event.php:170
@@ -390,7 +390,7 @@ msgstr "Keine Beschreibung"
 #: templates/endpoint/single-event.php:16
 #: templates/endpoint/themes/vendor/single-event.php:16
 msgid "No event found."
-msgstr "Kein Termin gefunden."
+msgstr "Keine Veranstaltung gefunden."
 
 #: includes/CPT/CalendarEvent.php:60
 #| msgid "No Events found in Trash."
@@ -403,7 +403,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 #: templates/shortcodes/themes/vendor/calendar.php:237
 #: templates/endpoint/themes/vendor/events.php:15
 msgid "No events found."
-msgstr "Keine Termine gefunden."
+msgstr "Keine Veranstaltungen gefunden."
 
 #: includes/CPT/CalendarFeed.php:80
 #| msgid "No feeds found in Trash."
@@ -422,7 +422,7 @@ msgstr "Keine Feeds gefunden."
 #: templates/endpoint/themes/rrze/events.php:20
 #: templates/endpoint/themes/fau/events.php:30
 msgid "No upcoming events."
-msgstr "Keine bevorstehenden Termine."
+msgstr "Keine bevorstehenden Veranstaltungen."
 
 #: includes/CPT/CalendarEvent.php:358 includes/CPT/CalendarEvent.php:367
 msgid "of month"
@@ -536,7 +536,7 @@ msgstr "Zeitplan"
 #: includes/Metabox.php:142 includes/Events.php:41
 #: includes/CPT/CalendarEvent.php:57
 msgid "Search Events"
-msgstr "Termine durchsuchen"
+msgstr "Veranstaltungen durchsuchen"
 
 #: includes/CPT/CalendarFeed.php:77
 msgid "Search Feeds"
@@ -571,7 +571,7 @@ msgstr "Kalender abonnieren"
 
 #: templates/endpoint/themes/rrze/single-event.php:126
 msgid "Subscribe to the event"
-msgstr "Termin abonnieren"
+msgstr "Veranstaltung abonnieren"
 
 #: templates/shortcodes/themes/fau-events/events.php:104
 #: templates/shortcodes/themes/rrze/events.php:97

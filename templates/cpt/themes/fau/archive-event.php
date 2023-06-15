@@ -11,31 +11,31 @@ if (isset($_GET['format']) && $_GET['format'] == 'embedded') {
     get_template_part('template-parts/index', 'embedded');
     return;
 }
-if ( is_active_sidebar( 'news-sidebar' ) ) { 
-    fau_use_sidebar(true);    
+if ( is_active_sidebar( 'news-sidebar' ) ) {
+    fau_use_sidebar(true);
 }
 get_header();
 
 ?>
 
     <div id="content">
-	    <div class="content-container">
-		    <div class="post-row">
-			    <main class="entry-content">
+        <div class="content-container">
+            <div class="post-row">
+                <main class="entry-content">
 
                     <?php if (empty($herotype)) {   ?>
                         <h1 id="maintop"  class="screen-reader-text"><?php _e('Events', 'rrze-calendar'); ?></h1>
-                     <?php } else { ?>
+                    <?php } else { ?>
                         <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
                     <?php } ?>
 
                     [rrze-events]
 
-			    </main>
-		    </div>    
-	    </div>
-	
+                </main>
+            </div>
+        </div>
+
     </div>
-<?php 
+<?php
 get_footer(); 
 
