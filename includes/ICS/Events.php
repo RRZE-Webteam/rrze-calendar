@@ -12,37 +12,6 @@ use function RRZE\Calendar\plugin;
 
 class Events
 {
-    public static function getEventBySlug(string $slug, $rawOutput = false)
-    {
-        $slugAry = explode('-', $slug);
-        $key = array_pop($slugAry);
-        $postId = !is_null($slugAry) ? array_pop($slugAry) : 0;
-        if (
-            get_post_status($postId) !== 'publish'
-            || !$items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
-        ) {
-            return [];
-        }
-        $item = $items[$key] ?? null;
-        if (!is_null($item)) {
-            return !$rawOutput ? self::getItem($postId, $key) : $item;
-        } else {
-            return [];
-        }
-    }
-
-    protected static function getEventsByFeed(int $postId, $rawOutput = false)
-    {
-        if (
-            get_post_status($postId) === 'publish'
-            && $items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
-        ) {
-            return !$rawOutput ? self::getItems($postId) : $items;
-        } else {
-            return [];
-        }
-    }
-
     public static function getListTableData(string $searchTerm = ''): array
     {
         $items = [];
@@ -85,6 +54,7 @@ class Events
         $url = (string) get_post_meta($postId, CalendarFeed::FEED_URL, true);
 
         $events = Import::getEvents($url);
+        \RRZE\WP\Debug::log($events);
         $error = !$events ? __('No events found.', 'rrze-calendar') : '';
         $items = !empty($events['events']) ? $events['events'] : [];
         $meta = !empty($events['meta']) ? $events['meta'] : [];
@@ -95,25 +65,9 @@ class Events
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
     }
 
-
-    public static function getItem(int $postId, int $key): array
-    {
-        return self::processItem($postId, $key);
-    }
-
     public static function getItems(int $postId): array
     {
         return self::processItems([$postId]);
-    }
-
-    public static function getItemsFromFeedIds(array $feedsIds, bool $list = false, $pastDays = 0, $limitDays = 365): array
-    {
-        if ($list) {
-            $items = self::processItems($feedsIds);
-            return !empty($items) ? self::getListData($items) : $items;
-        } else {
-            return self::processItems($feedsIds, $pastDays, $limitDays);
-        }
     }
 
     public static function getAllItems(): array
@@ -124,97 +78,6 @@ class Events
             $feedsIds[] = $post->ID;
         }
         return self::processItems($feedsIds);
-    }
-
-    /**
-     * processItem
-     *
-     * @param int $postId
-     * @param int $eventKey
-     * @return array
-     */
-    protected static function processItem(int $postId, int $eventKey): array
-    {
-        $feedItems = [];
-
-        $feedItems['events'] = [];
-        $feedItems['feed_url'] = (string) get_post_meta($postId, CalendarFeed::FEED_URL, true);
-        $feedItems['tz'] = get_option('timezone_string');
-
-        $limitDays = 365;
-
-        // Set display date range.
-        $firstDate = Utils::dateFormat('Ymd');
-        $limitDate = Utils::dateFormat('Ymd', $firstDate, null, '+' . intval($limitDays - 1) . ' days');
-
-        // Set earliest and latest dates
-        $feedItems['earliest'] = substr($firstDate, 0, 6);
-        $feedItems['latest'] = substr($limitDate, 0, 6);
-
-        // Get timezone
-        $urlTz = wp_timezone();
-
-        // Process events
-        if (
-            get_post_status($postId) !== 'publish'
-            || !$items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
-        ) {
-            return $feedItems;
-        }
-
-        // Assemble events
-        $event = (object) $items[$eventKey];
-        self::assembler($postId, $event, $eventKey, $urlTz, $feedItems);
-
-        // If no events, create empty array for today
-        if (empty($feedItems['events'])) {
-            $feedItems['events'] = [Utils::dateFormat('Ymd') => []];
-        }
-
-        // Sort events and split into year/month/day groups
-        ksort($feedItems['events']);
-        foreach ((array)$feedItems['events'] as $date => $events) {
-
-            // Only reorganize dates that are in the proper date range
-            if ($date >= $firstDate && $date <= $limitDate) {
-
-                // Get the date's events in order
-                ksort($events);
-
-                // Fix recurrence exceptions
-                $events = self::fixRecurrenceExceptions($events);
-
-                // Insert the date's events into the year/month/day hierarchical array
-                $year = substr($date, 0, 4);
-                $month = substr($date, 4, 2);
-                $day = substr($date, 6, 2);
-                $ym = substr($date, 0, 6);
-                $feedItems['events'][$year][$month][$day] = $events;
-            }
-
-            // Remove the old flat date item from the array
-            unset($feedItems['events'][$date]);
-        }
-
-        // Add empty event arrays
-        for ($i = substr($feedItems['earliest'], 0, 6); $i <= substr($feedItems['latest'], 0, 6); $i++) {
-            $Y = substr($i, 0, 4);
-            $m = substr($i, 4, 2);
-            if (intval($m) < 1 || intval($m) > 12) {
-                continue;
-            }
-            if (!isset($feedItems['events'][$Y][$m])) {
-                $feedItems['events'][$Y][$m] = null;
-            }
-        }
-
-        // Sort events
-        foreach (array_keys((array)$feedItems['events']) as $keyYear) {
-            ksort($feedItems['events'][$keyYear]);
-        }
-        ksort($feedItems['events']);
-
-        return $feedItems;
     }
 
     /**
@@ -720,191 +583,6 @@ class Events
         return $data;
     }
 
-    /**
-     * getSingleData
-     *
-     * @param array $data
-     * @return array
-     */
-    public static function getSingleData(array $data): array
-    {
-        $output = [];
-
-        // Feed URL
-        $feedUrl = $data['feed_url'];
-
-        // Calendar URL
-        $calendarUrl = '';
-        if (parse_url($feedUrl, PHP_URL_HOST) == 'groupware.fau.de') {
-            $feedUrl = str_replace('http://', 'https://', $feedUrl);
-            $calendarUrl = str_replace('.ics', '.html', $feedUrl);
-        }
-
-        $multidayEventKeysUsed = [];
-
-        foreach (array_keys((array)$data['events']) as $year) {
-            for ($m = 1; $m <= 12; $m++) {
-                $month = $m < 10 ? '0' . $m : '' . $m;
-                $ym = $year . $month;
-                if ($ym < $data['earliest']) {
-                    continue;
-                }
-                if ($ym > $data['latest']) {
-                    break (2);
-                }
-
-                // Build month's calendar
-                if (isset($data['events'][$year][$month])) {
-
-                    foreach ((array)$data['events'][$year][$month] as $day => $dayEvents) {
-                        // Pull out multi-day events and display them separately first
-                        foreach ((array)$dayEvents as $time => $events) {
-
-                            foreach ((array)$events as $eventKey => $event) {
-                                // Post Id
-                                $output['post_id'] = $event['post_id'];
-
-                                // UID
-                                $output['uid'] = $event['uid'];
-
-                                // Label (title)
-                                $output['label'] = $event['label'];
-
-                                // Category name
-                                $output['cat_name'] = $event['cat_name'];
-                                // Category background color
-                                $output['cat_bgcolor'] = $event['cat_bgcolor'];
-                                // Category text color
-                                $output['cat_color'] = $event['cat_color'];
-
-                                // Tags slugs
-                                $output['tag_slugs'] = $event['tag_slugs'];
-
-                                $output['is_multiday'] = false;
-                                // Only list multi-day events
-                                if (empty($event['multiday'])) {
-                                    continue;
-                                }
-                                $output['is_multiday'] = true;
-
-                                // Has this multi-day event already been listed?
-                                if (!in_array($event['multiday']['event_key'], $multidayEventKeysUsed)) {
-                                    // Format date/time for header
-                                    $output['multiday']['start_date'] = date('Y-m-d', strtotime($event['multiday']['start_date']));
-                                    $output['multiday']['end_date'] = date('Y-m-d', strtotime($event['multiday']['end_date']));
-                                    if ($time != 'all-day') {
-                                        $output['multiday']['start_time'] = Utils::timeFormat($event['multiday']['start_time'], 'H:i');
-                                        $output['multiday']['end_time'] = Utils::timeFormat($event['multiday']['end_time'], 'H:i');
-                                    } else {
-                                        $output['is_allday'] = true;
-                                    }
-
-                                    // Readable Rule
-                                    if (!empty($event['readable_rrule'])) {
-                                        $output['readable_rrule'] = $event['readable_rrule'];
-                                    }
-
-                                    // Location/Organizer/Description
-                                    if (!empty($event['location'])) {
-                                        $output['location'] = $event['location'];
-                                    }
-
-                                    if (!empty($event['eventdesc'])) {
-                                        $output['description'] = $event['eventdesc'];
-                                    }
-
-                                    // Calendar view url
-                                    if (!empty($calendarUrl)) {
-                                        $output['calendar_view_url'] = $calendarUrl;
-                                    }
-
-                                    // Calendar subscription url
-                                    if (!empty($feedUrl)) {
-                                        $output['calendar_subscription_url'] = $feedUrl;
-                                    }
-
-                                    // This multi-day event has already been listed
-                                    $multidayEventKeysUsed[] = $event['multiday']['event_key'];
-                                }
-
-                                // Remove event from array (to skip day if it only has multi-day events)
-                                unset($dayEvents[$time][$eventKey]);
-                            }
-
-                            // Remove time from array if all of its events have been removed
-                            if (empty($dayEvents[$time])) {
-                                unset($dayEvents[$time]);
-                            }
-                        }
-
-                        // Skip day if all of its events were multi-day
-                        if (empty($dayEvents)) {
-                            continue;
-                        }
-
-                        // Loop through day events
-                        foreach ((array)$dayEvents as $time => $events) {
-
-                            foreach ((array)$events as $event) {
-                                // Post Id
-                                $output['post_id'] = $event['post_id'];
-
-                                // UID
-                                $output['uid'] = $event['uid'];
-
-                                // Label (title)
-                                $output['label'] = $event['label'];
-
-                                // Readable Rule
-                                if (!empty($event['readable_rrule'])) {
-                                    $output['readable_rrule'] = $event['readable_rrule'];
-                                }
-
-                                // Location/Organizer/Description
-                                if (!empty($event['location'])) {
-                                    $output['location'] = $event['location'];
-                                }
-
-                                if (!empty($event['eventdesc'])) {
-                                    $output['description'] = $event['eventdesc'];
-                                }
-
-                                // Calendar view url
-                                if (!empty($calendarUrl)) {
-                                    $output['calendar_view_url'] = $calendarUrl;
-                                }
-
-                                // Calendar subscription url
-                                if (!empty($feedUrl)) {
-                                    $output['calendar_subscription_url'] = $feedUrl;
-                                }
-
-                                // Don't list multi-day events (these should all be removed above already)
-                                if (!empty($event['multiday'])) {
-                                    continue;
-                                }
-
-                                // Date/time
-                                $output['start_date'] = $year . '-' . $month . '-' . $day;
-                                $output['is_allday'] = false;
-                                if ($time == 'all-day') {
-                                    $output['is_allday'] = true;
-                                } else {
-                                    $output['start_time'] = $event['start'];
-                                    $output['end_time'] = $event['end'] ?: '';
-                                    if (!empty($event['end']) && $event['end'] != $event['start']) {
-                                        $output['end_time'] = $event['end'];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $output;
-    }
-
     public static function humanReadableRecurrence($rrule)
     {
         $opt = [
@@ -922,22 +600,6 @@ class Events
 
         $rrule = new RRule($rrule);
         return $rrule->humanReadable($opt);
-    }
-
-    /**
-     * Generate CSS classes to apply to wrapper for an event.
-     * 
-     * @param [type] $event
-     * @param [type] $time
-     * @return void
-     */
-    public static function cssClasses($event, $time)
-    {
-        $classes = ['event', $time];
-        if (!empty($event['multiday']['position'])) {
-            $classes[] = 'multiday_' . $event['multiday']['position'];
-        }
-        return esc_attr(implode(' ', $classes));
     }
 
     /**
