@@ -6,7 +6,6 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\Templates;
-use RRZE\Calendar\Events;
 use RRZE\Calendar\CPT\CalendarEvent;
 
 class Calendar
@@ -86,13 +85,13 @@ class Calendar
             $args = array_merge($args, ['tax_query' => $taxQuery]);
         }
 
-        $postsIds = get_posts($args);
+        $postIds = get_posts($args);
+        $data = []; // @todo Data must be obtained using the $postIds
+        $template = Templates::getShortcodeCalendarTpl();
 
         wp_enqueue_style(apply_filters('rrze-calendar-sc-calendar-style', 'rrze-calendar-sc-calendar'));
         wp_enqueue_script('rrze-calendar-sc-calendar');
 
-        $data = Events::getItemsFromFeedIds($postsIds, false, 30);
-        $template = Templates::getShortcodeCalendarTpl();
         return self::output($data, $template);
     }
 
