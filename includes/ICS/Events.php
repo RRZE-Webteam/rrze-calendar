@@ -12,22 +12,6 @@ use function RRZE\Calendar\plugin;
 
 class Events
 {
-    public static function getListTableData(string $searchTerm = ''): array
-    {
-        $items = [];
-        if ($screen = get_current_screen()) {
-            if ($screen->id == CalendarFeed::POST_TYPE) {
-                global $post;
-                if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-                    $items = self::getItems($post->ID);
-                }
-            } elseif ($screen->id == 'calendar_feed_page_all_events') {
-                $items = self::getAllItems();
-            }
-        }
-        return !empty($items) ? self::getListData($items, $searchTerm) : $items;
-    }
-
     public static function updateFeedsItems()
     {
         $feeds = self::getFeeds();
@@ -66,28 +50,24 @@ class Events
 
     public static function getItems(int $postId): array
     {
-        return self::processItems([$postId]);
-    }
-
-    public static function getAllItems(): array
-    {
-        $feedsIds = [];
-        $feeds = self::getFeeds();
-        foreach ($feeds as $post) {
-            $feedsIds[] = $post->ID;
-        }
-        return self::processItems($feedsIds);
+        return self::processItems($postId);
     }
 
     /**
      * processItems
      *
-     * @param array $postIds
+     * @param integer $postId
      * @return mixed
      */
-    protected static function processItems(array $postIds, int $pastDays = 0, int $limitDays = 365)
+    protected static function processItems($postId, int $pastDays = 0, int $limitDays = 365)
     {
         $feedItems = [];
+        if (
+            get_post_status($postId) !== 'publish'
+            || !$items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
+        ) {
+            return $feedItems;
+        }
 
         $feedItems['events'] = [];
         $feedItems['tz'] = get_option('timezone_string');
@@ -109,19 +89,9 @@ class Events
         // Get timezone
         $urlTz = wp_timezone();
 
-        // Process events
-        foreach ($postIds as $postId) {
-            if (
-                get_post_status($postId) !== 'publish'
-                || !$items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
-            ) {
-                continue;
-            }
-
-            // Assemble events
-            foreach ($items as $eventKey => $event) {
-                self::assembler($postId, $event, $eventKey, $urlTz, $feedItems);
-            }
+        // Assemble events
+        foreach ($items as $eventKey => $event) {
+            self::assembleEvents($postId, $event, $eventKey, $urlTz, $feedItems);
         }
 
         // If no events, create empty array for today
@@ -146,7 +116,6 @@ class Events
                 $year = substr($date, 0, 4);
                 $month = substr($date, 4, 2);
                 $day = substr($date, 6, 2);
-                $ym = substr($date, 0, 6);
                 $feedItems['events'][$year][$month][$day] = $events;
             }
 
@@ -175,7 +144,7 @@ class Events
         return $feedItems;
     }
 
-    protected static function assembler($postId, $event, $eventKey, $urlTz, &$feedItems)
+    protected static function assembleEvents($postId, $event, $eventKey, $urlTz, &$feedItems)
     {
         // Set start and end dates for event
         $dtstartDate = wp_date('Ymd', $event->dtstart_array[2], $urlTz);
@@ -204,12 +173,11 @@ class Events
             $dtendTime = isset($dtstartTime) ? $dtstartTime : null;
         }
 
-        // Label (Title)
-        $label = empty($event->summary) ?: $event->summary;
+        // Summary (Title)
+        $summary = empty($event->summary) ?: $event->summary;
 
         // Get the terms from the category
-        $termId = '';
-        $catName = '';
+        $categories = [];
         $terms = wp_get_post_terms(
             $postId,
             CalendarEvent::TAX_CATEGORY,
@@ -219,12 +187,8 @@ class Events
             ]
         );
         if (!empty($terms) && !is_wp_error($terms)) {
-            $termId = $terms[0];
-            $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
-            $catName = $term->name;
+            $categories = [$terms[0]];
         }
-        $catBgColor = $termId ? Utils::sanitizeHexColor(get_term_meta($termId, 'color', true)) : '';
-        $catColor = $catBgColor ? Utils::getContrastYIQ($catBgColor) : '';
 
         // Get the terms from the tag
         $tags = [];
@@ -234,30 +198,27 @@ class Events
         );
         if (!empty($terms) && !is_wp_error($terms)) {
             foreach ($terms as $term) {
-                $tags[] = $term->slug;
+                $tags[] = $term->id;
             }
         }
 
         // General event item details (regardless of all-day/start/end times)
         $eventItem = [
             'post_id' => $postId,
-            'slug' => Utils::setEventSlug($label, $postId, $eventKey),
-            'label' => $label,
-            'cat_name' => $catName,
-            'cat_bgcolor' => $catBgColor,
-            'cat_color' => $catColor,
-            'tag_slugs' => $tags,
-            'uid' => !empty($event->uid) ? $event->uid : '',
+            'summary' => $summary,
+            'categories' => $categories,
+            'tags' => $tags,
+            'uid' => $event->uid,
             'dtstart_date' => !empty($dtstartDate) ? $dtstartDate : '',
             'dtstart_time' => !empty($dtstartTime) ? $dtstartTime : '',
             'dtend_date' => !empty($dtendDate) ? $dtendDate : '',
             'dtend_time' => !empty($dtendTime) ? $dtendTime : '',
-            'eventdesc' => !empty($event->description) ? $event->description : '',
-            'location' => !empty($event->location) ? $event->location : '',
-            'organizer' => (!empty($event->organizer_array) ? $event->organizer_array : @$event->organizer),
-            'url' => (!empty($event->url) ? $event->url : null),
-            'rrule' => (!empty($event->rrule) ? $event->rrule : null),
-            'readable_rrule' => !empty($event->rrule) ? self::humanReadableRecurrence($event->rrule) : null,
+            'description' => $event->description,
+            'location' => $event->location,
+            'organizer' => $event->organizer ? $event->organizer_array : '',
+            'url' => !is_null($event->url) ? $event->url : '',
+            'rrule' => !is_null($event->rrule) ? $event->rrule : '',
+            'readable_rrule' => !is_null($event->rrule) ? self::humanReadableRecurrence($event->rrule) : '',
         ];
 
         // Events with different start and end dates
@@ -334,15 +295,28 @@ class Events
         }
     }
 
+    public static function getListTableData(string $searchTerm = ''): array
+    {
+        $items = [];
+        if ($screen = get_current_screen()) {
+            if ($screen->id == CalendarFeed::POST_TYPE) {
+                global $post;
+                if (get_post_type($post) === CalendarFeed::POST_TYPE) {
+                    $items = self::getItems($post->ID);
+                }
+            }
+        }
+        return !empty($items) ? self::getListData($items, $searchTerm) : $items;
+    }
+
     /**
      * Get the list of events to be displayed when the Feed is edited.
      *
      * @param array $items Feed items splitet into year/month/day groups
      * @param string $searchTerm Search term in event titles
-     * @param array $slugs Search for the exact slug or slugs in events
      * @return array
      */
-    public static function getListData(array $items, string $searchTerm = '', array $slugs = []): array
+    public static function getListData(array $items, string $searchTerm = ''): array
     {
         $data = [];
         $dateFormat = __('m-d-Y', 'rrze-calendar');
@@ -380,17 +354,12 @@ class Events
                                     continue;
                                 }
 
-                                if ($slugs && !in_array($event['slug'], $slugs)) {
-                                    continue;
-                                }
-
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
-                                $data[$i]['slug'] = $event['slug'];
                                 $data[$i]['uid'] = $event['uid'];
 
-                                // Event label (title)
-                                $title = $event['label'];
+                                // Event summary (title)
+                                $title = $event['summary'];
                                 if ($searchTerm && stripos($title, $searchTerm) === false) {
                                     continue;
                                 }
@@ -427,35 +396,13 @@ class Events
                                 }
 
                                 // Location
-                                $data[$i]['location'] = $event['location'];
+                                $data[$i]['event_location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['organizer'] = $event['organizer'];
+                                $data[$i]['event_organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['eventdesc'] = $event['eventdesc'];
-
-                                // Get the terms from the category
-                                $termId = '';
-                                $catName = '';
-                                $terms = wp_get_post_terms(
-                                    $data[$i]['post_id'],
-                                    CalendarEvent::TAX_CATEGORY,
-                                    [
-                                        'fields' => 'ids',
-                                        'parent' => 0
-                                    ]
-                                );
-                                if (!empty($terms) && !is_wp_error($terms)) {
-                                    $termId = $terms[0];
-                                    $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
-                                    $catName = $term->name;
-                                }
-                                $data[$i]['cat_name'] = $catName;
-                                $catBgColor = $termId ? Utils::sanitizeHexColor(get_term_meta($termId, 'color', true)) : '';
-                                $catColor = $catBgColor ? Utils::getContrastYIQ($catBgColor) : '';
-                                $data[$i]['cat_bgcolor'] = $catBgColor;
-                                $data[$i]['cat_color'] = $catColor;
+                                $data[$i]['event_description'] = $event['description'];
 
                                 // Now we use this event key for the next multiday event
                                 $multidayEventKeysUsed[] = $event['multiday']['event_key'];
@@ -493,17 +440,12 @@ class Events
                                     continue;
                                 }
 
-                                if ($slugs && !in_array($event['slug'], $slugs)) {
-                                    continue;
-                                }
-
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
-                                $data[$i]['slug'] = $event['slug'];
                                 $data[$i]['uid'] = $event['uid'];
 
-                                // Event label (title)
-                                $title = html_entity_decode(str_replace('/', '/<wbr />', $event['label']));
+                                // Event summary (title)
+                                $title = html_entity_decode(str_replace('/', '/<wbr />', $event['summary']));
                                 if ($searchTerm && stripos($title, $searchTerm) === false) {
                                     continue;
                                 }
@@ -541,35 +483,13 @@ class Events
                                 }
 
                                 // Location
-                                $data[$i]['location'] = $event['location'];
+                                $data[$i]['event_location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['organizer'] = $event['organizer'];
+                                $data[$i]['event_organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['eventdesc'] = $event['eventdesc'];
-
-                                // Get the terms from the category
-                                $termId = '';
-                                $catName = '';
-                                $terms = wp_get_post_terms(
-                                    $data[$i]['post_id'],
-                                    CalendarEvent::TAX_CATEGORY,
-                                    [
-                                        'fields' => 'ids',
-                                        'parent' => 0
-                                    ]
-                                );
-                                if (!empty($terms) && !is_wp_error($terms)) {
-                                    $termId = $terms[0];
-                                    $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
-                                    $catName = $term->name;
-                                }
-                                $data[$i]['cat_name'] = $catName;
-                                $catBgColor = $termId ? Utils::sanitizeHexColor(get_term_meta($termId, 'color', true)) : '';
-                                $catColor = $catBgColor ? Utils::getContrastYIQ($catBgColor) : '';
-                                $data[$i]['cat_bgcolor'] = $catBgColor;
-                                $data[$i]['cat_color'] = $catColor;
+                                $data[$i]['event_description'] = $event['description'];
 
                                 $i++;
                             }
@@ -582,7 +502,7 @@ class Events
         return $data;
     }
 
-    public static function humanReadableRecurrence($rrule)
+    public static function humanReadableRecurrence(string $rrule)
     {
         $opt = [
             'use_intl' => true,
