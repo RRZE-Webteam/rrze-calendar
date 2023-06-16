@@ -54,7 +54,7 @@ return [
         '1' => ', einmalig',
         'else' => ', %{count} Mal'
     ],
-    'and' => 'und',
+    'and' => 'und ',
     'x_of_the_y' => [
         'yearly' => '%{x} des Jahres', // e.g. the first Monday of the year, or the first day of the year
         'monthly' => '%{x} des Monats',
