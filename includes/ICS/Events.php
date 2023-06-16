@@ -54,7 +54,6 @@ class Events
         $url = (string) get_post_meta($postId, CalendarFeed::FEED_URL, true);
 
         $events = Import::getEvents($url);
-        \RRZE\WP\Debug::log($events);
         $error = !$events ? __('No events found.', 'rrze-calendar') : '';
         $items = !empty($events['events']) ? $events['events'] : [];
         $meta = !empty($events['meta']) ? $events['meta'] : [];
