@@ -100,7 +100,6 @@ function activation()
         }
     );
 
-    Endpoint::addEndpoint();
     flush_rewrite_rules(false);
 }
 
