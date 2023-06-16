@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\CalendarFeed;
+use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 
 class Update
 {
@@ -181,7 +181,6 @@ class Update
             return null;
         }
 
-        $category->feed_ids = [];
         $unencodedDescription = self::unencodedDescription($category->description);
         if (is_array($unencodedDescription)) {
             foreach ($unencodedDescription as $key => $value) {
@@ -201,7 +200,6 @@ class Update
             return null;
         }
 
-        $tag->feed_ids = [];
         $unencodedDescription = self::unencodedDescription($tag->description);
         if (is_array($unencodedDescription)) {
             foreach ($unencodedDescription as $key => $value) {
