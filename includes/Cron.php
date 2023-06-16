@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\ICS\Import;
+use RRZE\Calendar\ICS\Events;
 
 class Cron
 {
