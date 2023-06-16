@@ -917,7 +917,7 @@ class Events
             'explicit_infinite' => true,
             'include_start' => false,
             'include_until' => true,
-            'custom_path' => plugin()->getPath('config/rrule'),
+            'custom_path' => plugin()->getPath('languages/rrule'),
         ];
 
         $rrule = new RRule($rrule);
