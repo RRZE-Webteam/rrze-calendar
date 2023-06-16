@@ -59,11 +59,11 @@ class EventsListTable extends ListTable
     public function get_columns()
     {
         $columns = [
-            'title'          => __('Title', 'rrze-calendar'),
-            'date'           => __('Date', 'rrze-calendar'),
-            'readable_rrule' => __('Recurrence', 'rrze-calendar'),
-            'eventdesc'      => __('Description', 'rrze-calendar'),
-            'location'       => __('Location', 'rrze-calendar')
+            'title'             => __('Title', 'rrze-calendar'),
+            'date'              => __('Date', 'rrze-calendar'),
+            'readable_rrule'    => __('Recurrence', 'rrze-calendar'),
+            'event_description' => __('Description', 'rrze-calendar'),
+            'event_location'    => __('Location', 'rrze-calendar')
         ];
 
         return $columns;
@@ -91,25 +91,16 @@ class EventsListTable extends ListTable
     {
         switch ($column_name) {
             case 'title':
-                $screen = get_current_screen();
-                if ($screen->id == 'calendar_feed_page_all_events') {
-                    return sprintf(
-                        '<strong><a class="row-title" href="%1$s" aria-label="%2$s">%2$s</a></strong>',
-                        get_edit_post_link($item['post_id']),
-                        $item[$column_name]
-                    );
-                } else {
-                    return sprintf('<strong>%s</strong>', $item[$column_name]);
-                }
+                return sprintf('<strong>%s</strong>', $item[$column_name]);
                 break;
             case 'date':
             case 'readable_rrule':
                 return $item[$column_name];
                 break;
-            case 'location':
+            case 'event_location':
                 return sanitize_text_field($item[$column_name]);
                 break;
-            case 'eventdesc':
+            case 'event_description':
                 return wp_trim_words(sanitize_text_field($item[$column_name]), 20);
                 break;
             default:
@@ -125,7 +116,7 @@ class EventsListTable extends ListTable
      */
     protected function display_tablenav($which)
     {
-    ?>
+?>
         <div class="tablenav <?php echo esc_attr($which); ?>">
 
             <?php if ($this->has_items()) : ?>
@@ -140,7 +131,7 @@ class EventsListTable extends ListTable
 
             <br class="clear" />
         </div>
-    <?php
+<?php
     }
 
     /**
@@ -157,5 +148,5 @@ class EventsListTable extends ListTable
         } else {
             echo '<p class="description">',  __('No items found.'), '</p>';
         }
-    }    
+    }
 }
