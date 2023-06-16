@@ -7,7 +7,6 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\Templates;
 use RRZE\Calendar\CPT\CalendarEvent;
-use RRZE\Calendar\Events as MainEvents;
 
 class Events
 {
@@ -114,11 +113,10 @@ class Events
         }
 
         $postIds = get_posts($args);
+        $data = []; // @todo Data must be obtained using the $postIds
+        $template = Templates::getShortcodeEventsTpl();
 
         wp_enqueue_style(apply_filters('rrze-calendar-sc-calendar-style', 'rrze-calendar-sc-calendar'));
-
-        $data = MainEvents::getItemsFromFeedIds($postIds);
-        $template = Templates::getShortcodeEventsTpl();
 
         return self::output($template, $data, $limit);
     }
