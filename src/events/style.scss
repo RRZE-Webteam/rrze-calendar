@@ -1,4 +1,58 @@
-.event-item {
+.rrze-calendar {
+    ul.events-list  {
+        margin: 0;
+        padding: 0;
+        background: none;
+        li.event {
+            list-style: none;
+            margin-bottom: 1em;
+            display: flex;
+            flex-direction: row;
+            gap: 1em;
+            align-items: flex-start;
+        }
+        .event-date {
+            flex: 0 0 60px;
+            margin: 0;
+            padding: 0.5em;
+            text-align: center;
+            width: auto;
+            background: var(--color-primary-ci-hell, #003366);
+            color: var(--color-primary-ci-hell-kontrast, #fff);
+            line-height: 1.5;
+            .day-month {
+                .day {
+                    font-weight: bold;
+                    font-size: 1.4rem;
+                    //margin-bottom: 0.2em;
+                }
+                .month {
+                    font-size: 1rem;
+                    //text-transform: uppercase;
+                }
+            }
+        }
+        .event-info {
+
+        }
+        .event-title {
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            a {
+                color: var(--color-Text, #222);
+                box-shadow: none;
+                text-decoration: none;
+                &:hover, &:focus, &:active {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
+    .event-item {
     margin: 0 0 1.5em;
 }
 

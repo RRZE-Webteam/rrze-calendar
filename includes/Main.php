@@ -5,6 +5,7 @@ namespace RRZE\Calendar;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
+use RRZE\Calendar\Shortcodes\Shortcode;
 
 class Main
 {
@@ -24,6 +25,8 @@ class Main
 
         CalendarEvent::init();
         CalendarFeed::init();
+
+        Shortcode::init();
 
         Cron::init();
     }
