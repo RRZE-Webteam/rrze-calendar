@@ -30,6 +30,21 @@
             border-left: 2px solid var(--color-primary-ci-hell2,#ced9e7);
             padding-left: 15px;
         }
+        dt, dd, dt *, dd * {
+            font-size: 0.875rem;
+            line-height: 1.313rem;
+        }
+        dd {
+            margin-left: 0;
+            margin-bottom: 1em;
+            @media (min-width: 480px) {
+                margin-left: 1rem;
+            }
+            p {
+                margin: 0;
+                padding: 0;
+            }
+        }
     }
     .post-image {
         @media (min-width: 480px) {
