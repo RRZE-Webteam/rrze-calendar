@@ -1,6 +1,6 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 

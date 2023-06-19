@@ -1,8 +1,10 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Calendar\Utils;
 
 class CategoryRadiolist extends \Walker_Category_Checklist
 {

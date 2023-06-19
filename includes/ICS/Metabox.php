@@ -1,9 +1,10 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarFeed;
 
 class Metabox

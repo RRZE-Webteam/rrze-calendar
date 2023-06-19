@@ -29,12 +29,6 @@ class Utils
         }
     }
 
-    public static function setEventSlug(string $label, int $postId, int $eventKey): string
-    {
-        $label = sanitize_title_with_dashes(remove_accents($label));
-        return sprintf('%1$s-%2$s-%3$s', $label, $postId, $eventKey);
-    }
-
     public static function strListToArray(string $list, string $callback = 'trim'): array
     {
         return array_unique(
@@ -459,16 +453,16 @@ class Utils
         switch ($format) {
             case 'short':
                 $monthNames = [
-                     0 => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
-                     1 => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
-                     2 => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
-                     3 => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
-                     4 => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
-                     5 => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
-                     6 => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
-                     7 => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
-                     8 => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
-                     9 => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
+                    0 => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
+                    1 => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
+                    2 => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
+                    3 => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
+                    4 => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
+                    5 => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
+                    6 => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
+                    7 => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
+                    8 => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
+                    9 => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
                     10 => $wp_locale->get_month_abbrev($wp_locale->get_month('11')),
                     11 => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
                     12 => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
@@ -477,16 +471,16 @@ class Utils
             case 'full':
             default:
                 $monthNames = [
-                     0 => $wp_locale->get_month('01'),
-                     1 => $wp_locale->get_month('02'),
-                     2 => $wp_locale->get_month('03'),
-                     3 => $wp_locale->get_month('04'),
-                     4 => $wp_locale->get_month('05'),
-                     5 => $wp_locale->get_month('06'),
-                     6 => $wp_locale->get_month('07'),
-                     7 => $wp_locale->get_month('08'),
-                     8 => $wp_locale->get_month('09'),
-                     9 => $wp_locale->get_month('10'),
+                    0 => $wp_locale->get_month('01'),
+                    1 => $wp_locale->get_month('02'),
+                    2 => $wp_locale->get_month('03'),
+                    3 => $wp_locale->get_month('04'),
+                    4 => $wp_locale->get_month('05'),
+                    5 => $wp_locale->get_month('06'),
+                    6 => $wp_locale->get_month('07'),
+                    7 => $wp_locale->get_month('08'),
+                    8 => $wp_locale->get_month('09'),
+                    9 => $wp_locale->get_month('10'),
                     10 => $wp_locale->get_month('11'),
                     11 => $wp_locale->get_month('12'),
                     12 => $wp_locale->get_month('12'),
@@ -589,7 +583,8 @@ class Utils
         return ($yiq >= 128) ? 'black' : 'white';
     }
 
-    public static function buildEventsList($events, $upcomingOnly = true) {
+    public static function buildEventsList($events, $upcomingOnly = true)
+    {
         $eventsArray = [];
         foreach ($events as $event) {
             $period = [];
@@ -608,14 +603,14 @@ class Utils
             $startMinute = date('i', $startTS);
             if ($repeat !== 'on' && (($upcomingOnly && $startTS >= time()) || !$upcomingOnly)) {
                 // not repeating event
-                $eventsArray[$startTS.'#'.$event->ID] = $startTS + $duration;
+                $eventsArray[$startTS . '#' . $event->ID] = $startTS + $duration;
             } else {
                 // repeating event
                 if ($startTS < strtotime("-1 years")) {
                     $startTS = strtotime("-1 years");
                 }
                 $repeatInterval = self::getMeta($meta, 'repeat-interval');
-                $startDate = DateTime::createFromFormat( 'U', $startTS );
+                $startDate = DateTime::createFromFormat('U', $startTS);
                 $todayDate = new DateTime('today');
                 /*if ($upcomingOnly && ($startDate < $todayDate)) {
                     $start = $todayDate;
@@ -625,7 +620,7 @@ class Utils
                 $start = $startDate;
                 $lastDate = self::getMeta($meta, 'repeat-lastdate');
                 if ($lastDate != '') {
-                    $end = DateTime::createFromFormat( 'U', ($lastDate + (60*60*24-1)));
+                    $end = DateTime::createFromFormat('U', ($lastDate + (60 * 60 * 24 - 1)));
                 } else {
                     $end = clone $todayDate;
                     $end->add(new \DateInterval('P1Y7D')); // Move to 1 year from start
@@ -643,15 +638,15 @@ class Utils
                             }
                             foreach ($period as $d) {
                                 foreach ($d as $date) {
-                                    $date->add(new \DateInterval('PT'.$startHour.'H'.$startMinute.'M'));
+                                    $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                     if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
-                                        $eventsArray[$date->getTimestamp().'#'.$event->ID] = $date->getTimestamp() + $duration;
+                                        $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
                                     }
                                 }
                             }
                         }
                         // unset exceptions
-                        $exceptionsRaw = self::getMeta($meta,'exceptions');
+                        $exceptionsRaw = self::getMeta($meta, 'exceptions');
                         if (!empty($exceptionsRaw)) {
                             $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
                             foreach ($eventsArray as $TSstart_ID => $TSend) {
@@ -665,46 +660,46 @@ class Utils
                         break;
                     case 'month':
                         $unit  = 'M';
-                        $monthlyType = self::getMeta($meta,'repeat-monthly-type');
+                        $monthlyType = self::getMeta($meta, 'repeat-monthly-type');
                         if ($monthlyType == 'date') {
-                            $monthlyDate = self::getMeta($meta,'repeat-monthly-type-date');
+                            $monthlyDate = self::getMeta($meta, 'repeat-monthly-type-date');
                             if ($monthlyDate < $start->format('d')) {
                                 $start->modify('first day of next month');
                                 $diff = (int)$monthlyDate - 1;
                             } else {
                                 $diff = (int)$monthlyDate - (int)$start->format('d');
                             }
-                            $start->modify('+'.$diff.' day');
+                            $start->modify('+' . $diff . ' day');
                             $interval = new \DateInterval("P1M");
                             $period[] = new \DatePeriod($start, $interval, $end);
                             foreach ($period as $d) {
                                 foreach ($d as $date) {
-                                    $date->add(new \DateInterval('PT'.$startHour.'H'.$startMinute.'M'));
+                                    $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                     if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
-                                        $eventsArray[$date->getTimestamp().'#'.$event->ID] = $date->getTimestamp() + $duration;
+                                        $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
                                     }
                                 }
                             }
                         } elseif ($monthlyType == 'dow') {
-                            $monthlyDOW = self::getMeta($meta,'repeat-monthly-type-dow');
-                            if ($monthlyDOW == '' || !isset($monthlyDOW ["day"]) || !isset($monthlyDOW ["daycount"])) {
+                            $monthlyDOW = self::getMeta($meta, 'repeat-monthly-type-dow');
+                            if ($monthlyDOW == '' || !isset($monthlyDOW["day"]) || !isset($monthlyDOW["daycount"])) {
                                 continue 2;
                             }
-                            $diff = $monthlyDOW ["daycount"] - 1;
-                            $start->modify('first ' . $monthlyDOW ["day"] . ' of this month')->modify('+'.$diff.' week'); // Move to first occurence
+                            $diff = $monthlyDOW["daycount"] - 1;
+                            $start->modify('first ' . $monthlyDOW["day"] . ' of this month')->modify('+' . $diff . ' week'); // Move to first occurence
                             if ($start < $startDate) {
-                                $start->modify('first ' . $monthlyDOW ["day"] . ' of next month')->modify('+'.$diff.' week');
+                                $start->modify('first ' . $monthlyDOW["day"] . ' of next month')->modify('+' . $diff . ' week');
                             }
                             while ($start <= $end) {
-                                $start->add(new \DateInterval('PT'.$startHour.'H'.$startMinute.'M'));
+                                $start->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                 if (!$upcomingOnly || ($upcomingOnly && $start->getTimestamp() >= $todayDate->getTimestamp())) {
-                                    $eventsArray[$start->getTimestamp().'#'.$event->ID] =  $start->getTimestamp() + $duration;
+                                    $eventsArray[$start->getTimestamp() . '#' . $event->ID] =  $start->getTimestamp() + $duration;
                                 }
-                                $start->modify('first ' . $monthlyDOW ["day"] . ' of next month')->modify('+'.$diff.' week');
+                                $start->modify('first ' . $monthlyDOW["day"] . ' of next month')->modify('+' . $diff . ' week');
                             }
                         }
                         // unset unselected months
-                        $months = (array)self::getMeta($meta,'repeat-monthly-month');
+                        $months = (array)self::getMeta($meta, 'repeat-monthly-month');
                         foreach ($eventsArray as $TSstart_ID => $TSend) {
                             $timestamp = explode('#', $TSstart_ID)[0];
                             $month = strtolower(date('M', $timestamp));
@@ -720,10 +715,11 @@ class Utils
         return $eventsArray;
     }
 
-    public static function getMeta($meta, $key) {
+    public static function getMeta($meta, $key)
+    {
         if (!isset($meta[$key]))
             return '';
-        if (strpos($meta[$key][0], 'a:',0) === 0) {
+        if (strpos($meta[$key][0], 'a:', 0) === 0) {
             return unserialize($meta[$key][0]);
         } else {
             return $meta[$key][0];

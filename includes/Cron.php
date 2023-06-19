@@ -4,6 +4,8 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\ICS\Events;
+
 class Cron
 {
     const ACTION_HOOK = 'rrze_calendar_schedule_event';

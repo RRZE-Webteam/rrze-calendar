@@ -1,12 +1,10 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
-
-class Metaboxes
+class CategoryMetabox
 {
     public static function init()
     {

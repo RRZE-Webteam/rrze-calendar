@@ -38,7 +38,8 @@ class CalendarEvent
         // Templates
         add_filter('single_template', [__CLASS__, 'includeSingleTemplate']);
         add_filter('archive_template', [__CLASS__, 'includeArchiveTemplate']);
-
+        // Category Radio List Metabox.
+        CategoryMetabox::init();
     }
 
     public static function registerPostType()
@@ -497,7 +498,7 @@ class CalendarEvent
             foreach ($eventItems as $TSstart_ID => $TSend) {
                 $start = explode('#', $TSstart_ID)[0];
                 $class = $start < time() ? 'past' : 'future';
-                echo '<li class="'.$class.'">' . date_i18n(get_option('date_format'), $start) . '</li>';
+                echo '<li class="' . $class . '">' . date_i18n(get_option('date_format'), $start) . '</li>';
                 //echo '<li>' . date('Y-m-d', $start) . '</li>';
             }
             echo '</ul>';
@@ -507,7 +508,8 @@ class CalendarEvent
         }
     }
 
-    public static function includeSingleTemplate($singleTemplate) {
+    public static function includeSingleTemplate($singleTemplate)
+    {
         global $post;
         if ($post->post_type != 'calendar_event')
             return $singleTemplate;
@@ -515,7 +517,8 @@ class CalendarEvent
         return Templates::getCptCalendarEventSingleTpl();
     }
 
-    public static function includeArchiveTemplate($archiveTemplate) {
+    public static function includeArchiveTemplate($archiveTemplate)
+    {
         global $post;
         if ($post->post_type != 'calendar_event')
             return $archiveTemplate;

@@ -8,9 +8,8 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\Events;
-use RRZE\Calendar\Metabox;
 use RRZE\Calendar\Utils;
+use RRZE\Calendar\ICS\{Events, Metabox};
 
 class CalendarFeed
 {
@@ -57,7 +56,7 @@ class CalendarFeed
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
 
-        // Add Meta boxes.
+        // Add Metabox.
         Metabox::init();
     }
 

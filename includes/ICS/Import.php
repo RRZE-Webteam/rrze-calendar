@@ -1,10 +1,10 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\Utils;
+use RRZE\Calendar\{Transients, Utils};
 use ICal\ICal;
 use DateTime;
 
@@ -62,7 +62,7 @@ class Import
                 'filterDaysAfter'             => $filterDaysAfter,
                 'filterDaysBefore'            => $filterDaysBefore,
                 'replaceWindowsTimeZoneIds'   => true,
-                'skipRecurrence'              => false,
+                'skipRecurrence'              => true,
             ]);
             $ICal->initString($icsContent);
 

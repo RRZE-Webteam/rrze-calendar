@@ -1,6 +1,6 @@
 <?php
 
-namespace RRZE\Calendar;
+namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
