@@ -25,10 +25,9 @@ get_header();
 
                     <?php if (empty($herotype)) {   ?>
                         <h1 id="maintop"  class="screen-reader-text"><?php _e('Events', 'rrze-calendar'); ?></h1>
-                     <?php } else { ?>
+                    <?php } else { ?>
                         <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
                     <?php }
-                    //echo do_shortcode('[rrze-events]');
                     echo \RRZE\Calendar\Shortcodes\Events::shortcode([]);
                     ?>
 

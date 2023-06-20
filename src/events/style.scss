@@ -3,7 +3,7 @@
         margin: 0;
         padding: 0;
         background: none;
-        li.event {
+        li.event-item {
             list-style: none;
             margin-bottom: 1em;
             display: flex;
@@ -51,9 +51,30 @@
             }
         }
     }
-}
-    .event-item {
-    margin: 0 0 1.5em;
+    ul.events-list-short {
+        margin-left: 0;
+        li {
+            list-style: none;
+            margin-bottom: .5em;
+        }
+        .event-date {
+            display: inline;
+            background: unset;
+            color: unset;
+            padding: 0;
+        }
+        .event-title {
+            font-weight: bold;
+        }
+        .dashicons {
+            color: #333;
+            position: relative;
+            top: 2px;
+            &.dashicons-clock {
+                margin-left: .5em;
+            }
+        }
+    }
 }
 
 .event-allday {

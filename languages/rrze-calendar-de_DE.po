@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-19 14:46+0000\n"
+"PO-Revision-Date: 2023-06-20 12:21+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -127,14 +127,19 @@ msgstr "Ganztägig"
 msgid "All day event"
 msgstr "Ganztägig"
 
-#: includes/CPT/CalendarEvent.php:57 templates/endpoint/events.php:11
+#: includes/CPT/CalendarEvent.php:57 includes/Shortcodes/Events.php:34
+#: templates/endpoint/events.php:11
 #: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
 msgstr "Alle Veranstaltungen"
 
-#: includes/Shortcodes/Events.php:143
+#: includes/Shortcodes/Events.php:143 includes/Shortcodes/Events.php:175
 msgid "All-day"
 msgstr "Ganztägig"
+
+#: includes/Shortcodes/Calendar.php:361
+msgid "An diesem Tag finden keine Veranstaltungen statt."
+msgstr "An diesem Tag finden keine Veranstaltungen statt."
 
 #: includes/CPT/CalendarFeed.php:111
 msgid "Categories"
@@ -159,6 +164,10 @@ msgstr "Täglich"
 #: templates/cpt/themes/fau/single-event.php:142
 msgid "Date"
 msgstr "Datum"
+
+#: includes/Shortcodes/Calendar.php:211
+msgid "Day"
+msgstr "Tag"
 
 #: includes/CPT/CalendarEvent.php:178 includes/ICS/EventsListTable.php:65
 msgid "Description"
@@ -291,6 +300,14 @@ msgstr "vierten"
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
+#: includes/Shortcodes/Calendar.php:482
+msgid "Go to next month"
+msgstr "Zum nächsten Monat wechseln"
+
+#: includes/Shortcodes/Calendar.php:479
+msgid "Go to previous month"
+msgstr "Zum vorherigen Monat wechseln"
+
 #: includes/Main.php:88
 msgid "Hide past events"
 msgstr "Vergangene Termine ausblenden"
@@ -367,6 +384,10 @@ msgstr "m.d.Y"
 msgid "Maximum +/- 1 year."
 msgstr "Maximal +/- 1 Jahr."
 
+#: includes/Shortcodes/Calendar.php:212
+msgid "Month"
+msgstr "Monat"
+
 #: includes/CPT/CalendarEvent.php:287
 msgid "Monthly"
 msgstr "Monatlich"
@@ -383,6 +404,10 @@ msgstr "Neue Veranstaltung"
 #: includes/CPT/CalendarFeed.php:72
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
+
+#: includes/Shortcodes/Calendar.php:482
+msgid "Next"
+msgstr "Weiter"
 
 #: templates/shortcodes/calendar.php:243
 #: templates/shortcodes/themes/vendor/calendar.php:243
@@ -416,7 +441,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
-#: includes/Shortcodes/Events.php:156
+#: includes/Shortcodes/Events.php:192
 msgid "No events scheduled."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
@@ -442,6 +467,10 @@ msgstr "Keine bevorstehenden Veranstaltungen."
 #: includes/CPT/CalendarEvent.php:359 includes/CPT/CalendarEvent.php:368
 msgid "of month"
 msgstr "des Monats"
+
+#: includes/Shortcodes/Calendar.php:345
+msgid "Organizer"
+msgstr "Veranstalter"
 
 #: includes/CPT/CalendarFeed.php:334
 msgid "Page not found"
@@ -491,10 +520,18 @@ msgstr "ICS-Feed"
 msgid "Preview"
 msgstr "Vorschau"
 
+#: includes/Shortcodes/Calendar.php:479
+msgid "Previous"
+msgstr "Zurück"
+
 #: includes/CPT/CalendarEvent.php:204 templates/cpt/single-event.php:160
 #: templates/cpt/themes/fau/single-event.php:160
 msgid "Prices"
 msgstr "Preise"
+
+#: includes/Shortcodes/Calendar.php:607 includes/Shortcodes/Calendar.php:657
+msgid "Read more"
+msgstr "Weiterlesen"
 
 #: includes/Settings.php:29 includes/ICS/EventsListTable.php:64
 msgid "Recurrence"
@@ -669,6 +706,14 @@ msgstr ""
 msgid "Video Conference Link"
 msgstr "Link zur Videokonferenz"
 
+#: includes/Shortcodes/Calendar.php:211
+msgid "View day"
+msgstr "Tag ansehen"
+
+#: includes/Shortcodes/Calendar.php:425
+msgid "View Details"
+msgstr "Details ansehen"
+
 #: includes/CPT/CalendarEvent.php:56
 msgid "View Event"
 msgstr "Veranstaltung ansehen"
@@ -676,6 +721,10 @@ msgstr "Veranstaltung ansehen"
 #: includes/CPT/CalendarFeed.php:74
 msgid "View ICS Feed"
 msgstr "ICS-Feed ansehen"
+
+#: includes/Shortcodes/Calendar.php:212
+msgid "View monthly calendar"
+msgstr "Monatskalender ansehen"
 
 #: includes/Shortcodes/Shortcode.php:120
 #: templates/endpoint/single-event.php:102
@@ -686,6 +735,10 @@ msgstr "ICS-Feed ansehen"
 #: templates/endpoint/themes/vendor/single-event.php:209
 msgid "View the calendar"
 msgstr "Kalender ansehen"
+
+#: includes/Shortcodes/Calendar.php:213
+msgid "View yearly calendar"
+msgstr "Jahreskalender ansehen"
 
 #: includes/CPT/CalendarEvent.php:302
 msgid "week(s)"
@@ -698,3 +751,7 @@ msgstr "Wochentag"
 #: includes/CPT/CalendarEvent.php:286
 msgid "Weekly"
 msgstr "Wöchentlich"
+
+#: includes/Shortcodes/Calendar.php:213
+msgid "Year"
+msgstr "Jahr"
