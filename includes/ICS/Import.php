@@ -62,7 +62,7 @@ class Import
                 'filterDaysAfter'             => $filterDaysAfter,
                 'filterDaysBefore'            => $filterDaysBefore,
                 'replaceWindowsTimeZoneIds'   => true,
-                'skipRecurrence'              => true,
+                'skipRecurrence'              => false,
             ]);
             $ICal->initString($icsContent);
 
