@@ -355,18 +355,19 @@ class Events
                                 }
 
                                 // Event meta
-                                $data[$i]['post_id'] = $event['post_id'];
-                                $data[$i]['uid'] = $event['uid'];
+                                $uid = $event['uid'];
+                                $data[$uid]['post_id'] = $event['post_id'];
+                                $data[$uid]['uid'] = $uid;
 
                                 // Event summary (title)
                                 $title = $event['summary'];
                                 if ($searchTerm && stripos($title, $searchTerm) === false) {
                                     continue;
                                 }
-                                $data[$i]['title'] = $title;
+                                $data[$uid]['title'] = $title;
 
                                 // Multiday
-                                $data[$i]['is_multiday'] = true;
+                                $data[$uid]['is_multiday'] = true;
 
                                 // Format date/time
                                 $mdStart = Utils::dateFormat($dateFormat, strtotime($event['multiday']['start_date']));
@@ -379,30 +380,30 @@ class Events
                                     $dStart .= ' ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
                                     $dEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
                                 } else {
-                                    $data[$i]['is_allday'] = true;
+                                    $data[$uid]['is_allday'] = true;
                                 }
 
                                 // Date/time
-                                $data[$i]['start_date'] = $dStart;
-                                $data[$i]['end_date'] = $dEnd;
-                                $data[$i]['date'] = $mdStart . ' &#8211; ' . $mdEnd;
+                                $data[$uid]['start_date'] = $dStart;
+                                $data[$uid]['end_date'] = $dEnd;
+                                $data[$uid]['date'] = $mdStart . ' &#8211; ' . $mdEnd;
 
                                 // RRULE/FREQ
-                                $data[$i]['rrule'] = '';
-                                $data[$i]['readable_rrule'] = '';
+                                $data[$uid]['rrule'] = '';
+                                $data[$uid]['readable_rrule'] = '';
                                 if (!empty($event['rrule'])) {
-                                    $data[$i]['rrule'] = $event['rrule'];
-                                    $data[$i]['readable_rrule'] = $event['readable_rrule'];
+                                    $data[$uid]['rrule'] = $event['rrule'];
+                                    $data[$uid]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
                                 // Location
-                                $data[$i]['event_location'] = $event['location'];
+                                $data[$uid]['event_location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['event_organizer'] = $event['organizer'];
+                                $data[$uid]['event_organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['event_description'] = $event['description'];
+                                $data[$uid]['event_description'] = $event['description'];
 
                                 // Now we use this event key for the next multiday event
                                 $multidayEventKeysUsed[] = $event['multiday']['event_key'];
@@ -441,15 +442,16 @@ class Events
                                 }
 
                                 // Event meta
-                                $data[$i]['post_id'] = $event['post_id'];
-                                $data[$i]['uid'] = $event['uid'];
+                                $uid = $event['uid'];
+                                $data[$uid]['post_id'] = $event['post_id'];
+                                $data[$uid]['uid'] = $uid;
 
                                 // Event summary (title)
                                 $title = html_entity_decode(str_replace('/', '/<wbr />', $event['summary']));
                                 if ($searchTerm && stripos($title, $searchTerm) === false) {
                                     continue;
                                 }
-                                $data[$i]['title'] = $title;
+                                $data[$uid]['title'] = $title;
 
                                 // Date/time
                                 $mdate = Utils::dateFormat($dateFormat, $day . '-' .  $month . '-' . $year);
@@ -468,28 +470,28 @@ class Events
                                         }
                                     }
                                 } else {
-                                    $data[$i]['is_allday'] = true;
+                                    $data[$uid]['is_allday'] = true;
                                 }
-                                $data[$i]['start_date'] = $dStart;
-                                $data[$i]['end_date'] = $dEnd;
-                                $data[$i]['date'] = $mdate . $mtime;
+                                $data[$uid]['start_date'] = $dStart;
+                                $data[$uid]['end_date'] = $dEnd;
+                                $data[$uid]['date'] = $mdate . $mtime;
 
                                 // RRULE/FREQ
-                                $data[$i]['rrule'] = '';
-                                $data[$i]['readable_rrule'] = '';
+                                $data[$uid]['rrule'] = '';
+                                $data[$uid]['readable_rrule'] = '';
                                 if (!empty($event['rrule'])) {
-                                    $data[$i]['rrule'] = $event['rrule'];
-                                    $data[$i]['readable_rrule'] = $event['readable_rrule'];
+                                    $data[$uid]['rrule'] = $event['rrule'];
+                                    $data[$uid]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
                                 // Location
-                                $data[$i]['event_location'] = $event['location'];
+                                $data[$uid]['event_location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['event_organizer'] = $event['organizer'];
+                                $data[$uid]['event_organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['event_description'] = $event['description'];
+                                $data[$uid]['event_description'] = $event['description'];
 
                                 $i++;
                             }
