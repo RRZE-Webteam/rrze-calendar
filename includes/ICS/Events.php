@@ -316,7 +316,7 @@ class Events
      * @param string $searchTerm Search term in event titles
      * @return array
      */
-    public static function getListData(array $items, string $searchTerm = ''): array
+    private static function getListData(array $items, string $searchTerm = ''): array
     {
         $data = [];
         $dateFormat = __('m-d-Y', 'rrze-calendar');
@@ -499,6 +499,17 @@ class Events
             }
         }
 
+        $rruleEventUidUsed = [];
+        foreach ($data as $key => $event) {
+
+            if (in_array($event['uid'], $rruleEventUidUsed) && !empty($event['rrule'])) {
+                unset($data[$key]);
+                continue;
+            }
+            if (!empty($event['rrule'])) {
+                $rruleEventUidUsed[] = $event['uid'];
+            }
+        }
         return $data;
     }
 
