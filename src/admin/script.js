@@ -54,6 +54,8 @@ jQuery(document).ready(function ($) {
     let repeatCheck = $('input#repeat');
     let repeatIntervalSelect = $('select#repeat-interval');
     let repeatMonthlyTypeInput = $("input[name='repeat-monthly-type']");
+    let newStartDateInput = $("body.post-new-php input#start_date");
+    let newEndDateInput = $("body.post-new-php input#end_date");
 
     if (repeatCheck.length > 0) {
         triggerRepeatFields();
@@ -69,6 +71,12 @@ jQuery(document).ready(function ($) {
 
     repeatMonthlyTypeInput.on('change', function() {
         triggerMonthlyTypeFields();
+    });
+
+    newStartDateInput.on('change', function() {
+        if (!newEndDateInput.val() || newEndDateInput.val() < $(this).val()) {
+            newEndDateInput.val($(this).val());
+        }
     });
 
     function triggerRepeatFields() {

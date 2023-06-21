@@ -133,7 +133,7 @@ while (have_posts()) : the_post(); ?>
                         ?>
                     </article>
 
-                    <?php if (strlen($location . $prices . $registrationUrl . $downloads) > 0 || (!is_wp_error($categoryObjects) && !empty($categoryObjects))) { ?>
+                    <?php if (strlen($location . $prices . $registrationUrl) > 0 || (!is_wp_error($categoryObjects) && !empty($categoryObjects)) || !empty($downloads)) { ?>
                         <aside class="rrze-event-details">
                             <?php
                             echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
@@ -152,12 +152,12 @@ while (have_posts()) : the_post(); ?>
                             }
                             $vc_url = Utils::getMeta($meta, 'vc-url');
                             if ($vc_url != '') {
-                                echo '<p itemprop="location" itemscope itemtype="http://schema.org/VirtualLocation"><dt>' . __('Video Conference Link', 'rrze-calendar') . ':</dt><dd><a itemprop="url" href="'. $vc_url . '">' . $vc_url . '</a></dd>';
+                                echo '<dt>' . __('Video Conference Link', 'rrze-calendar') . ':</dt><dd><p itemprop="location" itemscope itemtype="http://schema.org/VirtualLocation"><a itemprop="url" href="'. $vc_url . '">' . $vc_url . '</a></p></dd>';
                             }
 
                             // Prices + Tickets
                             if ($prices != '') {
-                                echo '<div itemprop="offers" itemscope itemtype="https://schema.org/Offer"><dt>' . __('Prices', 'rrze-calendar') . ':</dt><dd>' . wpautop($prices) . '</dd></div>';
+                                echo '<dt>' . __('Prices', 'rrze-calendar') . ':</dt><dd><p itemprop="offers" itemscope itemtype="https://schema.org/Offer">' . wpautop($prices) . '</p></dd>';
                             }
 
                             // Registration

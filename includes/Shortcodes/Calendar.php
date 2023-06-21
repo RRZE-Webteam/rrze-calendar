@@ -17,6 +17,8 @@ class Calendar
         add_shortcode('rrze-kalender', [__CLASS__, 'shortcode']);
         add_shortcode('calendar', [__CLASS__, 'shortcode']);
         add_shortcode('kalender', [__CLASS__, 'shortcode']);
+        add_action( 'wp_ajax_UpdateCalendar', [__CLASS__, 'ajaxUpdateCalendar'] );
+        add_action( 'wp_ajax_nopriv_UpdateCalendar', [__CLASS__, 'ajaxUpdateCalendar'] );
     }
 
     public static function shortcode($atts, $content = "")
@@ -123,11 +125,11 @@ class Calendar
             'meta_query' => [
                 'relation' => 'OR',
                 [
-                    'key' => 'mec-event-lastdate',
+                    'key' => 'event-lastdate',
                     'compare' => 'NOT EXISTS'
                 ],
                 [
-                    'key' => 'mec-event-lastdate',
+                    'key' => 'event-lastdate',
                     'value' => $startTS,
                     'compare' => '>='
                 ],
@@ -208,10 +210,13 @@ class Calendar
         $output = '<div class="rrze-calendar">';
         if ($layout != 'mini') {
             $output .= '<p class="cal-type-select">'
-                . '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . '">' . __('Day', 'rrze-calendar') . '</a>'
-                . '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . '">' . __('Month', 'rrze-calendar') . '</a>'
-                . '<a href="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . '">' . __('Year', 'rrze-calendar') . '</a>'
-                . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
+                //. '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . '">' . __('Day', 'rrze-calendar') . '</a>'
+                //. '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . '">' . __('Month', 'rrze-calendar') . '</a>'
+                //. '<a href="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . '">' . __('Year', 'rrze-calendar') . '</a>'
+
+                . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . ']' . __('Day', 'rrze-calendar') . '[/button]'
+                    . '[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . ']' . __('Month', 'rrze-calendar') . '[/button]'
+                    . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
                 . '</p>';
         }
         $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging);
@@ -219,8 +224,8 @@ class Calendar
 
         wp_enqueue_style('rrze-calendar-sc-calendar');
         wp_enqueue_script('jquery');
-        wp_enqueue_script( 'rrze-calendar-script', plugin_dir_url( __DIR__ ) . '/js/shortcode.js', array(), '1.0.0', true );
-        wp_localize_script('rrze-calendar-script', 'mec_ajax', [
+        wp_enqueue_script( 'rrze-calendar-sc-calendar', plugin_dir_url( __DIR__ ) . 'js/shortcode.js', array(), '1.0.0', true );
+        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce( 'rrze-calendar-ajax-nonce' ),
         ]);
@@ -321,9 +326,9 @@ class Calendar
                 $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
                 // Date/Time
                 if ($eventStartDate == $eventEndDate) {
-                    $timeText = '<span class="mec-event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i \U\h\r', $eventEnd) . '</span>';
+                    $timeText = '<span class="event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i \U\h\r', $eventEnd) . '</span>';
                 } else {
-                    $timeText = '<span class="mec-event-date">' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r,', $eventStart) . ' bis ' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r', $eventEnd) . '</span>';
+                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r,', $eventStart) . ' bis ' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r', $eventEnd) . '</span>';
                 }
                 // Location
                 $location = Utils::getMeta($meta, 'location');
@@ -342,7 +347,7 @@ class Calendar
         if ($hasEvents) {
             $output .= $list;
         } else {
-            $output .= '<p>' . __('An diesem Tag finden keine Veranstaltungen statt.', 'rrze-calendar') . '</p>';
+            $output .= '<p>' . __('There are no events scheduled for this day.', 'rrze-calendar') . '</p>';
         }
 
         return $output;
@@ -515,7 +520,7 @@ class Calendar
                     } else {
                         $catColor = '';
                     }
-                    if ($catColor == '') $catColor = 'inherit';
+                    if ($catColor == '') $catColor = 'var(--color-primary-ci-hell, #003366)';
                     $eventTitleShort = $eventTitle;
                     if (strlen($eventTitle) > 40) {
                         $eventTitleShort = substr($eventTitle, 0, 37) . '&hellip;';
@@ -537,7 +542,7 @@ class Calendar
                     if ($calDay == $eventStartDate) {
                         // Events starting on this day
                         array_push($eventClasses, 'event-start', 'event-end');
-                        $dateClasses = ['mec-event-date'];
+                        $dateClasses = ['event-date'];
                         $span = floor(($eventEnd - $eventStart) / (60 * 60 * 24) + 1);
                         if ($span < 1) $span = 1;
                         if ($span > 1) {
@@ -559,10 +564,17 @@ class Calendar
                             }
                         }
                         $eventInfos = [];
-                        if (isset($eventsPerDay[$eventStartDate])) {
-                            $eventsPerDay[$eventStartDate]++;
-                        } else {
-                            $eventsPerDay[$eventStartDate] = 1;
+
+                        // Set row counter
+                        for ($i = 0 ; $i <= $span; $i++) {
+                            $startDay = date('d', $eventStart);
+                            $countDay = (int)$startDay + $i;
+                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                            if (isset($eventsPerDay[$countDate])) {
+                                $eventsPerDay[$countDate]++;
+                            } else {
+                                $eventsPerDay[$countDate] = 1;
+                            }
                         }
                         if ($eventStartDate == $eventEndDate) {
                             $dateOut = date('d.m.Y', $eventStart);
@@ -599,7 +611,6 @@ class Calendar
                             continue;
                         }
                         $span = floor(($eventEnd - strtotime($calDay)) / (60 * 60 * 24) + 1);
-                        //var_dump($calDay, ($eventEnd - strtotime($calDay)) / (60 * 60 * 24));
                         if ($span > 7) {
                             $span = 7; // trim if event longer than week
                             array_push($eventClasses, 'event-week');
@@ -609,11 +620,18 @@ class Calendar
                         if ($span > $daysLeft) {
                             $span = $daysLeft - 1; // trim if event longer than month
                         }
-                        if (isset($eventsPerDay[$eventStartDate])) {
-                            $eventsPerDay[$eventStartDate]++;
-                        } else {
-                            $eventsPerDay[$eventStartDate] = 1;
+                        // Set row counter
+                        for ($i = 0 ; $i <= $span; $i++) {
+                            $startDay = date('d', $eventStart);
+                            $countDay = (int)$startDay + $i;
+                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                            if (isset($eventsPerDay[$countDate])) {
+                                $eventsPerDay[$countDate]++;
+                            } else {
+                                $eventsPerDay[$countDate] = 1;
+                            }
                         }
+
                         if ($eventStartDate == $eventEndDate) {
                             $dateOut = date('d.m.Y', $eventStart);
                         } else {
@@ -629,7 +647,7 @@ class Calendar
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
                         $week .= '<div itemtype="http://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . ';">'
-                            . '<span class="mec-event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
+                            . '<span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
                             . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
@@ -672,7 +690,7 @@ class Calendar
 
     }
 
-    private static function ajaxUpdateCalendar() {
+    public static function ajaxUpdateCalendar() {
         check_ajax_referer( 'rrze-calendar-ajax-nonce', 'nonce' );
         $output = '';
         $periodRaw = sanitize_text_field($_POST['period']);
@@ -740,11 +758,11 @@ class Calendar
             'meta_query' => [
                 'relation' => 'OR',
                 [
-                    'key' => 'mec-event-lastdate',
+                    'key' => 'event-lastdate',
                     'compare' => 'NOT EXISTS'
                 ],
                 [
-                    'key' => 'mec-event-lastdate',
+                    'key' => 'event-lastdate',
                     'value' => $startTS,
                     'compare' => '>='
                 ],
