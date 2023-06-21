@@ -21,9 +21,9 @@ class CalendarFeed
 
     const FEED_ERROR = 'ics_feed_error';
 
-    const FEED_EVENTS_ITEMS = 'ics_events_items';
+    const FEED_EVENTS_ITEMS = 'ical_events_items';
 
-    const FEED_EVENTS_META = 'ics_events_meta';
+    const FEED_EVENTS_META = 'ical_events_meta';
 
     public static function init()
     {
