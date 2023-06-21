@@ -402,7 +402,7 @@ class CalendarEvent
 
     public static function save($post_id)
     {
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE || wp_is_post_revision($post_id) || !(get_post_type($post_id) === 'event')) {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE || wp_is_post_revision($post_id) || !(get_post_type($post_id) === self::POST_TYPE)) {
             return $post_id;
         }
 
@@ -434,10 +434,10 @@ class CalendarEvent
 
     public static function updatedMeta($meta_id, $post_id, $meta_key = '', $meta_value = '')
     {
-        //if ($meta_key =='_edit_lock') {
-        $eventList = Utils::buildEventsList([get_post($post_id)], false);
-        update_post_meta($post_id, 'event-items', $eventList);
-        //}
+        if (get_post_type($post_id) === self::POST_TYPE) {
+            $eventList = Utils::buildEventsList([get_post($post_id)], false);
+            update_post_meta($post_id, 'event-items', $eventList);
+        }
     }
 
     public static function renderMonthDayField($field, $value, $object_id, $object_type, $field_type)
