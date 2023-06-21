@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-06-21 13:51+0000\n"
+"PO-Revision-Date: 2023-06-21 14:06+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -21,43 +21,43 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
-#. translators: 1: Start date, 2: Start time, 3: End time.
-#. translators: 1: Start date, 2: Start time. 3: End time.
+#. 1: Start date, 2: Start time, 3: End time.
+#. 1: Start date, 2: Start time. 3: End time.
 #: includes/Shortcodes/Shortcode.php:96 includes/Shortcodes/Shortcode.php:189
 #: templates/endpoint/themes/fau-events/single-event.php:70
-#: templates/endpoint/themes/fau/events.php:110
 #: templates/endpoint/themes/rrze/single-event.php:93
+#: templates/endpoint/themes/fau/events.php:110
 msgid "%1$s %2$s - %3$s"
 msgstr "%1$s %2$s Uhr bis %3$s Uhr"
 
-#. translators: 1: Start date, 2: Start time, 3: End date, 4: End time.
+#. 1: Start date, 2: Start time, 3: End date, 4: End time.
 #: includes/Shortcodes/Shortcode.php:85 includes/Shortcodes/Shortcode.php:185
-#: templates/endpoint/themes/fau-events/events.php:81
-#: templates/endpoint/themes/fau-events/single-event.php:46
-#: templates/endpoint/themes/fau/events.php:99
-#: templates/endpoint/themes/rrze/events.php:82
-#: templates/endpoint/themes/rrze/single-event.php:69
 #: templates/shortcodes/themes/fau-events/events.php:61
 #: templates/shortcodes/themes/rrze/events.php:58
+#: templates/endpoint/themes/fau-events/events.php:81
+#: templates/endpoint/themes/fau-events/single-event.php:46
+#: templates/endpoint/themes/rrze/events.php:82
+#: templates/endpoint/themes/rrze/single-event.php:69
+#: templates/endpoint/themes/fau/events.php:99
 msgid "%1$s %2$s - %3$s %4$s"
 msgstr "%1$s %2$s Uhr bis %3$s %4$s Uhr"
 
-#. translators: 1: Start date, 2: End date.
-#. translators: 1: Start time, 2: End time.
+#. 1: Start date, 2: End date.
+#. 1: Start time, 2: End time.
 #: includes/Shortcodes/Shortcode.php:76 includes/Shortcodes/Shortcode.php:181
-#: templates/endpoint/themes/fau-events/events.php:69
-#: templates/endpoint/themes/fau-events/events.php:94
-#: templates/endpoint/themes/fau-events/single-event.php:35
-#: templates/endpoint/themes/fau-events/single-event.php:59
-#: templates/endpoint/themes/fau/events.php:90
-#: templates/endpoint/themes/rrze/events.php:70
-#: templates/endpoint/themes/rrze/events.php:95
-#: templates/endpoint/themes/rrze/single-event.php:58
-#: templates/endpoint/themes/rrze/single-event.php:82
 #: templates/shortcodes/themes/fau-events/events.php:50
 #: templates/shortcodes/themes/fau-events/events.php:74
 #: templates/shortcodes/themes/rrze/events.php:47
 #: templates/shortcodes/themes/rrze/events.php:71
+#: templates/endpoint/themes/fau-events/events.php:69
+#: templates/endpoint/themes/fau-events/events.php:94
+#: templates/endpoint/themes/fau-events/single-event.php:35
+#: templates/endpoint/themes/fau-events/single-event.php:59
+#: templates/endpoint/themes/rrze/events.php:70
+#: templates/endpoint/themes/rrze/events.php:95
+#: templates/endpoint/themes/rrze/single-event.php:58
+#: templates/endpoint/themes/rrze/single-event.php:82
+#: templates/endpoint/themes/fau/events.php:90
 msgid "%1$s - %2$s"
 msgstr "%1$s bis %2$s"
 
@@ -107,15 +107,19 @@ msgid "ICS Feeds"
 msgstr "ICS-Feeds"
 
 #: includes/Shortcodes/Shortcode.php:69 includes/Shortcodes/Shortcode.php:176
+#: templates/shortcodes/events.php:124 templates/shortcodes/calendar.php:138
 #: templates/endpoint/events.php:137 templates/endpoint/single-event.php:158
-#: templates/endpoint/themes/fau-events/events.php:60
-#: templates/endpoint/themes/fau-events/single-event.php:22
-#: templates/endpoint/themes/fau/events.php:83
-#: templates/endpoint/themes/rrze/events.php:61
-#: templates/endpoint/themes/rrze/single-event.php:45
-#: templates/shortcodes/calendar.php:138 templates/shortcodes/events.php:124
 #: templates/shortcodes/themes/fau-events/events.php:42
 #: templates/shortcodes/themes/rrze/events.php:39
+#: templates/shortcodes/themes/vendor/events.php:136
+#: templates/shortcodes/themes/vendor/calendar.php:138
+#: templates/endpoint/themes/fau-events/events.php:60
+#: templates/endpoint/themes/fau-events/single-event.php:22
+#: templates/endpoint/themes/rrze/events.php:61
+#: templates/endpoint/themes/rrze/single-event.php:45
+#: templates/endpoint/themes/fau/events.php:83
+#: templates/endpoint/themes/vendor/events.php:146
+#: templates/endpoint/themes/vendor/single-event.php:158
 msgid "All Day"
 msgstr "Ganztägig"
 
@@ -125,16 +129,13 @@ msgstr "Ganztägig"
 
 #: includes/CPT/CalendarEvent.php:57 includes/Shortcodes/Events.php:34
 #: templates/endpoint/events.php:11
+#: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
 msgstr "Alle Veranstaltungen"
 
 #: includes/Shortcodes/Events.php:143 includes/Shortcodes/Events.php:175
 msgid "All-day"
 msgstr "Ganztägig"
-
-#: includes/Shortcodes/Calendar.php:345
-msgid "An diesem Tag finden keine Veranstaltungen statt."
-msgstr ""
 
 #: includes/CPT/CalendarFeed.php:111
 msgid "Categories"
@@ -160,9 +161,9 @@ msgstr "Täglich"
 msgid "Date"
 msgstr "Datum"
 
-#: includes/Shortcodes/Calendar.php:211
+#: includes/Shortcodes/Calendar.php:217
 msgid "Day"
-msgstr ""
+msgstr "Tag"
 
 #: includes/CPT/CalendarEvent.php:178 includes/ICS/EventsListTable.php:65
 msgid "Description"
@@ -218,6 +219,7 @@ msgid "Enter the url of the ICS feed. This field is required."
 msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 
 #: includes/ICS/EventsListTable.php:15 templates/endpoint/single-event.php:11
+#: templates/endpoint/themes/vendor/single-event.php:11
 msgid "Event"
 msgstr "Veranstaltung"
 
@@ -239,8 +241,8 @@ msgstr "Termine"
 msgid "Event not found."
 msgstr "Veranstaltung nicht gefunden."
 
-#: includes/CPT/CalendarFeed.php:113 includes/ICS/EventsListTable.php:16
-#: includes/ICS/Metabox.php:34 templates/cpt/archive-event.php:27
+#: includes/CPT/CalendarFeed.php:113 includes/ICS/Metabox.php:34
+#: includes/ICS/EventsListTable.php:16 templates/cpt/archive-event.php:27
 #: templates/cpt/archive-event.php:29
 #: templates/cpt/themes/fau/archive-event.php:27
 #: templates/cpt/themes/fau/archive-event.php:29
@@ -257,6 +259,8 @@ msgid "Exceptions"
 msgstr "Ausnahmen"
 
 #: templates/shortcodes/calendar.php:34 templates/shortcodes/calendar.php:56
+#: templates/shortcodes/themes/vendor/calendar.php:34
+#: templates/shortcodes/themes/vendor/calendar.php:56
 msgid "F Y"
 msgstr "F Y"
 
@@ -292,13 +296,13 @@ msgstr "vierten"
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
-#: includes/Shortcodes/Calendar.php:466
+#: includes/Shortcodes/Calendar.php:471
 msgid "Go to next month"
-msgstr ""
+msgstr "Zum nächsten Monat wechseln"
 
-#: includes/Shortcodes/Calendar.php:463
+#: includes/Shortcodes/Calendar.php:468
 msgid "Go to previous month"
-msgstr ""
+msgstr "Zum vorherigen Monat wechseln"
 
 #: includes/Main.php:88
 msgid "Hide past events"
@@ -312,7 +316,7 @@ msgstr "Stündlich"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#. Plugin URI of the plugin
+#. URI of the plugin
 msgid "https://github.com/RRZE-Webteam/rrze-calendar"
 msgstr "https://github.com/RRZE-Webteam/rrze-calendar"
 
@@ -328,9 +332,12 @@ msgstr "ICS-Feeds"
 msgid "Import and output of FAU public events."
 msgstr "Import und Ausgabe öffentlicher Veranstaltungen der FAU."
 
-#. translators: %s: Day of the month without leading zeros.
+#. %s: Day of the month without leading zeros.
 #: templates/shortcodes/calendar.php:85 templates/shortcodes/calendar.php:111
 #: templates/shortcodes/calendar.php:227
+#: templates/shortcodes/themes/vendor/calendar.php:85
+#: templates/shortcodes/themes/vendor/calendar.php:111
+#: templates/shortcodes/themes/vendor/calendar.php:227
 msgid "j"
 msgstr "j."
 
@@ -339,6 +346,7 @@ msgid "j F"
 msgstr "j. F"
 
 #: templates/shortcodes/calendar.php:109
+#: templates/shortcodes/themes/vendor/calendar.php:109
 msgid "l F jS, Y"
 msgstr "l, j. F Y"
 
@@ -350,18 +358,21 @@ msgstr "Letzte Aktualisierung"
 #: templates/cpt/single-event.php:113 templates/cpt/single-event.php:151
 #: templates/cpt/themes/fau/single-event.php:113
 #: templates/cpt/themes/fau/single-event.php:151
-#: templates/endpoint/themes/rrze/single-event.php:108
 #: templates/shortcodes/themes/rrze/events.php:80
+#: templates/endpoint/themes/rrze/single-event.php:108
 msgid "Location"
 msgstr "Ort"
 
 #: templates/endpoint/single-event.php:93
 #: templates/endpoint/single-event.php:168
 #: templates/endpoint/single-event.php:200
+#: templates/endpoint/themes/vendor/single-event.php:93
+#: templates/endpoint/themes/vendor/single-event.php:168
+#: templates/endpoint/themes/vendor/single-event.php:200
 msgid "Location:"
 msgstr "Ort:"
 
-#: includes/ICS/Events.php:322 includes/ICS/Events.php:513
+#: includes/ICS/Events.php:325 includes/ICS/Events.php:530
 msgid "m-d-Y"
 msgstr "m.d.Y"
 
@@ -369,9 +380,9 @@ msgstr "m.d.Y"
 msgid "Maximum +/- 1 year."
 msgstr "Maximal +/- 1 Jahr."
 
-#: includes/Shortcodes/Calendar.php:212
+#: includes/Shortcodes/Calendar.php:218
 msgid "Month"
-msgstr ""
+msgstr "Monat"
 
 #: includes/CPT/CalendarEvent.php:287
 msgid "Monthly"
@@ -390,21 +401,26 @@ msgstr "Neue Veranstaltung"
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
 
-#: includes/Shortcodes/Calendar.php:466
+#: includes/Shortcodes/Calendar.php:471
 msgid "Next"
-msgstr ""
+msgstr "Weiter"
 
 #: templates/shortcodes/calendar.php:243
+#: templates/shortcodes/themes/vendor/calendar.php:243
 msgid "No additional events this month."
 msgstr "Keine weiteren Veranstaltungen in diesem Monat."
 
 #: includes/Shortcodes/Shortcode.php:51 templates/endpoint/single-event.php:95
 #: templates/endpoint/single-event.php:170
 #: templates/endpoint/single-event.php:202
+#: templates/endpoint/themes/vendor/single-event.php:95
+#: templates/endpoint/themes/vendor/single-event.php:170
+#: templates/endpoint/themes/vendor/single-event.php:202
 msgid "No description"
 msgstr "Keine Beschreibung"
 
 #: templates/endpoint/single-event.php:16
+#: templates/endpoint/themes/vendor/single-event.php:16
 msgid "No event found."
 msgstr "Keine Veranstaltung gefunden."
 
@@ -414,8 +430,10 @@ msgid "No events found in Trash."
 msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 
 #: includes/CPT/CalendarEvent.php:60 includes/CPT/CalendarEvent.php:507
-#: includes/ICS/Events.php:41 templates/endpoint/events.php:16
-#: templates/shortcodes/calendar.php:237
+#: includes/ICS/Events.php:41 templates/shortcodes/calendar.php:237
+#: templates/endpoint/events.php:16
+#: templates/shortcodes/themes/vendor/calendar.php:237
+#: templates/endpoint/themes/vendor/events.php:15
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
@@ -433,12 +451,12 @@ msgstr "Keine Feeds im Papierkorb gefunden."
 msgid "No ics feeds found."
 msgstr "Keine Feeds gefunden."
 
-#: templates/endpoint/themes/fau-events/events.php:22
-#: templates/endpoint/themes/fau/events.php:30
-#: templates/endpoint/themes/rrze/events.php:20
 #: templates/shortcodes/themes/fau-events/events.php:12
-#: templates/shortcodes/themes/fau/events.php:24
 #: templates/shortcodes/themes/rrze/events.php:10
+#: templates/shortcodes/themes/fau/events.php:24
+#: templates/endpoint/themes/fau-events/events.php:22
+#: templates/endpoint/themes/rrze/events.php:20
+#: templates/endpoint/themes/fau/events.php:30
 msgid "No upcoming events."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
@@ -458,7 +476,7 @@ msgstr "Übergeordnete Veranstaltungen:"
 msgid "Parent Feeds:"
 msgstr "Eltern-Feeds:"
 
-#. translators: 1: The plugin name, 2: The error string.
+#. 1: The plugin name, 2: The error string.
 #: rrze-calendar.php:87 rrze-calendar.php:145
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
@@ -494,20 +512,20 @@ msgstr "ICS-Feed"
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Shortcodes/Calendar.php:463
+#: includes/Shortcodes/Calendar.php:468
 msgid "Previous"
-msgstr ""
+msgstr "Zurück"
 
 #: includes/CPT/CalendarEvent.php:204 templates/cpt/single-event.php:160
 #: templates/cpt/themes/fau/single-event.php:160
 msgid "Prices"
 msgstr "Preise"
 
-#: includes/Shortcodes/Calendar.php:591 includes/Shortcodes/Calendar.php:641
+#: includes/Shortcodes/Calendar.php:603 includes/Shortcodes/Calendar.php:659
 msgid "Read more"
-msgstr ""
+msgstr "Weiterlesen"
 
-#: includes/ICS/EventsListTable.php:64 includes/Settings.php:29
+#: includes/Settings.php:29 includes/ICS/EventsListTable.php:64
 msgid "Recurrence"
 msgstr "Wiederholung"
 
@@ -549,7 +567,7 @@ msgstr "Wiederholt sich im"
 msgid "Repeats on"
 msgstr "Wiederholt sich an"
 
-#. Plugin Name of the plugin
+#. Name of the plugin
 msgid "RRZE Calendar"
 msgstr "RRZE Kalender"
 
@@ -578,6 +596,7 @@ msgid "Settings"
 msgstr "Einstellungen"
 
 #: includes/Main.php:89 templates/shortcodes/calendar.php:42
+#: templates/shortcodes/themes/vendor/calendar.php:42
 msgid "Show past events"
 msgstr "Vergangene Termine anzeigen"
 
@@ -589,6 +608,9 @@ msgstr "Start"
 #: templates/endpoint/single-event.php:105
 #: templates/endpoint/single-event.php:180
 #: templates/endpoint/single-event.php:212
+#: templates/endpoint/themes/vendor/single-event.php:105
+#: templates/endpoint/themes/vendor/single-event.php:180
+#: templates/endpoint/themes/vendor/single-event.php:212
 msgid "Subscribe to calendar"
 msgstr "Kalender abonnieren"
 
@@ -596,9 +618,9 @@ msgstr "Kalender abonnieren"
 msgid "Subscribe to the event"
 msgstr "Veranstaltung abonnieren"
 
-#: templates/endpoint/themes/fau-events/single-event.php:101
 #: templates/shortcodes/themes/fau-events/events.php:104
 #: templates/shortcodes/themes/rrze/events.php:97
+#: templates/endpoint/themes/fau-events/single-event.php:101
 msgid "Subscription"
 msgstr "Abonnement"
 
@@ -630,7 +652,7 @@ msgctxt "Taxonomy singular name"
 msgid "Event Tag"
 msgstr "Veranstaltungs-Schlagwort"
 
-#. translators: 1: Server PHP version number, 2: Required PHP version number.
+#. 1: Server PHP version number, 2: Required PHP version number.
 #: rrze-calendar.php:61
 msgid ""
 "The server is running PHP version %1$s. The Plugin requires at least PHP "
@@ -639,7 +661,7 @@ msgstr ""
 "Auf dem Server läuft PHP Version %1$s. Das Plugin benötigt mindestens PHP "
 "Version %2$s."
 
-#. translators: 1: Server WordPress version number, 2: Required WordPress version number.
+#. 1: Server WordPress version number, 2: Required WordPress version number.
 #: rrze-calendar.php:68
 msgid ""
 "The server is running WordPress version %1$s. The Plugin requires at least "
@@ -647,6 +669,10 @@ msgid ""
 msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
+
+#: includes/Shortcodes/Calendar.php:350
+msgid "There are no events scheduled for this day."
+msgstr "An diesem Tag finden keine Veranstaltungen statt."
 
 #: includes/CPT/CalendarEvent.php:453
 msgid "third"
@@ -676,13 +702,13 @@ msgstr ""
 msgid "Video Conference Link"
 msgstr "Link zur Videokonferenz"
 
-#: includes/Shortcodes/Calendar.php:211
+#: includes/Shortcodes/Calendar.php:217
 msgid "View day"
-msgstr ""
+msgstr "Tag ansehen"
 
-#: includes/Shortcodes/Calendar.php:409
+#: includes/Shortcodes/Calendar.php:414
 msgid "View Details"
-msgstr ""
+msgstr "Details ansehen"
 
 #: includes/CPT/CalendarEvent.php:56
 msgid "View Event"
@@ -692,20 +718,23 @@ msgstr "Veranstaltung ansehen"
 msgid "View ICS Feed"
 msgstr "ICS-Feed ansehen"
 
-#: includes/Shortcodes/Calendar.php:212
+#: includes/Shortcodes/Calendar.php:218
 msgid "View monthly calendar"
-msgstr ""
+msgstr "Monatskalender ansehen"
 
 #: includes/Shortcodes/Shortcode.php:120
 #: templates/endpoint/single-event.php:102
 #: templates/endpoint/single-event.php:177
 #: templates/endpoint/single-event.php:209
+#: templates/endpoint/themes/vendor/single-event.php:102
+#: templates/endpoint/themes/vendor/single-event.php:177
+#: templates/endpoint/themes/vendor/single-event.php:209
 msgid "View the calendar"
 msgstr "Kalender ansehen"
 
-#: includes/Shortcodes/Calendar.php:213 includes/Shortcodes/Calendar.php:214
+#: includes/Shortcodes/Calendar.php:219
 msgid "View yearly calendar"
-msgstr ""
+msgstr "Jahreskalender ansehen"
 
 #: includes/CPT/CalendarEvent.php:302
 msgid "week(s)"
@@ -719,6 +748,6 @@ msgstr "Wochentag"
 msgid "Weekly"
 msgstr "Wöchentlich"
 
-#: includes/Shortcodes/Calendar.php:213 includes/Shortcodes/Calendar.php:214
+#: includes/Shortcodes/Calendar.php:219
 msgid "Year"
-msgstr ""
+msgstr "Jahr"
