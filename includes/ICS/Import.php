@@ -4,7 +4,7 @@ namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\{Transients, Utils};
+use RRZE\Calendar\Utils;
 use ICal\ICal;
 use DateTime;
 
@@ -42,11 +42,11 @@ class Import
         }
 
         // Get ICS file contents
-        $icsContent = Transients::getIcalCache($url);
+        $icsContent = Cache::getIcalCache($url);
         if ($icsContent === false) {
             $icsContent = self::urlGetContent($url);
             if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
-                Transients::setIcalCache($url, $icsContent);
+                Cache::setIcalCache($url, $icsContent);
             } else {
                 $icsContent = '';
             }
