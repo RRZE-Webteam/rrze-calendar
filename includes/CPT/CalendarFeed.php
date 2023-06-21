@@ -15,15 +15,15 @@ class CalendarFeed
 {
     const POST_TYPE = 'calendar_feed';
 
-    const FEED_URL = 'rrze_calendar_feed_url';
+    const FEED_URL = 'ics_feed_url';
 
-    const FEED_DATETIME = 'rrze_calendar_feed_datetime';
+    const FEED_DATETIME = 'ics_feed_datetime';
 
-    const FEED_ERROR = 'rrze_calendar_feed_error';
+    const FEED_ERROR = 'ics_feed_error';
 
-    const FEED_EVENTS_ITEMS = 'rrze_calendar_events_items';
+    const FEED_EVENTS_ITEMS = 'ics_events_items';
 
-    const FEED_EVENTS_META = 'rrze_calendar_events_meta';
+    const FEED_EVENTS_META = 'ics_events_meta';
 
     public static function init()
     {
