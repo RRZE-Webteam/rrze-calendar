@@ -298,25 +298,28 @@ class Events
     public static function getListTableData(string $searchTerm = ''): array
     {
         $items = [];
+        $postId = 0;
         if ($screen = get_current_screen()) {
             if ($screen->id == CalendarFeed::POST_TYPE) {
                 global $post;
                 if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-                    $items = self::getItems($post->ID);
+                    $postId = $post->ID;
+                    $items = self::getItems($postId);
                 }
             }
         }
-        return !empty($items) ? self::getListData($items, $searchTerm) : $items;
+        return count($items) ? self::getListData($postId, $items, $searchTerm) : $items;
     }
 
     /**
      * Get the list of events to be displayed when the Feed is edited.
      *
+     * @param integer $postId Post ID
      * @param array $items Feed items splitet into year/month/day groups
      * @param string $searchTerm Search term in event titles
      * @return array
      */
-    private static function getListData(array $items, string $searchTerm = ''): array
+    private static function getListData(int $postId, array $items, string $searchTerm = ''): array
     {
         $data = [];
         $dateFormat = __('m-d-Y', 'rrze-calendar');
@@ -510,6 +513,11 @@ class Events
                 $rruleEventUidUsed[] = $event['uid'];
             }
         }
+
+        $meta = get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true);
+        $meta['event_count'] = count($data);
+        update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
+
         return $data;
     }
 
