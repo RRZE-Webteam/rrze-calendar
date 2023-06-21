@@ -70,7 +70,7 @@ class Update
                         CalendarEvent::TAX_TAG      => $nonHierarchicalTerms,
                     ],
                     'meta_input'    => [
-                        'rrze_calendar_feed_url' => $row->url,
+                        CalendarFeed::FEED_URL => $row->url,
                     ]
                 ];
 
