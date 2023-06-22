@@ -16,10 +16,11 @@ class Import
      * getEvents
      *
      * @param string $url
+     * @param boolean $cache
      * @param integer $limitDays
      * @return mixed
      */
-    public static function getEvents(string $url, int $limitDays = 365)
+    public static function getEvents(string $url, bool $cache = true, int $limitDays = 365)
     {
         $startDate = date('Ymd', current_time('timestamp'));
 
@@ -43,7 +44,7 @@ class Import
 
         // Get ICS file contents
         $icsContent = Cache::getIcalCache($url);
-        if ($icsContent === false) {
+        if ($icsContent === false || $cache == false) {
             $icsContent = self::urlGetContent($url);
             if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
                 Cache::setIcalCache($url, $icsContent);
@@ -53,7 +54,7 @@ class Import
         }
 
         // ICS data is not empty
-        if (!empty($icsContent)) {
+        if ($icsContent) {
             // Parse ICS contents
             $ICal = new ICal('ICal.ics', [
                 'defaultSpan'                 => 1,
