@@ -20,29 +20,17 @@ class Settings
             ->setMenuPosition(6)
             ->setMenuParentSlug('options-general.php');
 
-        $settings->addTab(__('ICS Feed', 'rrze-calendar'));
-
-        $settings->addSection(__('Schedule', 'rrze-calendar'));
+        $settings->addSection(__('ICS Feed', 'rrze-calendar'));
 
         $settings->addOption('select', [
             'name' => 'schedule_recurrence',
-            'label' => __('Recurrence', 'rrze-calendar'),
+            'label' => __('Schedule', 'rrze-calendar'),
             'description' => __('Choose the recurrence to check for new events.', 'rrze-calendar'),
             'options' => [
                 'hourly'     => __('Hourly', 'rrze-calendar'),
                 'twicedaily' => __('Twice daily', 'rrze-calendar'),
                 'daily'      => __('Daily', 'rrze-calendar')
             ]
-        ]);
-
-        $settings->addTab(__('Endpoint', 'rrze-calendar'));
-
-        $settings->addSection(__('Endpoint', 'rrze-calendar'));
-
-        $settings->addOption('checkbox', [
-            'name' => 'endpoint_enabled',
-            'label' => __('Enable', 'rrze-calendar'),
-            'description'  => __('Enables the endpoint url', 'rrze-calendar'),
         ]);
 
         $settings->build();
