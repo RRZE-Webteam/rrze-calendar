@@ -88,6 +88,10 @@ class Main
             'hide_past_events' => __('Hide past events', 'rrze-calendar'),
             'show_past_events' => __('Show past events', 'rrze-calendar'),
         ));
+        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce( 'rrze-calendar-ajax-nonce' ),
+        ]);
         wp_register_style(
             'rrze-calendar-sc-events',
             plugins_url('build/events.css', plugin()->getBasename()),
