@@ -6,9 +6,6 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
-use RRule\RRule;
-
-use function RRZE\Calendar\plugin;
 
 class Events
 {
@@ -219,7 +216,7 @@ class Events
             'organizer' => $event->organizer ? $event->organizer_array : '',
             'url' => !is_null($event->url) ? $event->url : '',
             'rrule' => !is_null($event->rrule) ? $event->rrule : '',
-            'readable_rrule' => !is_null($event->rrule) ? self::humanReadableRecurrence($event->rrule) : '',
+            'readable_rrule' => !is_null($event->rrule) ? Utils::humanReadableRecurrence($event->rrule) : '',
             'exdate' => !is_null($event->exdate) ? $event->exdate : '',
         ];
 
@@ -333,12 +330,11 @@ class Events
             $args = [
                 'post_date' => $event['date_start'],
                 'post_date_gmt' => $event['date_start'],
-                'post_title' => $event['title'],
-                'post_content' => $event['content'],
+                'post_title' => $event['summary'],
+                'post_content' => '',
                 'post_excerpt' => $event['content'],
                 'post_type' => CalendarEvent::POST_TYPE,
-                'post_status' => 'publish',
-                'post_author' => 1
+                'post_status' => 'publish'
             ];
 
             $eventId = wp_insert_post($args);
@@ -570,25 +566,6 @@ class Events
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
 
         return $data;
-    }
-
-    public static function humanReadableRecurrence(string $rrule)
-    {
-        $opt = [
-            'use_intl' => true,
-            'locale' => substr(get_locale(), 0, 2),
-            'date_formatter' => function ($date) {
-                return $date->format(__('m-d-Y', 'rrze-calendar'));
-            },
-            'fallback' => 'en',
-            'explicit_infinite' => true,
-            'include_start' => false,
-            'include_until' => true,
-            'custom_path' => plugin()->getPath('languages/rrule'),
-        ];
-
-        $rrule = new RRule($rrule);
-        return $rrule->humanReadable($opt);
     }
 
     /**
