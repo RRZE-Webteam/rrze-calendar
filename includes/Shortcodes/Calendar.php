@@ -17,8 +17,8 @@ class Calendar
         add_shortcode('rrze-kalender', [__CLASS__, 'shortcode']);
         add_shortcode('calendar', [__CLASS__, 'shortcode']);
         add_shortcode('kalender', [__CLASS__, 'shortcode']);
-        add_action( 'wp_ajax_UpdateCalendar', [__CLASS__, 'ajaxUpdateCalendar'] );
-        add_action( 'wp_ajax_nopriv_UpdateCalendar', [__CLASS__, 'ajaxUpdateCalendar'] );
+        add_action( 'wp_ajax_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar'] );
+        add_action( 'wp_ajax_nopriv_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar'] );
     }
 
     public static function shortcode($atts, $content = "")
@@ -208,12 +208,8 @@ class Calendar
 
         // Render calendar output
         $output = '<div class="rrze-calendar">';
-        if ($layout != 'mini') {
+        if ($layout == 'full' || $layout == 'mini' && $month == '') {
             $output .= '<p class="cal-type-select">'
-                //. '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . '">' . __('Day', 'rrze-calendar') . '</a>'
-                //. '<a href="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . '">' . __('Month', 'rrze-calendar') . '</a>'
-                //. '<a href="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . '">' . __('Year', 'rrze-calendar') . '</a>'
-
                 . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . ']' . __('Day', 'rrze-calendar') . '[/button]'
                     . '[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . ']' . __('Month', 'rrze-calendar') . '[/button]'
                     . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
@@ -225,10 +221,6 @@ class Calendar
         wp_enqueue_style('rrze-calendar-sc-calendar');
         wp_enqueue_script('jquery');
         wp_enqueue_script( 'rrze-calendar-sc-calendar', plugin_dir_url( __DIR__ ) . 'js/shortcode.js', array(), '1.0.0', true );
-        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce( 'rrze-calendar-ajax-nonce' ),
-        ]);
         return $output;
     }
 
@@ -691,7 +683,7 @@ class Calendar
     }
 
     public static function ajaxUpdateCalendar() {
-        check_ajax_referer( 'rrze-calendar-ajax-nonce', 'nonce' );
+        check_ajax_referer( 'rrze-calendar-ajax-nonce' );
         $output = '';
         $periodRaw = sanitize_text_field($_POST['period']);
         $period = explode('-', $periodRaw);

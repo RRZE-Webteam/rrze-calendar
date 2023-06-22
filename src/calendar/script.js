@@ -18,7 +18,7 @@ jQuery(document).ready(function($){
         var direction = $(this).data('direction');
         $.post(rrze_calendar_ajax.ajax_url, {         //POST request
             _ajax_nonce: rrze_calendar_ajax.nonce,     //nonce
-            action: "UpdateCalendar",            //action
+            action: "rrze-calendar-update-calendar",            //action
             period: period,                  //data
             layout: layout,
             direction: direction,
