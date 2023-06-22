@@ -423,6 +423,6 @@ class CalendarFeed
             return;
         }
 
-        Events::updateItems($postId);
+        Events::updateItems($postId, false);
     }
 }
