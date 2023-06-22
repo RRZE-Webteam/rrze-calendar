@@ -102,7 +102,7 @@ class CalendarEvent
         $args = [
             'labels'            => $labels,
             'public'            => false,
-            'hierarchical'      => true,
+            'hierarchical'      => false,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true
