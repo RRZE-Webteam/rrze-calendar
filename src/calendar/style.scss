@@ -205,7 +205,7 @@
                 padding: 10px;
                 margin-bottom: 5px;
                 font-size: small;
-                border: 1px solid var(--color-primary-ci-hell, #003366);
+                border: 2px solid var(--color-primary-ci-hell, #003366);
                 border-top-width: 4px;
                 background-color: #ffffff;
                 //border-radius: 4px;
@@ -241,6 +241,8 @@
                 p {
                     margin-bottom: 0;
                     padding-bottom: 0;
+                    font-size: 0.875rem;
+                    line-height: 1.5;
                 }
                 div[role=tooltip] {
                     display: none;
@@ -314,6 +316,8 @@
                 color: #666;
                 padding: 0;
                 margin: 0;
+                font-size: 0.875rem;
+                line-height: 1.5;
             }
             .event-title {
                 //font-weight: bold;
@@ -342,7 +346,7 @@
             .event-start {
                 //border-top-left-radius: 6px;
                 //border-bottom-left-radius: 6px;
-                border-left-width: 2px;
+                //border-left-width: 2px;
                 &:before {
                     display: none;
                     content: '';
@@ -351,7 +355,7 @@
             .event-end {
                 //border-top-right-radius: 6px;
                 //border-bottom-right-radius: 6px;
-                border-right-width: 2px;
+                //border-right-width: 2px;
                 float: none;
                 &:after {
                     display: none;
