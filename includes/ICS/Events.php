@@ -33,11 +33,11 @@ class Events
         return get_posts($args);
     }
 
-    public static function updateItems(int $postId)
+    public static function updateItems(int $postId, bool $cache = true)
     {
         $url = (string) get_post_meta($postId, CalendarFeed::FEED_URL, true);
 
-        $events = Import::getEvents($url);
+        $events = Import::getEvents($url, $cache);
         $error = !$events ? __('No events found.', 'rrze-calendar') : '';
         $items = !empty($events['events']) ? $events['events'] : [];
         $meta = !empty($events['meta']) ? $events['meta'] : [];
@@ -205,6 +205,7 @@ class Events
         // General event item details (regardless of all-day/start/end times)
         $eventItem = [
             'post_id' => $postId,
+            'timezone' => $urlTz->getName(),
             'summary' => $summary,
             'categories' => $categories,
             'tags' => $tags,
@@ -219,6 +220,7 @@ class Events
             'url' => !is_null($event->url) ? $event->url : '',
             'rrule' => !is_null($event->rrule) ? $event->rrule : '',
             'readable_rrule' => !is_null($event->rrule) ? self::humanReadableRecurrence($event->rrule) : '',
+            'exdate' => !is_null($event->exdate) ? $event->exdate : '',
         ];
 
         // Events with different start and end dates
@@ -244,9 +246,9 @@ class Events
                 // Get full date/time range of multi-day event
                 $eventItem['multiday'] = [
                     'event_key' => $eventKey,
-                    'start_date' => $dtstartDate,
+                    'date_start' => $dtstartDate,
                     'start_time' => $dtstartTime,
-                    'end_date' => $actualEndDate,
+                    'date_end' => $actualEndDate,
                     'end_time' => $dtendTime,
                     'all_day' => $allDay,
                 ];
@@ -308,7 +310,42 @@ class Events
                 }
             }
         }
+        //\RRZE\WP\Debug::log(self::getListData($postId, $items));
         return count($items) ? self::getListData($postId, $items, $searchTerm) : $items;
+    }
+
+    public static function insertEventData($postId)
+    {
+        $items = [];
+        $postId = 0;
+        if ($screen = get_current_screen()) {
+            if ($screen->id == CalendarFeed::POST_TYPE) {
+                global $post;
+                if (get_post_type($post) === CalendarFeed::POST_TYPE) {
+                    $postId = $post->ID;
+                    $items = self::getItems($postId);
+                }
+            }
+        }
+        $items = count($items) ? self::getListData($postId, $items) : $items;
+        foreach ($items as $event) {
+            // Insert post in the calendar event post type.
+            $args = [
+                'post_date' => $event['date_start'],
+                'post_date_gmt' => $event['date_start'],
+                'post_title' => $event['title'],
+                'post_content' => $event['content'],
+                'post_excerpt' => $event['content'],
+                'post_type' => CalendarEvent::POST_TYPE,
+                'post_status' => 'publish',
+                'post_author' => 1
+            ];
+
+            $eventId = wp_insert_post($args);
+            if ($eventId == 0 || is_wp_error($eventId)) {
+                continue;
+            }
+        }
     }
 
     /**
@@ -359,36 +396,37 @@ class Events
 
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
+                                $data[$i]['timezone'] = $event['timezone'];
                                 $data[$i]['uid'] = $event['uid'];
 
                                 // Event summary (title)
-                                $title = $event['summary'];
-                                if ($searchTerm && stripos($title, $searchTerm) === false) {
+                                $summary = $event['summary'];
+                                if ($searchTerm && stripos($summary, $searchTerm) === false) {
                                     continue;
                                 }
-                                $data[$i]['title'] = $title;
+                                $data[$i]['summary'] = $summary;
 
                                 // Multiday
                                 $data[$i]['is_multiday'] = true;
 
                                 // Format date/time
-                                $mdStart = Utils::dateFormat($dateFormat, strtotime($event['multiday']['start_date']));
-                                $mdEnd = Utils::dateFormat($dateFormat, strtotime($event['multiday']['end_date']));
-                                $dStart = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['start_date']));
-                                $dEnd = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['end_date']));
+                                $mdDtStart = Utils::dateFormat($dateFormat, strtotime($event['multiday']['date_start']));
+                                $mdDtEnd = Utils::dateFormat($dateFormat, strtotime($event['multiday']['date_end']));
+                                $dtStart = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_start']));
+                                $dtEnd = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_end']));
                                 if ($time != 'all-day') {
-                                    $mdStart .= ' ' . Utils::timeFormat($event['multiday']['start_time']);
-                                    $mdEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time']);
-                                    $dStart .= ' ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
-                                    $dEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
+                                    $mdDtStart .= ' ' . Utils::timeFormat($event['multiday']['start_time']);
+                                    $mdDtEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time']);
+                                    $dtStart .= ' ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
+                                    $dtEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
                                 } else {
                                     $data[$i]['is_allday'] = true;
                                 }
 
                                 // Date/time
-                                $data[$i]['start_date'] = $dStart;
-                                $data[$i]['end_date'] = $dEnd;
-                                $data[$i]['date'] = $mdStart . ' &#8211; ' . $mdEnd;
+                                $data[$i]['date_start'] = $dtStart;
+                                $data[$i]['date_end'] = $dtEnd;
+                                $data[$i]['readable_date'] = $mdDtStart . ' &#8211; ' . $mdDtEnd;
 
                                 // RRULE/FREQ
                                 $data[$i]['rrule'] = '';
@@ -398,14 +436,20 @@ class Events
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
+                                // EXDATE/VALUE
+                                $data[$i]['exdate'] = '';
+                                if (!empty($event['exdate'])) {
+                                    $data[$i]['exdate'] = $event['exdate'];
+                                }
+
                                 // Location
-                                $data[$i]['event_location'] = $event['location'];
+                                $data[$i]['location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['event_organizer'] = $event['organizer'];
+                                $data[$i]['organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['event_description'] = $event['description'];
+                                $data[$i]['description'] = $event['description'];
 
                                 // Now we use this event key for the next multiday event
                                 $multidayEventKeysUsed[] = $event['multiday']['event_key'];
@@ -445,37 +489,38 @@ class Events
 
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
+                                $data[$i]['timezone'] = $event['timezone'];
                                 $data[$i]['uid'] = $event['uid'];
 
                                 // Event summary (title)
-                                $title = html_entity_decode(str_replace('/', '/<wbr />', $event['summary']));
-                                if ($searchTerm && stripos($title, $searchTerm) === false) {
+                                $summary = html_entity_decode(str_replace('/', '/<wbr />', $event['summary']));
+                                if ($searchTerm && stripos($summary, $searchTerm) === false) {
                                     continue;
                                 }
-                                $data[$i]['title'] = $title;
+                                $data[$i]['summary'] = $summary;
 
                                 // Date/time
                                 $mdate = Utils::dateFormat($dateFormat, $day . '-' .  $month . '-' . $year);
-                                $dStart = Utils::dateFormat('Y-m-d', $day . '-' .  $month . '-' . $year);
-                                $dEnd = $dStart;
+                                $dtStart = Utils::dateFormat('Y-m-d', $day . '-' .  $month . '-' . $year);
+                                $dtEnd = $dtStart;
                                 $mtime = '';
                                 if ($time !== 'all-day') {
                                     if (!empty($event['start'])) {
                                         $mtime = ' ' . $event['start'];
-                                        $dStart = get_gmt_from_date($dStart . ' ' . $event['start']);
+                                        $dtStart = get_gmt_from_date($dtStart . ' ' . $event['start']);
                                         if (!empty($event['end']) && $event['end'] != $event['start']) {
                                             $mtime .= ' &#8211; ' . $event['end'];
-                                            $dEnd = get_gmt_from_date($dEnd . ' ' . $event['end']);
+                                            $dtEnd = get_gmt_from_date($dtEnd . ' ' . $event['end']);
                                         } else {
-                                            $dEnd = $dStart;
+                                            $dtEnd = $dtStart;
                                         }
                                     }
                                 } else {
                                     $data[$i]['is_allday'] = true;
                                 }
-                                $data[$i]['start_date'] = $dStart;
-                                $data[$i]['end_date'] = $dEnd;
-                                $data[$i]['date'] = $mdate . $mtime;
+                                $data[$i]['date_start'] = $dtStart;
+                                $data[$i]['date_end'] = $dtEnd;
+                                $data[$i]['readable_date'] = $mdate . $mtime;
 
                                 // RRULE/FREQ
                                 $data[$i]['rrule'] = '';
@@ -485,14 +530,20 @@ class Events
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
+                                // EXDATE/VALUE
+                                $data[$i]['exdate'] = '';
+                                if (!empty($event['exdate'])) {
+                                    $data[$i]['exdate'] = $event['exdate'];
+                                }
+
                                 // Location
-                                $data[$i]['event_location'] = $event['location'];
+                                $data[$i]['location'] = $event['location'];
 
                                 // Organizer
-                                $data[$i]['event_organizer'] = $event['organizer'];
+                                $data[$i]['organizer'] = $event['organizer'];
 
                                 // Description
-                                $data[$i]['event_description'] = $event['description'];
+                                $data[$i]['description'] = $event['description'];
 
                                 $i++;
                             }
