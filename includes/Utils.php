@@ -6,6 +6,7 @@ defined('ABSPATH') || exit;
 
 use DateTime;
 use DateTimeZone;
+use RRule\RRule;
 
 class Utils
 {
@@ -724,5 +725,24 @@ class Utils
         } else {
             return $meta[$key][0];
         }
+    }
+
+    public static function humanReadableRecurrence(string $rrule)
+    {
+        $opt = [
+            'use_intl' => true,
+            'locale' => substr(get_locale(), 0, 2),
+            'date_formatter' => function ($date) {
+                return $date->format(__('m-d-Y', 'rrze-calendar'));
+            },
+            'fallback' => 'en',
+            'explicit_infinite' => true,
+            'include_start' => false,
+            'include_until' => true,
+            'custom_path' => plugin()->getPath('languages/rrule'),
+        ];
+
+        $rrule = new RRule($rrule);
+        return $rrule->humanReadable($opt);
     }
 }
