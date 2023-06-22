@@ -133,7 +133,7 @@ while (have_posts()) : the_post(); ?>
                         ?>
                     </article>
 
-                    <?php if (strlen($location . $prices . $registrationUrl . $downloads) > 0 || (!is_wp_error($categoryObjects) && !empty($categoryObjects))) { ?>
+                    <?php if (strlen($location . $prices . $registrationUrl) > 0 || (!is_wp_error($categoryObjects) && !empty($categoryObjects)) || !empty($downloads)) { ?>
                         <aside class="rrze-event-details">
                             <?php
                             echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
