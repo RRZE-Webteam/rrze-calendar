@@ -420,7 +420,7 @@ class Events
                                     $dtStart .= ' ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
                                     $dtEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
                                 } else {
-                                    $data[$i]['is_allday'] = true;
+                                    $data[$i]['allday'] = true;
                                 }
 
                                 // Date/time
@@ -516,7 +516,7 @@ class Events
                                         }
                                     }
                                 } else {
-                                    $data[$i]['is_allday'] = true;
+                                    $data[$i]['allday'] = true;
                                 }
                                 $data[$i]['date_start'] = $dtStart;
                                 $data[$i]['date_end'] = $dtEnd;
