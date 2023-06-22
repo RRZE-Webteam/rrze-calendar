@@ -91,17 +91,19 @@ class EventsListTable extends ListTable
     {
         switch ($column_name) {
             case 'title':
-                return sprintf('<strong>%s</strong>', $item[$column_name]);
+                return sprintf('<strong>%s</strong>', $item['summary']);
                 break;
             case 'date':
+                return $item['readable_date'];
+                break;
             case 'readable_rrule':
-                return $item[$column_name];
+                return $item['readable_rrule'];
                 break;
             case 'event_location':
-                return sanitize_text_field($item[$column_name]);
+                return sanitize_text_field($item['location']);
                 break;
             case 'event_description':
-                return wp_trim_words(sanitize_text_field($item[$column_name]), 20);
+                return wp_trim_words(sanitize_text_field($item['description']), 20);
                 break;
             default:
                 return print_r($item, true);
@@ -116,7 +118,7 @@ class EventsListTable extends ListTable
      */
     protected function display_tablenav($which)
     {
-?>
+    ?>
         <div class="tablenav <?php echo esc_attr($which); ?>">
 
             <?php if ($this->has_items()) : ?>
@@ -131,7 +133,7 @@ class EventsListTable extends ListTable
 
             <br class="clear" />
         </div>
-<?php
+    <?php
     }
 
     /**
