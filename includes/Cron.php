@@ -22,11 +22,11 @@ class Cron
      */
     public static function activateScheduledEvents()
     {
-        $options = (object) get_option(Settings::OPTION_NAME);
-        if (false === wp_next_scheduled(self::ACTION_HOOK)) {
+        $scheduleRecurrence = settings()->getOption('schedule_recurrence');
+        if (wp_next_scheduled(self::ACTION_HOOK) === false && !is_null($scheduleRecurrence)) {
             wp_schedule_event(
                 time(),
-                $options->schedule_recurrence,
+                $scheduleRecurrence,
                 self::ACTION_HOOK,
                 [],
                 true
