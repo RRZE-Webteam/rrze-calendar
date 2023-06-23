@@ -38,34 +38,9 @@ class Settings
         $this->settings->build();
     }
 
-    public function defaultOptions()
-    {
-        $options = [];
-        foreach ($this->settings->tabs as $tab) {
-            foreach ($tab->sections as $section) {
-                foreach ($section->options as $option) {
-                    $options[$option->args['name']] = $option->args['default'] ?? null;
-                }
-            }
-        }
-
-        return $options;
-    }
-
-    public function getOptions()
-    {
-        $defaults = $this->defaultOptions();
-        $options = get_option(self::OPTION_NAME, []);
-        $options = wp_parse_args($options, $defaults);
-        $options = array_intersect_key($options, $defaults);
-
-        return $options;
-    }
-
     public function getOption($option)
     {
-        $options = $this->getOptions();
-        return $options[$option] ?? null;
+        $this->settings->getOption($option);
     }
 
     /**
