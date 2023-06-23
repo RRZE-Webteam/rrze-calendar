@@ -202,6 +202,7 @@ class Events
         // General event item details (regardless of all-day/start/end times)
         $eventItem = [
             'post_id' => $postId,
+            'feed_url' => get_post_meta($postId, CalendarFeed::FEED_URL),
             'timezone' => $urlTz->getName(),
             'summary' => $summary,
             'categories' => $categories,
@@ -311,39 +312,6 @@ class Events
         return count($items) ? self::getListData($postId, $items, $searchTerm) : $items;
     }
 
-    public static function insertEventData($postId)
-    {
-        $items = [];
-        $postId = 0;
-        if ($screen = get_current_screen()) {
-            if ($screen->id == CalendarFeed::POST_TYPE) {
-                global $post;
-                if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-                    $postId = $post->ID;
-                    $items = self::getItems($postId);
-                }
-            }
-        }
-        $items = count($items) ? self::getListData($postId, $items) : $items;
-        foreach ($items as $event) {
-            // Insert post in the calendar event post type.
-            $args = [
-                'post_date' => $event['date_start'],
-                'post_date_gmt' => $event['date_start'],
-                'post_title' => $event['summary'],
-                'post_content' => '',
-                'post_excerpt' => $event['content'],
-                'post_type' => CalendarEvent::POST_TYPE,
-                'post_status' => 'publish'
-            ];
-
-            $eventId = wp_insert_post($args);
-            if ($eventId == 0 || is_wp_error($eventId)) {
-                continue;
-            }
-        }
-    }
-
     /**
      * Get the list of events to be displayed when the Feed is edited.
      *
@@ -352,7 +320,7 @@ class Events
      * @param string $searchTerm Search term in event titles
      * @return array
      */
-    private static function getListData(int $postId, array $items, string $searchTerm = ''): array
+    public static function getListData(int $postId, array $items, string $searchTerm = ''): array
     {
         $data = [];
         $dateFormat = __('m-d-Y', 'rrze-calendar');
@@ -392,6 +360,7 @@ class Events
 
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
+
                                 $data[$i]['timezone'] = $event['timezone'];
                                 $data[$i]['uid'] = $event['uid'];
 
@@ -403,7 +372,7 @@ class Events
                                 $data[$i]['summary'] = $summary;
 
                                 // Multiday
-                                $data[$i]['is_multiday'] = true;
+                                $data[$i]['multiday'] = true;
 
                                 // Format date/time
                                 $mdDtStart = Utils::dateFormat($dateFormat, strtotime($event['multiday']['date_start']));
@@ -420,22 +389,14 @@ class Events
                                 }
 
                                 // Date/time
-                                $data[$i]['date_start'] = $dtStart;
-                                $data[$i]['date_end'] = $dtEnd;
+                                $data[$i]['dt_start'] = $dtStart;
+                                $data[$i]['dt_end'] = $dtEnd;
                                 $data[$i]['readable_date'] = $mdDtStart . ' &#8211; ' . $mdDtEnd;
 
                                 // RRULE/FREQ
-                                $data[$i]['rrule'] = '';
-                                $data[$i]['readable_rrule'] = '';
-                                if (!empty($event['rrule'])) {
+                                if ($event['rrule']) {
                                     $data[$i]['rrule'] = $event['rrule'];
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
-                                }
-
-                                // EXDATE/VALUE
-                                $data[$i]['exdate'] = '';
-                                if (!empty($event['exdate'])) {
-                                    $data[$i]['exdate'] = $event['exdate'];
                                 }
 
                                 // Location
@@ -514,22 +475,14 @@ class Events
                                 } else {
                                     $data[$i]['allday'] = true;
                                 }
-                                $data[$i]['date_start'] = $dtStart;
-                                $data[$i]['date_end'] = $dtEnd;
+                                $data[$i]['dt_start'] = $dtStart;
+                                $data[$i]['dt_end'] = $dtEnd;
                                 $data[$i]['readable_date'] = $mdate . $mtime;
 
                                 // RRULE/FREQ
-                                $data[$i]['rrule'] = '';
-                                $data[$i]['readable_rrule'] = '';
-                                if (!empty($event['rrule'])) {
+                                if ($event['rrule']) {
                                     $data[$i]['rrule'] = $event['rrule'];
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
-                                }
-
-                                // EXDATE/VALUE
-                                $data[$i]['exdate'] = '';
-                                if (!empty($event['exdate'])) {
-                                    $data[$i]['exdate'] = $event['exdate'];
                                 }
 
                                 // Location
@@ -550,17 +503,24 @@ class Events
         }
 
         $rruleEventUidUsed = [];
+        // RRULE ocurrences
+        $ocurrences = [];
         foreach ($data as $key => $event) {
-
-            if (in_array($event['uid'], $rruleEventUidUsed) && !empty($event['rrule'])) {
+            if (in_array($event['uid'], $rruleEventUidUsed) && isset($event['rrule'])) {
+                $ocurrences[$event['uid']][] = date('Y-m-d', strtotime($event['dt_start']));
                 unset($data[$key]);
                 continue;
             }
-            if (!empty($event['rrule'])) {
+            if (isset($event['rrule'])) {
                 $rruleEventUidUsed[] = $event['uid'];
+                $ocurrences[$event['uid']][] = date('Y-m-d', strtotime($event['dt_start']));
             }
         }
-
+        foreach ($data as $key => $event) {
+            if (isset($ocurrences[$event['uid']]) && isset($event['rrule'])) {
+                $data[$key]['ocurrences'] = $ocurrences[$event['uid']];
+            }
+        }
         $meta = get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true);
         $meta['event_count'] = count($data);
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
@@ -603,5 +563,95 @@ class Events
             }
         }
         return $events;
+    }
+
+    /**
+     * Insert event data in the calendar event post type.
+     *
+     * @param integer $postId
+     * @return void
+     */
+    public static function insertData(int $postId)
+    {
+        $items = [];
+        $post = get_post($postId);
+        if (get_post_type($post) === CalendarFeed::POST_TYPE) {
+            $items = Events::getItems($postId);
+        }
+        $items = count($items) ? Events::getListData($postId, $items) : $items;
+
+        if (count($items)) {
+            self::deleteData($postId);
+        } else {
+            return;
+        }
+
+        foreach ($items as $event) {
+            $args = [
+                'post_title' => $event['summary'],
+                'post_content' => '',
+                'post_excerpt' => $event['description'],
+                'post_type' => CalendarEvent::POST_TYPE,
+                'post_status' => 'publish'
+            ];
+
+            $eventId = wp_insert_post($args);
+            if ($eventId == 0 || is_wp_error($eventId)) {
+                continue;
+            }
+
+            $terms = get_the_terms($postId, CalendarEvent::TAX_CATEGORY);
+            if ($terms && !is_wp_error($terms)) {
+                $termIds = wp_list_pluck($terms, 'term_id');
+                wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_CATEGORY);
+            }
+            $terms = get_the_terms($postId, CalendarEvent::TAX_TAG);
+            if ($terms && !is_wp_error($terms)) {
+                $termIds = wp_list_pluck($terms, 'term_id');
+                wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
+            }
+
+            $dtStart = strtotime($event['dt_start']);
+            $dtEnd = strtotime($event['dt_end']);
+            add_post_meta($eventId, 'start', $dtStart, true);
+            add_post_meta($eventId, 'end', $dtEnd, true);
+
+            $allDay = $event['allday'] ?? false;
+            if ($allDay) {
+                add_post_meta($eventId, 'all-day', 'on', true);
+            }
+
+            add_post_meta($eventId, 'ics_feed_id', $postId, true);
+            add_post_meta($eventId, 'ics_event_meta', $event, true);
+
+            $ocurrences = $event['ocurrences'] ?? false;
+            if ($ocurrences) {
+                add_post_meta($eventId, 'ics_event_ocurrences', $ocurrences, true);
+            }
+        }
+    }
+
+    private static function deleteData(int $feedId)
+    {
+        $metaKey = 'ics_feed_id';
+        $metaValue = $feedId;
+
+        $query = new \WP_Query(
+            [
+                'meta_key' => $metaKey,
+                'meta_value' => $metaValue,
+                'post_type' => CalendarEvent::POST_TYPE,
+                'numberposts' => -1
+            ]
+        );
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $postId = get_the_ID();
+                wp_delete_post($postId, true);
+            }
+            wp_reset_postdata();
+        }
     }
 }
