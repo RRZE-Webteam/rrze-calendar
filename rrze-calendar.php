@@ -125,6 +125,19 @@ function plugin()
 }
 
 /**
+ * Instantiate Settings class.
+ * @return object Settings
+ */
+function settings()
+{
+    static $instance;
+    if (null === $instance) {
+        $instance = new Settings();
+    }
+    return $instance;
+}
+
+/**
  * Execute on 'plugins_loaded' API/action.
  * @return void
  */
