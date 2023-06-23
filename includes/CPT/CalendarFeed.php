@@ -424,5 +424,6 @@ class CalendarFeed
         }
 
         Events::updateItems($postId, false);
+        Events::insertData($postId);
     }
 }
