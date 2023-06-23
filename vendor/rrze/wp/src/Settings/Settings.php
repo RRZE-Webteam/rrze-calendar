@@ -236,35 +236,45 @@ class Settings
 
     public function render()
     {
-        Enqueuer::setEnqueueManager(new EnqueueManager);
+        Worker::setWorkBuilder(new WorkBuilder);
 
         do_action('rrze_wp_settings_before_render_settings_page');
 
-        Enqueuer::enqueue();
+        Worker::enqueue();
 
         Template::include('settings-page', ['settings' => $this]);
 
         do_action('rrze_wp_settings_after_render_settings_page');
     }
 
-    public function getOptions()
+    public function defaultOptions()
     {
-        return get_option($this->optionName, []);
-    }
-
-    public function findOption($search_option)
-    {
+        $options = [];
         foreach ($this->tabs as $tab) {
             foreach ($tab->sections as $section) {
                 foreach ($section->options as $option) {
-                    if ($option->args['name'] == $search_option) {
-                        return $option;
-                    }
+                    $options[$option->args['name']] = $option->args['default'] ?? null;
                 }
             }
         }
 
-        return false;
+        return $options;
+    }
+
+    public function getOptions()
+    {
+        $defaults = $this->defaultOptions();
+        $options = get_option($this->optionName, []);
+        $options = wp_parse_args($options, $defaults);
+        $options = array_intersect_key($options, $defaults);
+
+        return $options;
+    }
+
+    public function getOption($option)
+    {
+        $options = $this->getOptions();
+        return $options[$option] ?? null;
     }
 
     public function save()

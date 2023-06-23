@@ -56,9 +56,9 @@
             'dev_requirement' => false,
         ),
         'rrze/wp' => array(
-            'pretty_version' => '1.1.1',
-            'version' => '1.1.1.0',
-            'reference' => '5a488d82908309965f04b011d06b180e58a0f7ce',
+            'pretty_version' => '1.2.0',
+            'version' => '1.2.0.0',
+            'reference' => 'be3c13c0c263623fc14332cb6fe699d43f90fb35',
             'type' => 'library',
             'install_path' => __DIR__ . '/../rrze/wp',
             'aliases' => array(),

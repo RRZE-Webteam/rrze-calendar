@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-use RRZE\WP\Settings\Enqueuer;
+use RRZE\WP\Settings\Worker;
 
 class Color extends OptionAbstract
 {
@@ -17,7 +17,7 @@ class Color extends OptionAbstract
 
     public function enqueue()
     {
-        Enqueuer::add('wp-color-picker', function () {
+        Worker::add('wp-color-picker', function () {
             wp_enqueue_script('wp-color-picker');
             wp_enqueue_style('wp-color-picker');
 

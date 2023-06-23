@@ -18,7 +18,7 @@ defined('ABSPATH') || exit;
             <p class="description"><?php echo $description; ?></p>
         <?php } ?>
 
-        <?php if ($error = $option->has_error()) { ?>
+        <?php if ($error = $option->hasError()) { ?>
             <div class="rrze-wp-settings-error"><?php echo $error; ?></div>
         <?php } ?>
     </td>

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE\\WP\\Settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-15T09:14:30+00:00\n"
-"PO-Revision-Date: 2023-06-15 11:16+0200\n"
+"POT-Creation-Date: 2023-06-23T07:50:21+00:00\n"
+"PO-Revision-Date: 2023-06-23 09:50+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -22,11 +22,11 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
-#: Settings.php:285
+#: Settings.php:287
 msgid "You don't have enough permissions to do that."
 msgstr "Du hast nicht genug Rechte, um das zu tun."
 
-#: Settings.php:310
+#: Settings.php:312
 msgid "Settings saved."
 msgstr "Die Einstellungen wurden gespeichert."
 

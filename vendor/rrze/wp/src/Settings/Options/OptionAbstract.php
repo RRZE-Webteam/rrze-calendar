@@ -25,7 +25,7 @@ abstract class OptionAbstract
         return Template::include('options/'.$this->template, ['option' => $this]);
     }
 
-    public function has_error()
+    public function hasError()
     {
         return $this->section->tab->settings->errors->get($this->getArg('name'));
     }
