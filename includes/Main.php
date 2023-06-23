@@ -21,8 +21,6 @@ class Main
 
         Update::init();
 
-        Settings::init();
-
         CalendarEvent::init();
         CalendarFeed::init();
 
