@@ -634,7 +634,7 @@ class Events
         }
     }
 
-    private static function deleteData(int $feedId)
+    public static function deleteData(int $feedId)
     {
         $metaKey = 'ics_feed_id';
         $metaValue = $feedId;
