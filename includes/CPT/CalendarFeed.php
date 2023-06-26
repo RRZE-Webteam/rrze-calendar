@@ -137,16 +137,23 @@ class CalendarFeed
             case 'updated':
                 $published = get_post_status($postId) === 'publish';
                 $dt = get_post_meta($postId, self::FEED_DATETIME, true);
+                $lastUpdate = $dt ? strtotime($dt) : '&mdash;';
                 $error = get_post_meta($postId, self::FEED_ERROR, true);
                 if ($published && $dt) {
-                    printf(
-                        /* translators: 1: Post date, 2: Post time. */
-                        '<abbr title="%1$s %2$s">%1$s</abbr>',
-                        /* translators: Post date format. See https://www.php.net/manual/datetime.format.php */
-                        get_date_from_gmt($dt, __('Y/m/d')),
-                        /* translators: Post time format. See https://www.php.net/manual/datetime.format.php */
-                        get_date_from_gmt($dt, __('g:i a'))
-                    );
+                    $timeDiff = time() - $lastUpdate;
+                    if ($lastUpdate && $timeDiff > 0 && $timeDiff < DAY_IN_SECONDS) {
+                        /* translators: %s: Human-readable time difference. */
+                        printf(__('%s ago'), human_time_diff($lastUpdate));
+                    } else {
+                        printf(
+                            /* translators: 1: Post date, 2: Post time. */
+                            '<abbr title="%1$s %2$s">%1$s</abbr>',
+                            /* translators: Date format. See https://www.php.net/manual/datetime.format.php */
+                            get_date_from_gmt($dt, __('Y/m/d')),
+                            /* translators: Time format. See https://www.php.net/manual/datetime.format.php */
+                            get_date_from_gmt($dt, __('g:i a'))
+                        );
+                    }
                 } elseif ($published && $error) {
                     echo $error;
                 } else {
