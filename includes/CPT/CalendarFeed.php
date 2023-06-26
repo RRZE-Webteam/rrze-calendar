@@ -408,6 +408,11 @@ class CalendarFeed
             return;
         }
 
+        // Check the post status.
+        if ($post->post_status != 'publish') {
+            return;
+        }
+
         // Check if user has permissions to save data.
         if (!current_user_can('edit_post', $postId)) {
             return;
