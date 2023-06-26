@@ -17,10 +17,17 @@
             padding: 0.5em;
             text-align: center;
             width: auto;
+            height: auto;
             background: var(--color-primary-ci-hell, #003366);
             color: var(--color-primary-ci-hell-kontrast, #fff);
             line-height: 1.5;
+            .rrze-2019 & {
+                background-color: #00458c;
+            }
             .day-month {
+                padding: 0;
+                float: none;
+                height: auto;
                 .day {
                     font-weight: bold;
                     font-size: 1.4rem;
@@ -58,6 +65,7 @@
             margin-bottom: .5em;
         }
         .event-date {
+            float: none;
             display: inline;
             background: unset;
             color: unset;
@@ -129,6 +137,10 @@
         @media (min-width: 992px) {
             max-width: 30%;
         }
+    }
+    .wp-post-image {
+        float: right;
+        margin: 0 0 1em 1em;
     }
 }
 .rrze-event {

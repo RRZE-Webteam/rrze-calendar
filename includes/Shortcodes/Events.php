@@ -44,7 +44,7 @@ class Events
         }
 
         $args = [
-            'post_type' => 'calendar_event',
+            'post_type' => CalendarEvent::POST_TYPE,
             'posts_per_page' => -1,
             'meta_query' => [
                 'relation' => 'AND',
@@ -112,6 +112,7 @@ class Events
 
         $output = '<div class="rrze-calendar">';
 
+        $eventsArray = [];
         if (!empty($events)) {
             $i = 0;
             foreach ($events as $event) {
@@ -125,65 +126,92 @@ class Events
                     }
                 }
             }
-            ksort($eventsArray);
+            if ($eventsArray) {
+                ksort($eventsArray);
+            }
             if ($display == 'list') {
-                // TODO: Styling
-                $output .= '<ul class="events-list-short">';
-                $i = 0;
-                foreach ($eventsArray as $timestamp => $events) {
-                    if ($timestamp >= time()) {
-                        foreach ($events as $event) {
-                            $eventEnd = $event['end'];
-                            $allDay = get_post_meta($event['id'], 'all-day', true);
-                            $eventTitle = get_the_title($event['id']);
-                            $eventURL = get_the_permalink($event['id']);
-                            $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
-                            $output .= '<li class="event-item">'
-                                . '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . date_i18n(get_option('date_format'), $timestamp)
-                                . '<span class="dashicons dashicons-clock"></span>' . ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $timestamp) . ' &ndash; ' . date_i18n(get_option('time_format'), $eventEnd). '</span>') . '<br />'
-                                . '<span class="event-title">' . $eventTitle . '</span></li>';
-                            $i++;
-                            if ($i >= $number) break 2;
-                        }
-                    }
-                }
-                $output .= '</ul>';
+                $ulClass = 'events-list-short';
+                $iconDate = '<span class="dashicons dashicons-calendar"></span>';
+                $iconTime = '<span class="dashicons dashicons-clock"></span>';
             } else {
-                $i = 0;
-                foreach ($eventsArray as $timestamp => $events) {
-                    if ($timestamp >= time()) {
-                        $output .= '<ul class="events-list">';
-                        foreach ($events as $event) {
-                            $eventTitle = get_the_title($event['id']);
-                            $eventURL = get_the_permalink($event['id']);
-                            $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
-                            $timeStart = date(get_option('time_format'), $timestamp);
-                            $timeEnd = date(get_option('time_format'), $event['end']);
-                            $location = get_post_meta($event['id'], 'location', true);
-                            $allDay = get_post_meta($event['id'], 'all-day', true) == 'on';
-                            $output .= '<li class="event-item" itemscope itemtype="http://schema.org/Event">'
-                                . '<meta itemprop="startDate" content="'. date('c', $timestamp) . '">'
-                                . '<meta itemprop="endDate" content="'. date('c', $event['end']) . '">'
-                                . '<div class="event-date">'
-                                . '<div class="day-month">'
-                                . '<div class="day">' . date('d', $timestamp) . '</div>'
-                                . '<div class="month">' . date_i18n('M', $timestamp) . '</div>'
-                                . '</div>'
-                                //. '<div class="year">' . date('Y', $timestamp) .'</div>'
-                                . '</div>'
-                                . '<div class="event-info">'
-                                . '<div class="event-time">' . ($allDay ? __('All-day', 'rrze-calendar') : $timeStart . ' &ndash; ' . $timeEnd) . '</div>'
-                                . '<div class="event-title" itemprop="name">' . $eventTitle . '</div>'
-                                . ($location != '' ? '<div class="event-location" itemprop="location">' . $location . '</div>' : '')
-                                . '</div>'
-                                . '</li>';
-                            $i++;
-                            if ($i >= $number) break 2;
-                        }
-                        $output .= '</ul>';
+                $ulClass = 'events-list';
+                $iconDate = '';
+                $iconTime = '';
+            }
+            $i = 0;
+            $output .= '<ul class="' . $ulClass . '">';
+            foreach ($eventsArray as $timestamp => $events) {
+                if ($timestamp < time()) continue;
+
+                foreach ($events as $event) {
+                    $eventEnd = $event['end'];
+                    $eventTitle = get_the_title($event['id']);
+                    $eventURL = get_the_permalink($event['id']);
+                    $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
+                    $location = get_post_meta($event['id'], 'location', TRUE);
+                    $vc_url = get_post_meta($event['id'], 'vc-url', TRUE);
+                    $allDay = get_post_meta($event['id'], 'all-day', TRUE) == 'on';
+
+                    $metaStart = '<meta itemprop="startDate" content="'. date('c', $timestamp) . '" />';
+                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $event['end']) . '" />';
+                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $timestamp) . ' &ndash; ' . date_i18n(get_option('time_format'), $eventEnd). '</span>');
+                    if ($location != '' && $vc_url == '') {
+                        // Offline Event
+                        $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
+                        $metaLocation = '<meta itemprop="location" content="' . $location . '>';
+                        $locationOut = $location;
+                    } elseif ($location == '' && $vc_url != '') {
+                        // Online Event
+                        $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OnlineEventAttendanceMode" />';
+                        $metaLocation = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
+                        $locationOut = __('Online', 'rrze-calendar');
+                    } elseif ($location != '' && $vc_url != '') {
+                        // Hybrid Event
+                        $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
+                        $metaLocation = '<meta itemprop="location" content="' . $location . '">'
+                            . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
+                        $locationOut = $location . ' / ' . __('Online', 'rrze-calendar');
+                    } else {
+                        $metaLocation = '';
+                        $metaAttendance = '';
+                        $locationOut = '';
                     }
+
+                    $output .= '<li class="event-item" itemscope itemtype="https://schema.org/Event">';
+                    if ($display == 'list') {
+                        $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . date_i18n(get_option('date_format'), $timestamp)
+                            . '<span class="dashicons dashicons-clock"></span>' . $timeOut . '<br />'
+                            . '<span class="event-title" itemprop="name">' . $eventTitle . '</span>'
+                            . $metaStart
+                            . $metaEnd
+                            . $metaLocation
+                            . $metaAttendance;
+                        wp_enqueue_style( 'dashicons' );
+                    } else {
+                        $output .= '<div class="event-date">'
+                            . '<div class="day-month">'
+                            . '<div class="day">' . date('d', $timestamp) . '</div>'
+                            . '<div class="month">' . date_i18n('M', $timestamp) . '</div>'
+                            . '</div>'
+                            //. '<div class="year">' . date('Y', $timestamp) .'</div>'
+                            . '</div>'
+                            . '<div class="event-info">'
+                            . '<div class="event-time">' . $timeOut . '</div>'
+                            . '<div class="event-title" itemprop="name">' . $eventTitle . '</div>'
+                            . '<div class="event-location">' . $locationOut . '</div>'
+                            . $metaStart
+                            . $metaEnd
+                            . $metaLocation
+                            . $metaAttendance
+                            . '</div>';
+                    }
+                    $output .= '</li>';
+                    $i++;
+                    if ($i >= $number) break 2;
                 }
             }
+            $output .= '</ul>';
+
             if (is_numeric($atts['page_link']) && is_string(get_post_status((int)$atts['page_link']))) {
                 $label = sanitize_text_field($atts['page_link_label']);
                 $output .= do_shortcode('[button link="' . get_permalink((int)$atts['page_link']) . '"]' . $label . '[/button]');

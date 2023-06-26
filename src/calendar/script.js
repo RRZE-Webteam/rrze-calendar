@@ -22,7 +22,7 @@ jQuery(document).ready(function($){
             period: period,                  //data
             layout: layout,
             direction: direction,
-        }, function(result) {                 //callback
+        }, function(result) {
             calendar.remove();
             $('div.rrze-calendar').append(result);
         });

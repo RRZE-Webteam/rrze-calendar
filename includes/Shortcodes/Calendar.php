@@ -745,7 +745,7 @@ class Calendar
         $startTS = $startObj->getTimestamp();
         // Get events in calendar period
         $events = get_posts([
-            'post_type' => 'event',
+            'post_type' => CalendarEvent::POST_TYPE,
             'posts_per_page' => -1,
             'meta_query' => [
                 'relation' => 'OR',

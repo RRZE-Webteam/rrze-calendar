@@ -15,6 +15,7 @@ use RRZE\Calendar\Utils;
 
 get_header();
 wp_enqueue_style('rrze-calendar-sc-events');
+wp_enqueue_style( 'dashicons' );
 
 while (have_posts()) : the_post(); ?>
 
