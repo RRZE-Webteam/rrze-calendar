@@ -13,7 +13,10 @@ class Events
     {
         $feeds = self::getFeeds();
         foreach ($feeds as $post) {
-            self::updateItems($post->ID);
+            if ($post->post_status == 'publish') {
+                self::updateItems($post->ID);
+                self::insertData($post->ID);
+            }
         }
     }
 
