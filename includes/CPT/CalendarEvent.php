@@ -40,6 +40,8 @@ class CalendarEvent
         add_filter('archive_template', [__CLASS__, 'includeArchiveTemplate']);
         // Category Radio List Metabox.
         CategoryMetabox::init();
+        // Disables the ability to edit the post if it has the post meta ics_feed_id.
+        add_filter('user_has_cap', [__CLASS__, 'disablePostEditing'], 10, 3);
     }
 
     public static function registerPostType()
@@ -524,5 +526,32 @@ class CalendarEvent
             return $archiveTemplate;
 
         return Templates::getCptCalendarEventTpl();
+    }
+
+    public static function disablePostEditing($allCaps, $caps, $args)
+    {
+        $postId = $args[2] ?? 0;
+        if (!$postId) {
+            return $allCaps;
+        }
+        $post = get_post($args[2]);
+        if (get_post_type($post->ID) != self::POST_TYPE) {
+            return $allCaps;
+        }
+
+        $disabledCaps = ['edit_post', 'edit_posts', 'edit_others_posts'];
+        // Check if the user tries to edit a post.
+        if (in_array($args[0], $disabledCaps)) {
+
+            // Check if the post has the post_meta 'ics_feed_id'
+            if ((bool) get_post_meta($post->ID, 'ics_feed_id')) {
+                // Disables the ability to edit the post
+                foreach ($disabledCaps as $value) {
+                    $allCaps[$value] = false;
+                }
+            }
+        }
+
+        return $allCaps;
     }
 }
