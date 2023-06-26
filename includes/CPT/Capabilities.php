@@ -22,7 +22,7 @@ class Capabilities
         return [
             'capability_type' => 'post',
             'capabilities' => [],
-            'map_meta_cap' => false
+            'map_meta_cap' => true
         ];
     }
 
