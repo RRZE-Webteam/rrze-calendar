@@ -53,6 +53,8 @@ class CalendarFeed
         add_action('admin_head-post.php', [__CLASS__, 'hidePublishingActions']);
         add_action('admin_head-post-new.php', [__CLASS__, 'hidePublishingActions']);
 
+        // Transition Feed Status.
+        add_action('transition_post_status', [__CLASS__, 'maybeDelete'], 10, 3);
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
 
@@ -123,6 +125,7 @@ class CalendarFeed
 
     public static function postsCustomColumns($column, $postId)
     {
+        $published = get_post_status($postId) === 'publish';
         switch ($column) {
             case 'events':
                 if (
@@ -135,11 +138,10 @@ class CalendarFeed
                 }
                 break;
             case 'updated':
-                $published = get_post_status($postId) === 'publish';
-                $dt = get_post_meta($postId, self::FEED_DATETIME, true);
-                $lastUpdate = $dt ? strtotime($dt) : '&mdash;';
+                $lastUpdate = get_post_meta($postId, self::FEED_DATETIME, true);
                 $error = get_post_meta($postId, self::FEED_ERROR, true);
-                if ($published && $dt) {
+                if ($published && $lastUpdate) {
+                    $lastUpdate = strtotime($lastUpdate);
                     $timeDiff = time() - $lastUpdate;
                     if ($lastUpdate && $timeDiff > 0 && $timeDiff < DAY_IN_SECONDS) {
                         /* translators: %s: Human-readable time difference. */
@@ -149,9 +151,9 @@ class CalendarFeed
                             /* translators: 1: Post date, 2: Post time. */
                             '<abbr title="%1$s %2$s">%1$s</abbr>',
                             /* translators: Date format. See https://www.php.net/manual/datetime.format.php */
-                            get_date_from_gmt($dt, __('Y/m/d')),
+                            get_date_from_gmt($lastUpdate, __('Y/m/d')),
                             /* translators: Time format. See https://www.php.net/manual/datetime.format.php */
-                            get_date_from_gmt($dt, __('g:i a'))
+                            get_date_from_gmt($lastUpdate, __('g:i a'))
                         );
                     }
                 } elseif ($published && $error) {
@@ -159,6 +161,7 @@ class CalendarFeed
                 } else {
                     echo '&mdash;';
                 }
+                break;
         }
     }
 
@@ -405,6 +408,16 @@ class CalendarFeed
                     }
                 </style>
             ';
+        }
+    }
+
+    public static function maybeDelete($newStatus, $oldStatus, $post)
+    {
+        if (
+            $newStatus != 'publish' && $oldStatus == 'publish'
+            && self::POST_TYPE == get_post_type($post->ID)
+        ) {
+            Events::deleteData($post->ID);
         }
     }
 
