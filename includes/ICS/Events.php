@@ -363,7 +363,7 @@ class Events
 
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
-
+                                $data[$i]['feed_url'] = $event['feed_url'];
                                 $data[$i]['timezone'] = $event['timezone'];
                                 $data[$i]['uid'] = $event['uid'];
 
@@ -449,6 +449,7 @@ class Events
 
                                 // Event meta
                                 $data[$i]['post_id'] = $event['post_id'];
+                                $data[$i]['feed_url'] = $event['feed_url'];
                                 $data[$i]['timezone'] = $event['timezone'];
                                 $data[$i]['uid'] = $event['uid'];
 
