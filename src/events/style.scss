@@ -108,7 +108,7 @@
             grid-template-columns: 1fr var(--min-width-aside, 300px);
         }
     }
-    aside {
+    aside.rrze-event-details {
         @media (min-width: 1024px) {
             border-left: 2px solid var(--color-primary-ci-hell2,#ced9e7);
             padding-left: 15px;
@@ -138,9 +138,12 @@
             max-width: 30%;
         }
     }
-    .wp-post-image {
+    figure.post-thumbnail {
         float: right;
         margin: 0 0 1em 1em;
+        @media (min-width: 480px) {
+            width: auto;
+        }
     }
 }
 .rrze-event {
@@ -151,6 +154,9 @@
         .rrze-event-time,
         .rrze-event-location {
             display: block;
+        }
+        .rrze-event-date,
+        .rrze-event-time {
             @media (min-width: 768px) {
                 display: inline-block;
                 margin-right: 2em;

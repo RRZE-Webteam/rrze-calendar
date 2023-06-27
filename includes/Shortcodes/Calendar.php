@@ -527,7 +527,7 @@ class Calendar
                     }
                     $vc_url = Utils::getMeta($meta, 'vc-url');
                     if ($vc_url != '') {
-                        $locationMeta .= '<span itemprop="location" itemscope itemtype="http://schema.org/VirtualLocation"><meta itemprop="url" content="'. $vc_url . '" /></span>';
+                        $locationMeta .= '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="'. $vc_url . '" /></span>';
                     }
 
                     $eventClasses = ['event'];
@@ -581,7 +581,7 @@ class Calendar
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
-                        $week .= '<div itemtype="http://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . '; border-color: ' . $catColor . ';">'
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . '; border-color: ' . $catColor . ';">'
                             . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
                             . $timeOut
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
@@ -638,7 +638,7 @@ class Calendar
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
-                        $week .= '<div itemtype="http://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . ';">'
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . ';">'
                             . '<span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'

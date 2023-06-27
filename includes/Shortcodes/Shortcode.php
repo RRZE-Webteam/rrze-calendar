@@ -53,7 +53,7 @@ class Shortcode
         $description = apply_filters('the_content', $description);
         $description = str_replace(']]>', ']]&gt;', $description);
 ?>
-        <div class="rrze-calendar" itemscope itemtype="http://schema.org/Event">
+        <div class="rrze-calendar" itemscope itemtype="https://schema.org/Event">
             <h1 class="screen-reader-text" itemprop="name"><?php echo $data->label; ?></h1>
             <div class="event-detail-item">
                 <div class="event-date" <?php echo $inline; ?>>
@@ -158,7 +158,7 @@ class Shortcode
             $endDate = $startDate;
         }
     ?>
-        <div class="rrze-calendar" itemscope itemtype="http://schema.org/Event">
+        <div class="rrze-calendar" itemscope itemtype="https://schema.org/Event">
             <h1 class="screen-reader-text" itemprop="name"><?php echo $data->title; ?></h1>
             <div class="event-detail-item">
                 <div class="event-date" <?php echo $inline; ?>>

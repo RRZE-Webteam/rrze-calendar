@@ -320,21 +320,6 @@ class CalendarEvent
             ],
             'classes'   => ['repeat', 'repeat-weekly'],
         ]);
-        $cmb_schedule->add_field([
-            'name' => __('Exceptions', 'rrze-calendar'),
-            'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
-            //'desc' => __('Hier können Sie Tage angeben, an denen die Veranstaltung ausnahmsweise ausfällt (Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum pro Zeile.', 'rrze-calendar'),
-            'id' => 'exceptions',
-            'type' => 'textarea_small',
-            'classes'   => ['repeat'],
-        ]);
-        $cmb_schedule->add_field([
-            'name' => __('Additions', 'rrze-calendar'),
-            'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
-            'id' => 'additions',
-            'type' => 'textarea_small',
-            'classes'   => ['repeat'],
-        ]);
         // repeat monthly
         $cmb_schedule->add_field([
             'name' => __('Each', 'rrze-calendar'),
@@ -394,6 +379,21 @@ class CalendarEvent
             'classes'   => ['repeat', 'repeat-monthly'],
         ]);
         $cmb_schedule->add_field([
+            'name' => __('Exceptions', 'rrze-calendar'),
+            'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
+            //'desc' => __('Hier können Sie Tage angeben, an denen die Veranstaltung ausnahmsweise ausfällt (Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum pro Zeile.', 'rrze-calendar'),
+            'id' => 'exceptions',
+            'type' => 'textarea_small',
+            'classes'   => ['repeat'],
+        ]);
+        $cmb_schedule->add_field([
+            'name' => __('Additions', 'rrze-calendar'),
+            'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
+            'id' => 'additions',
+            'type' => 'textarea_small',
+            'classes'   => ['repeat'],
+        ]);
+        $cmb_schedule->add_field([
             'name' => __('Event Items', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
             'id' => 'event-items',
@@ -411,6 +411,7 @@ class CalendarEvent
         $eventList = Utils::buildEventsList([get_post($post_id)], false);
         //var_dump($eventList);
         update_post_meta($post_id, 'event-items', $eventList);
+        //update_post_meta($post_id, 'event-items', json_encode($eventList));
 
         // unhook this function to prevent infinite looping
         /* remove_action( 'save_post', 'saveEvent' );
@@ -439,6 +440,7 @@ class CalendarEvent
         if (get_post_type($post_id) === self::POST_TYPE) {
             $eventList = Utils::buildEventsList([get_post($post_id)], false);
             update_post_meta($post_id, 'event-items', $eventList);
+            //update_post_meta($post_id, 'event-items', json_encode($eventList));
         }
     }
 
@@ -526,6 +528,145 @@ class CalendarEvent
             return $archiveTemplate;
 
         return Templates::getCptCalendarEventTpl();
+    }
+
+    public static function getEventData($post_id) {
+        $meta = get_post_meta($post_id);
+        $eventItems = Utils::getMeta($meta, 'event-items');
+        $data['allDay'] = Utils::getMeta($meta, 'all-day');
+        $firstItemTSstart_ID = array_key_first($eventItems);
+        $firstItemTSstart = explode('#', $firstItemTSstart_ID)[0];
+        $firstItemEnd = reset($eventItems);
+        $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
+        $data['location'] = Utils::getMeta($meta, 'location');
+        $data['vc_url'] = Utils::getMeta($meta, 'vc_url');
+        if ($data['location'] == '' && $data['vc_url'] != '') {
+            $data['location'] = __('Online', 'rrze-calendar');
+        }
+        $data['prices'] = Utils::getMeta($meta, 'prices');
+        $data['registrationUrl'] = Utils::getMeta($meta, 'registration-url');
+        $data['downloads'] = Utils::getMeta($meta, 'downloads');
+        $categoryObjects = wp_get_object_terms($post_id, 'rrze-calendar-category');
+        if (!is_wp_error($categoryObjects) && !empty($categoryObjects)) {
+            $categories = [];
+            foreach ($categoryObjects as $categoryObject) {
+                $categories[] = '<a href="' . get_term_link($categoryObject->term_id) . '">' . $categoryObject->name . '</a>';
+            }
+            $data['categories'] = implode(', ', $categories);
+        } else {
+            $data['categories'] = '';
+        }
+        $data['description'] = Utils::getMeta($meta, 'description');
+
+        $data['eventItemsFormatted'] = [];
+        foreach ($eventItems as $TSstart_ID => $TSend) {
+            $TSstart = explode('#', $TSstart_ID)[0];
+            if ($TSstart < time()) continue;
+            $startDay = date('Y-m-d', $TSstart);
+            $endDay = date('Y-m-d', $TSend);
+            if ($data['allDay'] == 'on' || $startDay != $endDay) {
+                $data['eventItemsFormatted'][] = [
+                    'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $TSstart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format'), $TSend)),
+                    'time' => '',
+                    'startISO' => $startDay,
+                    'endISO' => $endDay,
+                ];
+            } else {
+                $data['eventItemsFormatted'][] = [
+                    'date' => date_i18n(get_option('date_format'), $TSstart),
+                    'time' => date_i18n(get_option('time_format'), $TSstart) . ' &ndash; ' . date_i18n(get_option('time_format'), $TSend),
+                    'startISO' => date_i18n('c', $TSstart),
+                    'endISO' => date_i18n('c', $TSend),
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    public static function displayEventMain($data) {
+        // Schedule
+        echo '<div class="rrze-event-schedule">'
+            . '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][0]['date'] . '</span>'
+            . '<meta itemprop="startDate" content="'. $data['eventItemsFormatted'][0]['startISO'] . '">'
+            . '<meta itemprop="endDate" content="'. $data['eventItemsFormatted'][0]['endISO'] . '">'
+            . (($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][0]['time'] . '</span>' : '')
+            . ($data['location'] != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $data['location'] . '</span>' : '')
+            . '</p>';
+        if (count($data['eventItemsFormatted']) > 1) {
+            $upcomingItems = '';
+            foreach ($data['eventItemsFormatted'] as $k => $eventItemFormatted) {
+                if ($k == 0 ) continue;
+                $upcomingItems .= '<li><span class="dashicons dashicons-calendar"></span><span class="rrze--event-date">' . $eventItemFormatted['date'] . '</span>'
+                    . '<meta itemprop="startDate" content="'. $eventItemFormatted['startISO'] . '">'
+                    . '<meta itemprop="endDate" content="'. $eventItemFormatted['endISO'] . '">'
+                    .'</li>';
+            }
+            echo do_shortcode('[collapsibles][collapse title="Weitere Termine"]<ul class="' . $data['scheduleClass'] . '">'.$upcomingItems . '</ul>[/collapse][/collapsibles]');
+        }
+        echo '</div>';
+
+        // Description
+        echo '<div class="rrze-event-description" itemprop="description">';
+        echo wpautop($data['description']);
+        echo '</div>';
+    }
+
+    public static function displayEventDetails($data) {
+        if (strlen($data['location'] . $data['prices'] . $data['registrationUrl']) . $data['categories'] > 0 || !empty($data['downloads'])) { ?>
+            <aside class="rrze-event-details">
+
+                <?php echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
+
+                // Date
+                echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . $data['eventItemsFormatted'][0]['date'] . '</dd>';
+
+                // Time
+                if ($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) {
+                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . $data['eventItemsFormatted'][0]['time'] . '</dd>';
+                }
+
+                // Location
+                if ($data['location'] != '') {
+                    echo '<dt>' . __('Location', 'rrze-calendar') . ':</dt><dd>' . wpautop($data['location']) . '</dd>';
+                }
+                if ($data['vc_url'] != '') {
+                    echo '<dt>' . __('Video Conference Link', 'rrze-calendar') . ':</dt><dd><p itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><a itemprop="url" href="'. $data['vc_url'] . '">' . $data['vc_url'] . '</a></p></dd>';
+                }
+
+                // Prices + Tickets
+                if ($data['prices'] != '') {
+                    echo '<dt>' . __('Prices', 'rrze-calendar') . ':</dt><dd><p itemprop="offers" itemscope itemtype="https://schema.org/Offer">' . wpautop($data['prices']) . '</p></dd>';
+                }
+
+                // Registration
+                if ($data['registrationUrl'] != '') {
+                    echo '<dt>' . __('Registration', 'rrze-calendar') . ':</dt><dd><a href="'. $data['registrationUrl'] . '">' . $data['registrationUrl'] . '</a></dd>';
+                }
+
+                //Downloads
+                if ($data['downloads'] != '') {
+                    echo '<dt>' . __('Downloads', 'rrze-calendar') . ':</dt><dd><ul class="downloads"><li>';
+                    $downloadList = [];
+                    foreach ($data['downloads'] as $attachmentID => $attachmentURL ) {
+                        $caption = wp_get_attachment_caption($attachmentID);
+                        if ($caption == '') {
+                            $caption = basename(get_attached_file($attachmentID));
+                        }
+                        $downloadList[] = '<a href="' . $attachmentURL . '">' . $caption . '</a>';
+                    }
+                    echo  implode('</li><li>', $downloadList);
+                    echo  '</li></ul></dd>';
+                }
+
+                // Categories
+                if ($data['categories'] != '') {
+                    echo '<dt>' . __('Event Categories', 'rrze-calendar') . ':</dt><dd>' . $data['categories'] . '</dd>';
+                } ?>
+            </aside>
+        <?php }
     }
 
     public static function disablePostEditing($allCaps, $caps, $args)

@@ -605,6 +605,7 @@ class Utils
             if ($repeat !== 'on' && (($upcomingOnly && $startTS >= time()) || !$upcomingOnly)) {
                 // not repeating event
                 $eventsArray[$startTS . '#' . $event->ID] = $startTS + $duration;
+                $eventsArray2[$startTS][$event->ID] = $startTS + $duration;
             } else {
                 // repeating event
                 if ($startTS < strtotime("-1 years")) {
@@ -642,6 +643,7 @@ class Utils
                                     $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                     if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
                                         $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
+                                        $eventsArray2[$date->getTimestamp()][$event->ID] = $date->getTimestamp() + $duration;
                                     }
                                 }
                             }
@@ -655,6 +657,7 @@ class Utils
                                 $dayFormatted = date('Y-m-d', $start);
                                 if (in_array($dayFormatted, $exceptions)) {
                                     unset($eventsArray[$TSstart_ID]);
+                                    unset($eventsArray2[$start][$event->ID]);
                                 }
                             }
                         }
@@ -678,6 +681,7 @@ class Utils
                                     $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                     if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
                                         $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
+                                        $eventsArray2[$date->getTimestamp()][$event->ID] = $date->getTimestamp() + $duration;
                                     }
                                 }
                             }
@@ -695,6 +699,7 @@ class Utils
                                 $start->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
                                 if (!$upcomingOnly || ($upcomingOnly && $start->getTimestamp() >= $todayDate->getTimestamp())) {
                                     $eventsArray[$start->getTimestamp() . '#' . $event->ID] =  $start->getTimestamp() + $duration;
+                                    $eventsArray2[$start->getTimestamp()][$event->ID] =  $start->getTimestamp() + $duration;
                                 }
                                 $start->modify('first ' . $monthlyDOW["day"] . ' of next month')->modify('+' . $diff . ' week');
                             }
@@ -706,13 +711,40 @@ class Utils
                             $month = strtolower(date('M', $timestamp));
                             if (!in_array($month, $months)) {
                                 unset($eventsArray[$TSstart_ID]);
+                                unset($eventsArray2[$timestamp][$event->ID]);
                             }
+                        }
+                        // unset exceptions
+                        $exceptionsRaw = self::getMeta($meta, 'exceptions');
+                        if (!empty($exceptionsRaw)) {
+                            $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
+                            foreach ($eventsArray as $TSstart_ID => $TSend) {
+                                $start = explode('#', $TSstart_ID)[0];
+                                $dayFormatted = date('Y-m-d', $start);
+                                if (in_array($dayFormatted, $exceptions)) {
+                                    unset($eventsArray[$TSstart_ID]);
+                                    unset($eventsArray2[$start][$event->ID]);
+                                }
+                            }
+                        }
+                        // add additions
+                        $additionsRaw = self::getMeta($meta, 'additions');
+                        if (!empty($additionsRaw)) {
+                            $additions = explode("\n", str_replace("\r", '', $additionsRaw));
+                            foreach ($additions as $addition) {
+                                $TSaddition = strtotime($addition . ' ' . $startHour . ':' . $startMinute);
+                                $eventsArray[$TSaddition . '#' . $event->ID] = $TSaddition + $duration;
+                                $eventsArray2[$TSaddition][$event->ID] = $TSaddition + $duration;
+                            }
+
                         }
                         break;
                 }
             }
             ksort($eventsArray);
         }
+        //print "<pre>"; var_dump($eventsArray); print "</pre>";
+        //print "<pre>"; var_dump($eventsArray2); print "</pre>";
         return $eventsArray;
     }
 
