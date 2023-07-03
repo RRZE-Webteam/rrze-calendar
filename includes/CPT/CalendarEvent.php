@@ -8,6 +8,7 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
+use RRule\RRule;
 use RRZE\Calendar\Templates;
 use RRZE\Calendar\Utils;
 
@@ -412,6 +413,8 @@ class CalendarEvent
         //var_dump($eventList);
         update_post_meta($post_id, 'event-items', $eventList);
         //update_post_meta($post_id, 'event-items', json_encode($eventList));
+        $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
+        update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
 
         // unhook this function to prevent infinite looping
         /* remove_action( 'save_post', 'saveEvent' );
@@ -441,6 +444,8 @@ class CalendarEvent
             $eventList = Utils::buildEventsList([get_post($post_id)], false);
             update_post_meta($post_id, 'event-items', $eventList);
             //update_post_meta($post_id, 'event-items', json_encode($eventList));
+            $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
+            update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
         }
     }
 
@@ -463,13 +468,13 @@ class CalendarEvent
             $optionsDaycount .= '<option value="' . $k . '" ' . selected($k, $value['daycount'], false) . '>' . $v . '</option>';
         }
         $weekdays = [
-            'mon' => $wp_locale->get_weekday(1),
-            'tue' => $wp_locale->get_weekday(2),
-            'wed' => $wp_locale->get_weekday(3),
-            'thu' => $wp_locale->get_weekday(4),
-            'fri' => $wp_locale->get_weekday(5),
-            'sat' => $wp_locale->get_weekday(6),
-            'sun' => $wp_locale->get_weekday(0),
+            'monday' => $wp_locale->get_weekday(1),
+            'tuesday' => $wp_locale->get_weekday(2),
+            'wednesday' => $wp_locale->get_weekday(3),
+            'thursday' => $wp_locale->get_weekday(4),
+            'friday' => $wp_locale->get_weekday(5),
+            'saturday' => $wp_locale->get_weekday(6),
+            'sunday' => $wp_locale->get_weekday(0),
         ];
         $optionsWeekdays = '';
         foreach ($weekdays as $k => $v) {
@@ -510,6 +515,13 @@ class CalendarEvent
         } else {
             _e('No events found.', 'rrze-calendar');
         }
+
+        $rruleArgs = get_post_meta($object_id, 'event-rrule-args', true);
+        if ($rruleArgs != '') {
+            var_dump($rruleArgs);
+            $rrule = new RRule($rruleArgs);
+            var_dump($rrule);
+        }
     }
 
     public static function includeSingleTemplate($singleTemplate)
@@ -539,8 +551,8 @@ class CalendarEvent
         $firstItemEnd = reset($eventItems);
         $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
         $data['location'] = Utils::getMeta($meta, 'location');
-        $data['vc_url'] = Utils::getMeta($meta, 'vc_url');
-        if ($data['location'] == '' && $data['vc_url'] != '') {
+        $data['vcUrl'] = Utils::getMeta($meta, 'vc-url');
+        if ($data['location'] == '' && $data['vcUrl'] != '') {
             $data['location'] = __('Online', 'rrze-calendar');
         }
         $data['prices'] = Utils::getMeta($meta, 'prices');
@@ -616,7 +628,7 @@ class CalendarEvent
 
     public static function displayEventDetails($data) {
         if (strlen($data['location'] . $data['prices'] . $data['registrationUrl']) . $data['categories'] > 0 || !empty($data['downloads'])) { ?>
-            <aside class="rrze-event-details">
+            <div class="rrze-event-details">
 
                 <?php echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
 
@@ -632,8 +644,8 @@ class CalendarEvent
                 if ($data['location'] != '') {
                     echo '<dt>' . __('Location', 'rrze-calendar') . ':</dt><dd>' . wpautop($data['location']) . '</dd>';
                 }
-                if ($data['vc_url'] != '') {
-                    echo '<dt>' . __('Video Conference Link', 'rrze-calendar') . ':</dt><dd><p itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><a itemprop="url" href="'. $data['vc_url'] . '">' . $data['vc_url'] . '</a></p></dd>';
+                if ($data['vcUrl'] != '') {
+                    echo '<dt>' . __('Video Conference Link', 'rrze-calendar') . ':</dt><dd><p itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><a itemprop="url" href="'. $data['vcUrl'] . '">' . $data['vcUrl'] . '</a></p></dd>';
                 }
 
                 // Prices + Tickets
@@ -665,7 +677,7 @@ class CalendarEvent
                 if ($data['categories'] != '') {
                     echo '<dt>' . __('Event Categories', 'rrze-calendar') . ':</dt><dd>' . $data['categories'] . '</dd>';
                 } ?>
-            </aside>
+            </div>
         <?php }
     }
 

@@ -409,6 +409,17 @@ class Utils
         global $wp_locale;
         $daysOfWeek = [];
         switch ($format) {
+            case 'rrule':
+                $daysOfWeek = [
+                    'monday' => 'MO',
+                    'tuesday' => 'TU',
+                    'wednesday' => 'WE',
+                    'thursday' => 'TH',
+                    'friday' => 'FR',
+                    'saturday' => 'SA',
+                    'sunday' => 'SU',
+                ];
+                break;
             case 'min':
                 $daysOfWeek = [
                     0 => $wp_locale->get_weekday_initial($wp_locale->get_weekday(0)),
@@ -452,6 +463,22 @@ class Utils
         global $wp_locale;
         $monthNames = [];
         switch ($format) {
+            case 'rrule':
+                $monthNames = [
+                    'jan' => 1,
+                    'feb' => 2,
+                    'mar' => 3,
+                    'apr' => 4,
+                    'may' => 5,
+                    'jun' => 6,
+                    'jul' => 7,
+                    'aug' => 8,
+                    'sep' => 9,
+                    'oct' => 10,
+                    'nov' => 11,
+                    'dec' => 12,
+                ];
+                break;
             case 'short':
                 $monthNames = [
                     0 => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
@@ -746,6 +773,72 @@ class Utils
         //print "<pre>"; var_dump($eventsArray); print "</pre>";
         //print "<pre>"; var_dump($eventsArray2); print "</pre>";
         return $eventsArray;
+    }
+
+    public static function makeRRuleArgs($event)
+    {
+        $meta = get_post_meta($event->ID);
+        $repeat = self::getMeta($meta, 'repeat');
+        if  ($repeat != 'on') return [];
+        $startTS = self::getMeta($meta, 'start');
+        if ($startTS == '') return [];
+        $dtstart = self::date('Y-m-d H:i:s', (int)$startTS);
+        $endTS = self::getMeta($meta, 'end');
+        if ($endTS == '') return [];
+        $dtend = self::date('Y-m-d H:i:s', (int)$endTS);;
+
+        $rruleArgs = [
+            'DTSTART' => $dtstart,
+            'COUNT' => 10,
+        ];
+
+        $lastDateTS = self::getMeta($meta, 'repeat-lastdate');
+        if ($lastDateTS != '') {
+            $lastDate = (new DateTime('@' . $lastDateTS))->setTimezone(wp_timezone());
+            $rruleArgs['UNTIL'] = $lastDate;
+        }
+
+        $repeatInterval = self::getMeta($meta, 'repeat-interval');
+        if ($repeatInterval == 'week') {
+
+            $rruleArgs['FREQ'] = 'weekly';
+            $rruleArgs['INTERVAL'] = self::getMeta($meta, 'repeat-weekly-interval');
+            $dows = self::getMeta($meta, 'repeat-weekly-day');
+            $daysOfWeek = self::daysOfWeek('rrule');
+            foreach ($dows as $i => $dow) {
+                $dows[$i] = $daysOfWeek[$dow];
+            }
+            $rruleArgs['BYDAY'] = $dows;
+
+        } elseif ($repeatInterval == 'month') {
+            $rruleArgs['FREQ'] = 'monthly';
+            $months = (array)self::getMeta($meta, 'repeat-monthly-month');
+            $monthsRrule = self::getMonthNames('rrule');
+            foreach ($months as $i => $month) {
+                $months[$i] = $monthsRrule[$month];
+            }
+            $rruleArgs['BYMONTH'] = $months;
+            $monthlyType = self::getMeta($meta, 'repeat-monthly-type');
+
+            if ($monthlyType == 'date') {
+                $rruleArgs['BYMONTHDAY'] = self::getMeta($meta, 'repeat-monthly-type-date');
+            } elseif ($monthlyType == 'dow') {
+                $monthlyDow = self::getMeta($meta, 'repeat-monthly-type-dow');
+                $daysOfWeek = self::daysOfWeek('rrule');
+                $rruleArgs['BYDAY'] = $daysOfWeek[$monthlyDow["day"]];
+                $rruleArgs['BYSETPOS'] = ($monthlyDow["daycount"] ?? 1);
+            }
+
+        }
+        //$rrule = new RRule($rruleArgs);
+        //var_dump($rrule);
+        //exit;
+        //foreach ( $rrule as $occurrence ) {
+        //    echo $occurrence->format('r'),"<br />";
+        //}
+        // exit;
+
+        return $rruleArgs;
     }
 
     public static function getMeta($meta, $key)

@@ -102,16 +102,31 @@
             padding-left: 0;
             padding-right: 0;
         }
+
+    }
+    .rrze-event {
+        margin-top: 20px;
         @media (min-width: 1024px) {
             display: grid;
-            gap: var(--gap-width, 30px);
+            column-gap: var(--gap-width, 30px);
             grid-template-columns: 1fr var(--min-width-aside, 300px);
         }
+        .entry-header {
+            @media (min-width: 1024px) {
+                grid-column: 1 / span 2;
+            }
+        }
     }
-    aside.rrze-event-details {
+    .rrze-event-details {
         @media (min-width: 1024px) {
             border-left: 2px solid var(--color-primary-ci-hell2,#ced9e7);
             padding-left: 15px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        p {
+            margin-bottom: .5em;
         }
         dt, dd, dt *, dd * {
             font-size: 0.875rem;
@@ -127,6 +142,16 @@
         }
         ul.downloads {
             margin-left: 0;
+            overflow: hidden;
+            padding-left: 20px;
+        }
+        div.prices {
+            overflow: hidden;
+        }
+        span.label {
+            display: block;
+            //min-width: 140px;
+            font-weight: bold;
         }
     }
     .post-image {
@@ -139,15 +164,17 @@
         }
     }
     figure.post-thumbnail {
-        float: right;
-        margin: 0 0 1em 1em;
+        @media (min-width: 480px) {
+            float: right;
+            margin: 0 0 1em 1em;
+        }
+        .wp-caption-text {
+            margin-bottom: 0;
+        }
         @media (min-width: 480px) {
             width: auto;
         }
     }
-}
-.rrze-event {
-    margin-top: 20px;
     .rrze-event-schedule {
         margin-bottom: 1em;
         .rrze-event-date,
@@ -161,6 +188,9 @@
                 display: inline-block;
                 margin-right: 2em;
             }
+        }
+        .rrze-event-location {
+            margin-top: .5em;
         }
         ul {
             margin-bottom: 0;
@@ -187,24 +217,5 @@
         span.label {
             font-weight: bold;
         }
-    }
-}
-.rrze-event-details {
-    padding-top: 1em;
-    p {
-        margin-bottom: .5em;
-    }
-    ul.downloads {
-        overflow: hidden;
-        padding-left: 20px;
-    }
-
-    div.prices {
-        overflow: hidden;
-    }
-    span.label {
-        display: block;
-        //min-width: 140px;
-        font-weight: bold;
     }
 }
