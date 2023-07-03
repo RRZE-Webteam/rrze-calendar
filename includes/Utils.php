@@ -789,14 +789,17 @@ class Utils
 
         $rruleArgs = [
             'DTSTART' => $dtstart,
-            'COUNT' => 10,
+            //'COUNT' => 100,
         ];
 
         $lastDateTS = self::getMeta($meta, 'repeat-lastdate');
         if ($lastDateTS != '') {
-            $lastDate = (new DateTime('@' . $lastDateTS))->setTimezone(wp_timezone());
-            $rruleArgs['UNTIL'] = $lastDate;
+            $lastDate = new DateTime('@' . $lastDateTS);
+        } else {
+            $lastDate = '@' . strtotime('+1 year');
         }
+        $rruleArgs['UNTIL'] = $lastDate;
+
 
         $repeatInterval = self::getMeta($meta, 'repeat-interval');
         if ($repeatInterval == 'week') {

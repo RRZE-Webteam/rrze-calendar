@@ -518,9 +518,12 @@ class CalendarEvent
 
         $rruleArgs = get_post_meta($object_id, 'event-rrule-args', true);
         if ($rruleArgs != '') {
-            var_dump($rruleArgs);
+            $rruleArgs = json_decode($rruleArgs, true);
+            //print "<pre>"; print_r($rruleArgs); print "</pre>";
             $rrule = new RRule($rruleArgs);
-            var_dump($rrule);
+            foreach ( $rrule as $occurrence ) {
+                echo "<br />", $occurrence->format('r');
+            }
         }
     }
 
