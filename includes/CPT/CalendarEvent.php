@@ -9,6 +9,7 @@ namespace RRZE\Calendar\CPT;
 defined('ABSPATH') || exit;
 
 use RRule\RRule;
+use RRule\RSet;
 use RRZE\Calendar\Templates;
 use RRZE\Calendar\Utils;
 
@@ -501,7 +502,8 @@ class CalendarEvent
 
     public static function renderEventItemsField($field, $value, $object_id, $object_type, $field_type)
     {
-        $eventItems = get_post_meta($object_id, 'event-items', true);
+        $meta = get_post_meta($object_id);
+        $eventItems = Utils::getMeta($meta, 'event-items');
         if (is_array($eventItems)) {
             echo '<ul class="event-items">';
             foreach ($eventItems as $TSstart_ID => $TSend) {
@@ -516,14 +518,10 @@ class CalendarEvent
             _e('No events found.', 'rrze-calendar');
         }
 
-        $rruleArgs = get_post_meta($object_id, 'event-rrule-args', true);
-        if ($rruleArgs != '') {
-            $rruleArgs = json_decode($rruleArgs, true);
-            //print "<pre>"; print_r($rruleArgs); print "</pre>";
-            $rrule = new RRule($rruleArgs);
-            foreach ( $rrule as $occurrence ) {
-                echo "<br />", $occurrence->format('r');
-            }
+        $occurrences = Utils::makeRRuleSet($object_id);
+        echo "Rrule:";
+        foreach ($occurrences as $occurrence) {
+            echo "<br />", date_i18n(get_option('date_format'), strtotime($occurrence->format('Y-m-d H:i')));
         }
     }
 

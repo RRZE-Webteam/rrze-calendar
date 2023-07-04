@@ -7,6 +7,7 @@ defined('ABSPATH') || exit;
 use DateTime;
 use DateTimeZone;
 use RRule\RRule;
+use RRule\RSet;
 
 class Utils
 {
@@ -775,7 +776,7 @@ class Utils
         return $eventsArray;
     }
 
-    public static function makeRRuleArgs($event)
+    public static function makeRRuleArgs($event): array
     {
         $meta = get_post_meta($event->ID);
         $repeat = self::getMeta($meta, 'repeat');
@@ -794,12 +795,11 @@ class Utils
 
         $lastDateTS = self::getMeta($meta, 'repeat-lastdate');
         if ($lastDateTS != '') {
-            $lastDate = new DateTime('@' . $lastDateTS);
+            $lastDate = '@' . $lastDateTS;
         } else {
             $lastDate = '@' . strtotime('+1 year');
         }
         $rruleArgs['UNTIL'] = $lastDate;
-
 
         $repeatInterval = self::getMeta($meta, 'repeat-interval');
         if ($repeatInterval == 'week') {
@@ -815,14 +815,17 @@ class Utils
 
         } elseif ($repeatInterval == 'month') {
             $rruleArgs['FREQ'] = 'monthly';
-            $months = (array)self::getMeta($meta, 'repeat-monthly-month');
-            $monthsRrule = self::getMonthNames('rrule');
-            foreach ($months as $i => $month) {
-                $months[$i] = $monthsRrule[$month];
-            }
-            $rruleArgs['BYMONTH'] = $months;
-            $monthlyType = self::getMeta($meta, 'repeat-monthly-type');
 
+            $months = (array)self::getMeta($meta, 'repeat-monthly-month');
+            if (count($months) < 12) {
+                $monthsRrule = self::getMonthNames('rrule');
+                foreach ($months as $i => $month) {
+                    $months[$i] = $monthsRrule[$month];
+                }
+                $rruleArgs['BYMONTH'] = $months;
+            }
+
+            $monthlyType = self::getMeta($meta, 'repeat-monthly-type');
             if ($monthlyType == 'date') {
                 $rruleArgs['BYMONTHDAY'] = self::getMeta($meta, 'repeat-monthly-type-date');
             } elseif ($monthlyType == 'dow') {
@@ -842,6 +845,39 @@ class Utils
         // exit;
 
         return $rruleArgs;
+    }
+
+    public static function makeRRuleSet($event_id): array
+    {
+        $meta = get_post_meta($event_id);
+        $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+        if ($rruleArgs != '') {
+            $rruleArgs = json_decode($rruleArgs, true);
+            $rset = new RSet();
+            $rset->addRRule($rruleArgs);
+            $startTS = Utils::getMeta($meta, 'start');
+            $startTime = date('H:i', $startTS);
+
+            // Exceptions
+            $exceptionsRaw = Utils::getMeta($meta, 'exceptions');
+            if (!empty($exceptionsRaw)) {
+                $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
+                foreach ($exceptions as $exception) {
+                    $rset->addExDate($exception . ' ' . $startTime);
+                }
+            }
+            // Additions
+            $additionsRaw = Utils::getMeta($meta, 'additions');
+            if (!empty($additionsRaw)) {
+                $additions = explode("\n", str_replace("\r", '', $additionsRaw));
+                foreach ($additions as $addition) {
+                    $rset->addDate($addition . ' ' . $startTime);
+                }
+            }
+
+            return $rset->getOccurrences();
+        }
+        return [];
     }
 
     public static function getMeta($meta, $key)
