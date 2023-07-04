@@ -184,27 +184,7 @@ class Calendar
 
         // Get events in calendar period
         $events = get_posts($args);
-        $i = 0;
-        foreach ($events as $event) {
-            $eventItems = get_post_meta($event->ID, 'event-items', true);
-            if (!empty($eventItems)) {
-                foreach ($eventItems as $TSstart_ID => $TSend) {
-                    $TSstart = explode('#', $TSstart_ID)[0];
-                    $eventsArray[$TSstart][$i]['id'] = $event->ID;
-                    $eventsArray[$TSstart][$i]['end'] = $TSend;
-                    $i++;
-                }
-            }
-        }
-        //print "<pre>";var_dump($eventsArray);print "</pre>"; exit;
-        //$eventsArray = self::build_events_list($events, false);
-        //print "<pre>";var_dump($events);print "</pre>";
-        /*foreach ($eventsArray as $ts => $events) {
-            foreach ($events as $event) {
-                print date('Y-m-d', $ts) . ' ' . $event['id'] . '<br />';
-            }
-        }
-        exit;*/
+        $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
 
         // Render calendar output
         $output = '<div class="rrze-calendar">';
@@ -499,7 +479,7 @@ class Calendar
                     $eventEnd = $event['end'];
                     $eventStartDate = date('Y-m-d', $eventStart);
                     $eventEndDate = date('Y-m-d', $eventEnd);
-                    if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
+                    if ($calDay != $eventStartDate) {
                         continue;
                     }
                     $meta = get_post_meta($event['id']);
@@ -705,6 +685,7 @@ class Calendar
                     break;
             }
             $startObj = date_create($date);
+            $endObj = $startObj;
         } elseif (count($period) == 2) {
             // month view
             $day = '';
@@ -730,7 +711,7 @@ class Calendar
             }
             $monthName = strtolower(date("F", mktime(0, 0, 0, $month, 1)));
             $startObj = date_create('first day of ' . $monthName . ' ' . $year);
-            //$endObj = date_create('last day of ' . $monthName . ' ' . $year);
+            $endObj = date_create('last day of ' . $monthName . ' ' . $year);
         } else {
             // year view
             $day = '';
@@ -738,10 +719,10 @@ class Calendar
             $year = (int)$period[0];
             $year += ($_POST['direction'] == 'next' ? 1 : -1);
             $startObj = date_create('first day of january' . $year);
-            //$endObj = date_create('last day of december ' . $year);
+            $endObj = date_create('last day of december ' . $year);
         }
         //$endObj->add(new DateInterval('PT23H59M59S'));
-        //$endTS = $endObj->getTimestamp();
+        $endTS = $endObj->getTimestamp();
         $startTS = $startObj->getTimestamp();
         // Get events in calendar period
         $events = get_posts([
@@ -760,20 +741,9 @@ class Calendar
                 ],
             ],
         ]);
-        $eventsArray = [];
-        $i = 0;
-        foreach ($events as $event) {
-            $eventItems = get_post_meta($event->ID, 'event-items', true);
-            if (!empty($eventItems)) {
-                //$eventsArray = array_merge($eventsArray, $eventItems);
-                foreach ($eventItems as $TSstart_ID => $TSend) {
-                    $TSstart = explode('#', $TSstart_ID)[0];
-                    $eventsArray[$TSstart][$i]['id'] = $event->ID;
-                    $eventsArray[$TSstart][$i]['end'] = $TSend;
-                    $i++;
-                }
-            }
-        }
+
+        $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
+
         $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout);
         echo $output;
         wp_die();

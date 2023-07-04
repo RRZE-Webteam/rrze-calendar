@@ -395,13 +395,6 @@ class CalendarEvent
             'type' => 'textarea_small',
             'classes'   => ['repeat'],
         ]);
-        $cmb_schedule->add_field([
-            'name' => __('Event Items', 'rrze-calendar'),
-            //'desc'    => __('', 'rrze-calendar'),
-            'id' => 'event-items',
-            'type' => 'event_items',
-            'classes'   => ['repeat'],
-        ]);
     }
 
     public static function save($post_id)
@@ -410,10 +403,6 @@ class CalendarEvent
             return $post_id;
         }
 
-        $eventList = Utils::buildEventsList([get_post($post_id)], false);
-        //var_dump($eventList);
-        update_post_meta($post_id, 'event-items', $eventList);
-        //update_post_meta($post_id, 'event-items', json_encode($eventList));
         $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
         update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
 
@@ -442,9 +431,6 @@ class CalendarEvent
     public static function updatedMeta($meta_id, $post_id, $meta_key = '', $meta_value = '')
     {
         if (get_post_type($post_id) === self::POST_TYPE) {
-            $eventList = Utils::buildEventsList([get_post($post_id)], false);
-            update_post_meta($post_id, 'event-items', $eventList);
-            //update_post_meta($post_id, 'event-items', json_encode($eventList));
             $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
             update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
         }
@@ -502,26 +488,16 @@ class CalendarEvent
 
     public static function renderEventItemsField($field, $value, $object_id, $object_type, $field_type)
     {
-        $meta = get_post_meta($object_id);
-        $eventItems = Utils::getMeta($meta, 'event-items');
-        if (is_array($eventItems)) {
+        $occurrences = Utils::makeRRuleSet($object_id);
+        if (!empty($occurrences)) {
             echo '<ul class="event-items">';
-            foreach ($eventItems as $TSstart_ID => $TSend) {
-                $start = explode('#', $TSstart_ID)[0];
-                $class = $start < time() ? 'past' : 'future';
-                echo '<li class="' . $class . '">' . date_i18n(get_option('date_format'), $start) . '</li>';
-                //echo '<li>' . date('Y-m-d', $start) . '</li>';
+            foreach ($occurrences as $occurrence) {
+                $TS = strtotime($occurrence->format('Y-m-d H:i'));
+                $class = $TS < time() ? 'past' : 'future';
+                echo '<li class="' . $class . '">' . date_i18n(get_option('date_format'), $TS) . '</li>';
             }
             echo '</ul>';
             echo '<p class="description">' . __('Maximum +/- 1 year.', 'rrze-calendar') . '</p>';
-        } else {
-            _e('No events found.', 'rrze-calendar');
-        }
-
-        $occurrences = Utils::makeRRuleSet($object_id);
-        echo "Rrule:";
-        foreach ($occurrences as $occurrence) {
-            echo "<br />", date_i18n(get_option('date_format'), strtotime($occurrence->format('Y-m-d H:i')));
         }
     }
 
@@ -545,11 +521,8 @@ class CalendarEvent
 
     public static function getEventData($post_id) {
         $meta = get_post_meta($post_id);
-        $eventItems = Utils::getMeta($meta, 'event-items');
+        $eventItems = Utils::buildEventsArray([get_post($post_id)], date('Y-m-d', time()));
         $data['allDay'] = Utils::getMeta($meta, 'all-day');
-        $firstItemTSstart_ID = array_key_first($eventItems);
-        $firstItemTSstart = explode('#', $firstItemTSstart_ID)[0];
-        $firstItemEnd = reset($eventItems);
         $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
         $data['location'] = Utils::getMeta($meta, 'location');
         $data['vcUrl'] = Utils::getMeta($meta, 'vc-url');
@@ -572,30 +545,34 @@ class CalendarEvent
         $data['description'] = Utils::getMeta($meta, 'description');
 
         $data['eventItemsFormatted'] = [];
-        foreach ($eventItems as $TSstart_ID => $TSend) {
-            $TSstart = explode('#', $TSstart_ID)[0];
-            if ($TSstart < time()) continue;
-            $startDay = date('Y-m-d', $TSstart);
-            $endDay = date('Y-m-d', $TSend);
-            if ($data['allDay'] == 'on' || $startDay != $endDay) {
-                $data['eventItemsFormatted'][] = [
-                    'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $TSstart)
-                        . ' &ndash; '
-                        . date_i18n(get_option('date_format'), $TSend)),
-                    'time' => '',
-                    'startISO' => $startDay,
-                    'endISO' => $endDay,
-                ];
-            } else {
-                $data['eventItemsFormatted'][] = [
-                    'date' => date_i18n(get_option('date_format'), $TSstart),
-                    'time' => date_i18n(get_option('time_format'), $TSstart) . ' &ndash; ' . date_i18n(get_option('time_format'), $TSend),
-                    'startISO' => date_i18n('c', $TSstart),
-                    'endISO' => date_i18n('c', $TSend),
-                ];
+        foreach ($eventItems as $TSstart => $items) {
+            foreach ($items as $item) {
+                //var_dump($data);
+                if ($TSstart < time()) {
+                    continue;
+                }
+                $TSend = $item['end'];
+                $startDay = date('Y-m-d', $TSstart);
+                $endDay = date('Y-m-d', $TSend);
+                if ($data['allDay'] == 'on' || $startDay != $endDay) {
+                    $data['eventItemsFormatted'][] = [
+                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $TSstart)
+                            . ' &ndash; '
+                            . date_i18n(get_option('date_format'), $TSend)),
+                        'time' => '',
+                        'startISO' => $startDay,
+                        'endISO' => $endDay,
+                    ];
+                } else {
+                    $data['eventItemsFormatted'][] = [
+                        'date' => date_i18n(get_option('date_format'), $TSstart),
+                        'time' => date_i18n(get_option('time_format'), $TSstart) . ' &ndash; ' . date_i18n(get_option('time_format'), $TSend),
+                        'startISO' => date_i18n('c', $TSstart),
+                        'endISO' => date_i18n('c', $TSend),
+                    ];
+                }
             }
         }
-
         return $data;
     }
 

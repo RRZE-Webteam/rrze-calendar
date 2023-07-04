@@ -612,167 +612,33 @@ class Utils
         return ($yiq >= 128) ? 'black' : 'white';
     }
 
-    public static function buildEventsList($events, $upcomingOnly = true)
+    public static function buildEventsArray($events, $start = NULL, $end = NULL): array
     {
         $eventsArray = [];
+        $i = 0;
         foreach ($events as $event) {
-            $period = [];
             $meta = get_post_meta($event->ID);
-            $startTS = self::getMeta($meta, 'start');
-            if ($startTS == '') return [];
-            $endTS = self::getMeta($meta, 'end');
-            if ($endTS == '') return [];
-            $duration = $endTS - $startTS;
-            $repeat = self::getMeta($meta, 'repeat');
-            //if ($repeat !== 'on' && $date <= time()) {
-            // not repeating event in the past
-            //continue;
-            //}
-            $startHour = date('H', $startTS);
-            $startMinute = date('i', $startTS);
-            if ($repeat !== 'on' && (($upcomingOnly && $startTS >= time()) || !$upcomingOnly)) {
-                // not repeating event
-                $eventsArray[$startTS . '#' . $event->ID] = $startTS + $duration;
-                $eventsArray2[$startTS][$event->ID] = $startTS + $duration;
+            $repeat = Utils::getMeta($meta, 'repeat');
+            if  ($repeat != 'on') {
+                $startTS = Utils::getMeta($meta, 'start');
+                $endTS = Utils::getMeta($meta, 'end');
+                $eventsArray[$startTS][$i]['id'] = $event->ID;
+                $eventsArray[$startTS][$i]['end'] = $endTS;
             } else {
-                // repeating event
-                if ($startTS < strtotime("-1 years")) {
-                    $startTS = strtotime("-1 years");
-                }
-                $repeatInterval = self::getMeta($meta, 'repeat-interval');
-                $startDate = DateTime::createFromFormat('U', $startTS);
-                $todayDate = new DateTime('today');
-                /*if ($upcomingOnly && ($startDate < $todayDate)) {
-                    $start = $todayDate;
-                } else {
-                    $start = $startDate;
-                }*/
-                $start = $startDate;
-                $lastDate = self::getMeta($meta, 'repeat-lastdate');
-                if ($lastDate != '') {
-                    $end = DateTime::createFromFormat('U', ($lastDate + (60 * 60 * 24 - 1)));
-                } else {
-                    $end = clone $todayDate;
-                    $end->add(new \DateInterval('P1Y7D')); // Move to 1 year from start
-                }
-                switch ($repeatInterval) {
-                    case 'week':
-                        $unit  = 'W';
-                        $step = self::getMeta($meta, 'repeat-weekly-interval');
-                        $dows = self::getMeta($meta, 'repeat-weekly-day');
-                        if ($step != '' && $dows != '') {
-                            $interval = new \DateInterval("P{$step}{$unit}");
-                            foreach ($dows as $dow) {
-                                $start->modify($dow); // Move to first occurence
-                                $period[] = new \DatePeriod($start, $interval, $end);
-                            }
-                            foreach ($period as $d) {
-                                foreach ($d as $date) {
-                                    $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
-                                    if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
-                                        $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
-                                        $eventsArray2[$date->getTimestamp()][$event->ID] = $date->getTimestamp() + $duration;
-                                    }
-                                }
-                            }
-                        }
-                        // unset exceptions
-                        $exceptionsRaw = self::getMeta($meta, 'exceptions');
-                        if (!empty($exceptionsRaw)) {
-                            $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
-                            foreach ($eventsArray as $TSstart_ID => $TSend) {
-                                $start = explode('#', $TSstart_ID)[0];
-                                $dayFormatted = date('Y-m-d', $start);
-                                if (in_array($dayFormatted, $exceptions)) {
-                                    unset($eventsArray[$TSstart_ID]);
-                                    unset($eventsArray2[$start][$event->ID]);
-                                }
-                            }
-                        }
-                        break;
-                    case 'month':
-                        $unit  = 'M';
-                        $monthlyType = self::getMeta($meta, 'repeat-monthly-type');
-                        if ($monthlyType == 'date') {
-                            $monthlyDate = self::getMeta($meta, 'repeat-monthly-type-date');
-                            if ($monthlyDate < $start->format('d')) {
-                                $start->modify('first day of next month');
-                                $diff = (int)$monthlyDate - 1;
-                            } else {
-                                $diff = (int)$monthlyDate - (int)$start->format('d');
-                            }
-                            $start->modify('+' . $diff . ' day');
-                            $interval = new \DateInterval("P1M");
-                            $period[] = new \DatePeriod($start, $interval, $end);
-                            foreach ($period as $d) {
-                                foreach ($d as $date) {
-                                    $date->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
-                                    if (!$upcomingOnly || ($upcomingOnly && $date >= $todayDate)) {
-                                        $eventsArray[$date->getTimestamp() . '#' . $event->ID] = $date->getTimestamp() + $duration;
-                                        $eventsArray2[$date->getTimestamp()][$event->ID] = $date->getTimestamp() + $duration;
-                                    }
-                                }
-                            }
-                        } elseif ($monthlyType == 'dow') {
-                            $monthlyDOW = self::getMeta($meta, 'repeat-monthly-type-dow');
-                            if ($monthlyDOW == '' || !isset($monthlyDOW["day"]) || !isset($monthlyDOW["daycount"])) {
-                                continue 2;
-                            }
-                            $diff = $monthlyDOW["daycount"] - 1;
-                            $start->modify('first ' . $monthlyDOW["day"] . ' of this month')->modify('+' . $diff . ' week'); // Move to first occurence
-                            if ($start < $startDate) {
-                                $start->modify('first ' . $monthlyDOW["day"] . ' of next month')->modify('+' . $diff . ' week');
-                            }
-                            while ($start <= $end) {
-                                $start->add(new \DateInterval('PT' . $startHour . 'H' . $startMinute . 'M'));
-                                if (!$upcomingOnly || ($upcomingOnly && $start->getTimestamp() >= $todayDate->getTimestamp())) {
-                                    $eventsArray[$start->getTimestamp() . '#' . $event->ID] =  $start->getTimestamp() + $duration;
-                                    $eventsArray2[$start->getTimestamp()][$event->ID] =  $start->getTimestamp() + $duration;
-                                }
-                                $start->modify('first ' . $monthlyDOW["day"] . ' of next month')->modify('+' . $diff . ' week');
-                            }
-                        }
-                        // unset unselected months
-                        $months = (array)self::getMeta($meta, 'repeat-monthly-month');
-                        foreach ($eventsArray as $TSstart_ID => $TSend) {
-                            $timestamp = explode('#', $TSstart_ID)[0];
-                            $month = strtolower(date('M', $timestamp));
-                            if (!in_array($month, $months)) {
-                                unset($eventsArray[$TSstart_ID]);
-                                unset($eventsArray2[$timestamp][$event->ID]);
-                            }
-                        }
-                        // unset exceptions
-                        $exceptionsRaw = self::getMeta($meta, 'exceptions');
-                        if (!empty($exceptionsRaw)) {
-                            $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
-                            foreach ($eventsArray as $TSstart_ID => $TSend) {
-                                $start = explode('#', $TSstart_ID)[0];
-                                $dayFormatted = date('Y-m-d', $start);
-                                if (in_array($dayFormatted, $exceptions)) {
-                                    unset($eventsArray[$TSstart_ID]);
-                                    unset($eventsArray2[$start][$event->ID]);
-                                }
-                            }
-                        }
-                        // add additions
-                        $additionsRaw = self::getMeta($meta, 'additions');
-                        if (!empty($additionsRaw)) {
-                            $additions = explode("\n", str_replace("\r", '', $additionsRaw));
-                            foreach ($additions as $addition) {
-                                $TSaddition = strtotime($addition . ' ' . $startHour . ':' . $startMinute);
-                                $eventsArray[$TSaddition . '#' . $event->ID] = $TSaddition + $duration;
-                                $eventsArray2[$TSaddition][$event->ID] = $TSaddition + $duration;
-                            }
-
-                        }
-                        break;
+                $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
+                foreach($occurrences as $occurrence) {
+                    $startTS = $occurrence->getTimestamp();
+                    $endTStmp = Utils::getMeta($meta, 'end');
+                    $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
+                    $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['end'] = $endTS;
                 }
             }
+            $i++;
+        }
+        if ($eventsArray) {
             ksort($eventsArray);
         }
-        //print "<pre>"; var_dump($eventsArray); print "</pre>";
-        //print "<pre>"; var_dump($eventsArray2); print "</pre>";
         return $eventsArray;
     }
 
@@ -783,10 +649,14 @@ class Utils
         if  ($repeat != 'on') return [];
         $startTS = self::getMeta($meta, 'start');
         if ($startTS == '') return [];
-        $dtstart = self::date('Y-m-d H:i:s', (int)$startTS);
+        if ($startTS >= strtotime('-1 year')) {
+            $dtstart = date('Y-m-d H:i:s', (int)$startTS);
+        } else {
+            $dtstart = date('Y-m-d', strtotime('-1 year')) . ' ' . date('H:i:s', $startTS);
+        }
         $endTS = self::getMeta($meta, 'end');
         if ($endTS == '') return [];
-        $dtend = self::date('Y-m-d H:i:s', (int)$endTS);;
+        $dtend = date('Y-m-d H:i:s', (int)$endTS);
 
         $rruleArgs = [
             'DTSTART' => $dtstart,
@@ -847,7 +717,7 @@ class Utils
         return $rruleArgs;
     }
 
-    public static function makeRRuleSet($event_id): array
+    public static function makeRRuleSet($event_id, $start = NULL, $end = NULL): array
     {
         $meta = get_post_meta($event_id);
         $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
@@ -875,7 +745,11 @@ class Utils
                 }
             }
 
-            return $rset->getOccurrences();
+            if ($start != NULL || $end != NULL) {
+                return $rset->getOccurrencesBetween($start, $end);
+            } else {
+                return $rset->getOccurrences();
+            }
         }
         return [];
     }

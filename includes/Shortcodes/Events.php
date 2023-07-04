@@ -112,20 +112,8 @@ class Events
 
         $output = '<div class="rrze-calendar">';
 
-        $eventsArray = [];
         if (!empty($events)) {
-            $i = 0;
-            foreach ($events as $event) {
-                $eventItems = get_post_meta($event->ID, 'event-items', true);
-                if (!empty($eventItems)) {
-                    foreach ($eventItems as $TSstart_ID => $TSend) {
-                        $start = explode('#', $TSstart_ID)[0];
-                        $eventsArray[$start][$i]['id'] = $event->ID;
-                        $eventsArray[$start][$i]['end'] = $TSend;
-                        $i++;
-                    }
-                }
-            }
+            $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', time()), date('Y-m-d', strtotime('+1 year')));
             if ($eventsArray) {
                 ksort($eventsArray);
             }
