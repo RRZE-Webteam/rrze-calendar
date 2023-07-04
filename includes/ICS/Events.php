@@ -647,15 +647,14 @@ class Events
                 'meta_key' => $metaKey,
                 'meta_value' => $metaValue,
                 'post_type' => CalendarEvent::POST_TYPE,
-                'numberposts' => -1
+                'posts_per_page' => -1
             ]
         );
 
         if ($query->have_posts()) {
             while ($query->have_posts()) {
                 $query->the_post();
-                $postId = get_the_ID();
-                wp_delete_post($postId, true);
+                wp_delete_post(get_the_ID(), true);
             }
             wp_reset_postdata();
         }
