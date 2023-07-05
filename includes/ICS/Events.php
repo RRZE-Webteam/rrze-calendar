@@ -626,6 +626,7 @@ class Events
             }
 
             add_post_meta($eventId, 'description', $event['description'], true);
+            add_post_meta($eventId, 'location', $event['location'], true);
 
             add_post_meta($eventId, 'ics_feed_id', $postId, true);
             add_post_meta($eventId, 'ics_event_meta', $event, true);

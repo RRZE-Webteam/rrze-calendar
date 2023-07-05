@@ -139,6 +139,7 @@ class Events
                     $location = get_post_meta($event['id'], 'location', TRUE);
                     $vc_url = get_post_meta($event['id'], 'vc-url', TRUE);
                     $allDay = get_post_meta($event['id'], 'all-day', TRUE) == 'on';
+                    $isImport = get_post_meta($event['id'], 'ics_feed_id', TRUE) != '';
 
                     $metaStart = '<meta itemprop="startDate" content="'. date('c', $timestamp) . '" />';
                     $metaEnd = '<meta itemprop="endDate" content="'. date('c', $event['end']) . '" />';
