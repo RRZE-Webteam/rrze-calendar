@@ -306,6 +306,8 @@ class Calendar
                 $location = Utils::getMeta($meta, 'location');
                 if ($location != '') {
                     $locationText = '<br />' . $location;
+                } else {
+                    $locationText = '';
                 }
 
                 $list .= '<li>';
@@ -405,7 +407,7 @@ class Calendar
     }
 
     /**
-     * Render Full Calendar Month View with event details for internal use
+     * Render Full Calendar Month View with event details
      * @param integer $month
      * @param integer $year
      * @param array $events
@@ -455,7 +457,7 @@ class Calendar
         // Weeks
         $output .= '<div class="week">';
         for($i = 1; $i < $first_day_in_month; $i++) {
-            $output .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 5;" aria-hidden="true"> </div>';
+            $output .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
         }
         $weekNum = 1;
         $eventsPerDay = [];
@@ -470,7 +472,7 @@ class Calendar
             $daysLeft = $month_days - $day + 1;
 
             // Background div for each day
-            $week .= '<div class="no-event" style="grid-column-start: day-'.$col.'; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 5" aria-hidden="true"> </div>';
+            $week .= '<div class="no-event" style="grid-column-start: day-'.$col.'; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
 
             foreach ($eventsArray as $ts => $events) {
                 //var_dump($eventsArray);
@@ -541,7 +543,7 @@ class Calendar
                         $eventInfos = [];
 
                         // Set row counter
-                        for ($i = 0 ; $i <= $span; $i++) {
+                        for ($i = 0 ; $i < $span; $i++) {
                             $startDay = date('d', $eventStartLocal);
                             $countDay = (int)$startDay + $i;
                             $countDate = date('Y-m-', $eventStartLocal) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
@@ -550,6 +552,14 @@ class Calendar
                             } else {
                                 $eventsPerDay[$countDate] = 1;
                             }
+                        }
+                        $rowNum = $eventsPerDay[$eventStartDate];
+                        if ($eventsPerDay[$countDate] > 3) {
+                            $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
+                                . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
+                                . __('More&hellip;', 'rrze-calendar')
+                                . '</a></div>';
+                            continue 2;
                         }
                         if ($eventStartDate == $eventEndDate) {
                             $dateOut = date('d.m.Y', $eventStartLocal);
@@ -563,8 +573,7 @@ class Calendar
                             $excerpt = substr($excerpt, 0, 100);
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
-                        $rowNum = $eventsPerDay[$eventStartDate];
-                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . '; border-color: ' . $catColor . ';">'
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
                             . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
                             . $timeOut
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
@@ -621,7 +630,7 @@ class Calendar
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
-                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . ';">'
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
                             . '<span class="event-date">' . date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
@@ -641,7 +650,7 @@ class Calendar
             // Add empty cells if month ends before weekend
             if ($day == $month_days && $col < 7) {
                 for ($i = ($col + 1); $i <= 7; $i++) {
-                    $week .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 5;" aria-hidden="true"> </div>';
+                    $week .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
                 }
             }
 

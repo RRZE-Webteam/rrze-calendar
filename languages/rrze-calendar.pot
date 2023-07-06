@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-07-04 17:29+0000\n"
+"POT-Creation-Date: 2023-07-06 12:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: rrze-calendar\n"
@@ -131,13 +131,13 @@ msgstr ""
 msgid "All day event"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:61 includes/Shortcodes/Events.php:34
+#: includes/CPT/CalendarEvent.php:61 includes/Shortcodes/Events.php:35
 #: templates/endpoint/events.php:11
 #: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
 msgstr ""
 
-#: includes/Shortcodes/Events.php:145
+#: includes/Shortcodes/Events.php:151
 msgid "All-day"
 msgstr ""
 
@@ -158,8 +158,8 @@ msgstr ""
 msgid "Daily"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:338 includes/CPT/CalendarEvent.php:594
-#: includes/CPT/CalendarEvent.php:626 includes/ICS/EventsListTable.php:63
+#: includes/CPT/CalendarEvent.php:338 includes/CPT/CalendarEvent.php:604
+#: includes/CPT/CalendarEvent.php:636 includes/ICS/EventsListTable.php:63
 msgid "Date"
 msgstr ""
 
@@ -171,7 +171,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:231 includes/CPT/CalendarEvent.php:653
+#: includes/CPT/CalendarEvent.php:231 includes/CPT/CalendarEvent.php:663
 msgid "Downloads"
 msgstr ""
 
@@ -210,12 +210,16 @@ msgstr ""
 msgid "Event"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:668
+#: includes/CPT/CalendarEvent.php:678
 msgid "Event Categories"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:623
+#: includes/CPT/CalendarEvent.php:633
 msgid "Event Details"
+msgstr ""
+
+#: includes/CPT/CalendarEvent.php:405
+msgid "Event Items"
 msgstr ""
 
 #: templates/endpoint/themes/fau/single-event.php:29
@@ -262,15 +266,15 @@ msgstr ""
 msgid "Feed URL."
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:457
+#: includes/CPT/CalendarEvent.php:464
 msgid "fifth"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:453
+#: includes/CPT/CalendarEvent.php:460
 msgid "first"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:456
+#: includes/CPT/CalendarEvent.php:463
 msgid "fourth"
 msgstr ""
 
@@ -278,11 +282,11 @@ msgstr ""
 msgid "General Information"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:443
+#: includes/Shortcodes/Calendar.php:445
 msgid "Go to next month"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:440
+#: includes/Shortcodes/Calendar.php:442
 msgid "Go to previous month"
 msgstr ""
 
@@ -336,8 +340,8 @@ msgstr ""
 msgid "Last Updated"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:197 includes/CPT/CalendarEvent.php:598
-#: includes/CPT/CalendarEvent.php:635 includes/ICS/EventsListTable.php:66
+#: includes/CPT/CalendarEvent.php:197 includes/CPT/CalendarEvent.php:608
+#: includes/CPT/CalendarEvent.php:645 includes/ICS/EventsListTable.php:66
 #: templates/shortcodes/themes/rrze/events.php:80
 #: templates/endpoint/themes/rrze/single-event.php:108
 msgid "Location"
@@ -352,11 +356,11 @@ msgstr ""
 msgid "Location:"
 msgstr ""
 
-#: includes/Utils.php:774 includes/ICS/Events.php:329
+#: includes/Utils.php:793 includes/ICS/Events.php:329
 msgid "m-d-Y"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:506
+#: includes/CPT/CalendarEvent.php:513
 msgid "Maximum +/- 1 year."
 msgstr ""
 
@@ -373,6 +377,10 @@ msgstr ""
 msgid "More events"
 msgstr ""
 
+#: includes/Shortcodes/Calendar.php:560
+msgid "More&hellip;"
+msgstr ""
+
 #: includes/CPT/CalendarEvent.php:58
 msgid "New Event"
 msgstr ""
@@ -381,7 +389,7 @@ msgstr ""
 msgid "New ICS Feed"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:443
+#: includes/Shortcodes/Calendar.php:445
 msgid "Next"
 msgstr ""
 
@@ -415,7 +423,7 @@ msgstr ""
 msgid "No events found."
 msgstr ""
 
-#: includes/Shortcodes/Events.php:208
+#: includes/Shortcodes/Events.php:214
 msgid "No events scheduled."
 msgstr ""
 
@@ -440,8 +448,8 @@ msgstr ""
 msgid "of month"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:542 includes/Shortcodes/Events.php:155
-#: includes/Shortcodes/Events.php:161
+#: includes/CPT/CalendarEvent.php:549 includes/Shortcodes/Events.php:161
+#: includes/Shortcodes/Events.php:167
 msgid "Online"
 msgstr ""
 
@@ -491,15 +499,15 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:440
+#: includes/Shortcodes/Calendar.php:442
 msgid "Previous"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:214 includes/CPT/CalendarEvent.php:643
+#: includes/CPT/CalendarEvent.php:214 includes/CPT/CalendarEvent.php:653
 msgid "Prices"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:575 includes/Shortcodes/Calendar.php:631
+#: includes/Shortcodes/Calendar.php:587 includes/Shortcodes/Calendar.php:643
 msgid "Read more"
 msgstr ""
 
@@ -507,7 +515,7 @@ msgstr ""
 msgid "Recurrence"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:648
+#: includes/CPT/CalendarEvent.php:658
 msgid "Registration"
 msgstr ""
 
@@ -564,7 +572,7 @@ msgstr ""
 msgid "Search Feeds"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:454
+#: includes/CPT/CalendarEvent.php:461
 msgid "second"
 msgstr ""
 
@@ -639,15 +647,15 @@ msgid ""
 "WordPress version %2$s."
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:322
+#: includes/Shortcodes/Calendar.php:324
 msgid "There are no events scheduled for this day."
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:455
+#: includes/CPT/CalendarEvent.php:462
 msgid "third"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:597 includes/CPT/CalendarEvent.php:630
+#: includes/CPT/CalendarEvent.php:607 includes/CPT/CalendarEvent.php:640
 msgid "Time"
 msgstr ""
 
@@ -663,7 +671,7 @@ msgstr ""
 msgid "VC URL"
 msgstr ""
 
-#: includes/CPT/CalendarEvent.php:638
+#: includes/CPT/CalendarEvent.php:648
 msgid "Video Conference Link"
 msgstr ""
 
@@ -671,7 +679,7 @@ msgstr ""
 msgid "View day"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:386
+#: includes/Shortcodes/Calendar.php:388
 msgid "View Details"
 msgstr ""
 

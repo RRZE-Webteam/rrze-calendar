@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-06-07T10:42:38+00:00\n"
-"PO-Revision-Date: 2023-07-04 17:31+0000\n"
+"PO-Revision-Date: 2023-07-06 12:59+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -141,13 +141,13 @@ msgstr "Ganztägig"
 msgid "All day event"
 msgstr "Ganztägig"
 
-#: includes/CPT/CalendarEvent.php:61 includes/Shortcodes/Events.php:34
+#: includes/CPT/CalendarEvent.php:61 includes/Shortcodes/Events.php:35
 #: templates/endpoint/events.php:11
 #: templates/endpoint/themes/vendor/events.php:10
 msgid "All Events"
 msgstr "Alle Veranstaltungen"
 
-#: includes/Shortcodes/Events.php:145
+#: includes/Shortcodes/Events.php:151
 msgid "All-day"
 msgstr "Ganztägig"
 
@@ -168,8 +168,8 @@ msgstr "Farbe"
 msgid "Daily"
 msgstr "Täglich"
 
-#: includes/CPT/CalendarEvent.php:338 includes/CPT/CalendarEvent.php:594
-#: includes/CPT/CalendarEvent.php:626 includes/ICS/EventsListTable.php:63
+#: includes/CPT/CalendarEvent.php:338 includes/CPT/CalendarEvent.php:604
+#: includes/CPT/CalendarEvent.php:636 includes/ICS/EventsListTable.php:63
 msgid "Date"
 msgstr "Datum"
 
@@ -181,7 +181,7 @@ msgstr "Tag"
 msgid "Description"
 msgstr "Beschreibung"
 
-#: includes/CPT/CalendarEvent.php:231 includes/CPT/CalendarEvent.php:653
+#: includes/CPT/CalendarEvent.php:231 includes/CPT/CalendarEvent.php:663
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -222,13 +222,17 @@ msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 msgid "Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/CalendarEvent.php:668
+#: includes/CPT/CalendarEvent.php:678
 msgid "Event Categories"
 msgstr "Veranstaltungskategorien"
 
-#: includes/CPT/CalendarEvent.php:623
+#: includes/CPT/CalendarEvent.php:633
 msgid "Event Details"
 msgstr "Details"
+
+#: includes/CPT/CalendarEvent.php:405
+msgid "Event Items"
+msgstr "Termine"
 
 #: templates/endpoint/themes/fau/single-event.php:29
 msgid "Event not found."
@@ -274,15 +278,15 @@ msgstr "Die Feed-URL ist ungültig."
 msgid "Feed URL."
 msgstr "Feed-URL."
 
-#: includes/CPT/CalendarEvent.php:457
+#: includes/CPT/CalendarEvent.php:464
 msgid "fifth"
 msgstr "fünften"
 
-#: includes/CPT/CalendarEvent.php:453
+#: includes/CPT/CalendarEvent.php:460
 msgid "first"
 msgstr "ersten"
 
-#: includes/CPT/CalendarEvent.php:456
+#: includes/CPT/CalendarEvent.php:463
 msgid "fourth"
 msgstr "vierten"
 
@@ -290,11 +294,11 @@ msgstr "vierten"
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
-#: includes/Shortcodes/Calendar.php:443
+#: includes/Shortcodes/Calendar.php:445
 msgid "Go to next month"
 msgstr "Zum nächsten Monat wechseln"
 
-#: includes/Shortcodes/Calendar.php:440
+#: includes/Shortcodes/Calendar.php:442
 msgid "Go to previous month"
 msgstr "Zum vorherigen Monat wechseln"
 
@@ -348,8 +352,8 @@ msgstr "l, j. F Y"
 msgid "Last Updated"
 msgstr "Letzte Aktualisierung"
 
-#: includes/CPT/CalendarEvent.php:197 includes/CPT/CalendarEvent.php:598
-#: includes/CPT/CalendarEvent.php:635 includes/ICS/EventsListTable.php:66
+#: includes/CPT/CalendarEvent.php:197 includes/CPT/CalendarEvent.php:608
+#: includes/CPT/CalendarEvent.php:645 includes/ICS/EventsListTable.php:66
 #: templates/shortcodes/themes/rrze/events.php:80
 #: templates/endpoint/themes/rrze/single-event.php:108
 msgid "Location"
@@ -364,11 +368,11 @@ msgstr "Ort"
 msgid "Location:"
 msgstr "Ort:"
 
-#: includes/Utils.php:774 includes/ICS/Events.php:329
+#: includes/Utils.php:793 includes/ICS/Events.php:329
 msgid "m-d-Y"
 msgstr "m.d.Y"
 
-#: includes/CPT/CalendarEvent.php:506
+#: includes/CPT/CalendarEvent.php:513
 msgid "Maximum +/- 1 year."
 msgstr "Maximal +/- 1 Jahr."
 
@@ -385,6 +389,10 @@ msgstr "Monatlich"
 msgid "More events"
 msgstr "Weitere Veranstaltungen"
 
+#: includes/Shortcodes/Calendar.php:560
+msgid "More&hellip;"
+msgstr "Mehr&hellip;"
+
 #: includes/CPT/CalendarEvent.php:58
 msgid "New Event"
 msgstr "Neue Veranstaltung"
@@ -393,7 +401,7 @@ msgstr "Neue Veranstaltung"
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
 
-#: includes/Shortcodes/Calendar.php:443
+#: includes/Shortcodes/Calendar.php:445
 msgid "Next"
 msgstr "Weiter"
 
@@ -428,7 +436,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
-#: includes/Shortcodes/Events.php:208
+#: includes/Shortcodes/Events.php:214
 msgid "No events scheduled."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
@@ -455,8 +463,8 @@ msgstr "Keine bevorstehenden Veranstaltungen."
 msgid "of month"
 msgstr "des Monats"
 
-#: includes/CPT/CalendarEvent.php:542 includes/Shortcodes/Events.php:155
-#: includes/Shortcodes/Events.php:161
+#: includes/CPT/CalendarEvent.php:549 includes/Shortcodes/Events.php:161
+#: includes/Shortcodes/Events.php:167
 msgid "Online"
 msgstr "Online"
 
@@ -508,15 +516,15 @@ msgstr "ICS-Feed"
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Shortcodes/Calendar.php:440
+#: includes/Shortcodes/Calendar.php:442
 msgid "Previous"
 msgstr "Zurück"
 
-#: includes/CPT/CalendarEvent.php:214 includes/CPT/CalendarEvent.php:643
+#: includes/CPT/CalendarEvent.php:214 includes/CPT/CalendarEvent.php:653
 msgid "Prices"
 msgstr "Preise"
 
-#: includes/Shortcodes/Calendar.php:575 includes/Shortcodes/Calendar.php:631
+#: includes/Shortcodes/Calendar.php:587 includes/Shortcodes/Calendar.php:643
 msgid "Read more"
 msgstr "Weiterlesen"
 
@@ -524,7 +532,7 @@ msgstr "Weiterlesen"
 msgid "Recurrence"
 msgstr "Wiederholung"
 
-#: includes/CPT/CalendarEvent.php:648
+#: includes/CPT/CalendarEvent.php:658
 msgid "Registration"
 msgstr "Anmeldung"
 
@@ -581,7 +589,7 @@ msgstr "Veranstaltungen durchsuchen"
 msgid "Search Feeds"
 msgstr "Feed durchsuchen"
 
-#: includes/CPT/CalendarEvent.php:454
+#: includes/CPT/CalendarEvent.php:461
 msgid "second"
 msgstr "zweiten"
 
@@ -664,15 +672,15 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
 
-#: includes/Shortcodes/Calendar.php:322
+#: includes/Shortcodes/Calendar.php:324
 msgid "There are no events scheduled for this day."
 msgstr "An diesem Tag finden keine Veranstaltungen statt."
 
-#: includes/CPT/CalendarEvent.php:455
+#: includes/CPT/CalendarEvent.php:462
 msgid "third"
 msgstr "dritten"
 
-#: includes/CPT/CalendarEvent.php:597 includes/CPT/CalendarEvent.php:630
+#: includes/CPT/CalendarEvent.php:607 includes/CPT/CalendarEvent.php:640
 msgid "Time"
 msgstr "Zeit"
 
@@ -689,7 +697,7 @@ msgid "VC URL"
 msgstr ""
 "Videokonferenz-URL\n"
 
-#: includes/CPT/CalendarEvent.php:638
+#: includes/CPT/CalendarEvent.php:648
 msgid "Video Conference Link"
 msgstr "Link zur Videokonferenz"
 
@@ -697,7 +705,7 @@ msgstr "Link zur Videokonferenz"
 msgid "View day"
 msgstr "Tag ansehen"
 
-#: includes/Shortcodes/Calendar.php:386
+#: includes/Shortcodes/Calendar.php:388
 msgid "View Details"
 msgstr "Details ansehen"
 
