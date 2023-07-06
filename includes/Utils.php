@@ -802,4 +802,24 @@ class Utils
         $rrule = new RRule($rrule);
         return $rrule->humanReadable($opt);
     }
+
+    /**
+     * getTimezoneOffset
+     * Returns offset between UTC and website's timezone in seconds (e.g. 7200) or as a string (e.g. +02:00)
+     * @param $format "string"|"seconds"
+     * @return int|string
+     */
+    public static function getTimezoneOffset($format = 'string') {
+        $offset  = (float) get_option( 'gmt_offset' );
+        if ($format == 'seconds') {
+            return (int)($offset * 60 * 60);
+        } else {
+            $hours   = (int) $offset;
+            $minutes = ( $offset - $hours );
+            $sign      = ( $offset < 0 ) ? '-' : '+';
+            $abs_hour  = abs( $hours );
+            $abs_mins  = abs( $minutes * 60 );
+            return sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
+        }
+    }
 }

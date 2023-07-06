@@ -7,6 +7,7 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\Templates;
 use RRZE\Calendar\CPT\CalendarEvent;
+use RRZE\Projects\Util\Util;
 
 class Events
 {
@@ -133,6 +134,9 @@ class Events
 
                 foreach ($events as $event) {
                     $eventEnd = $event['end'];
+                    $offset = Utils::getTimezoneOffset('seconds');
+                    $tsStartLocal = $timestamp + $offset;
+                    $tsEndLocal = $eventEnd + $offset;
                     $eventTitle = get_the_title($event['id']);
                     $eventURL = get_the_permalink($event['id']);
                     $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
@@ -142,8 +146,9 @@ class Events
                     $isImport = get_post_meta($event['id'], 'ics_feed_id', TRUE) != '';
 
                     $metaStart = '<meta itemprop="startDate" content="'. date('c', $timestamp) . '" />';
-                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $event['end']) . '" />';
-                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $timestamp) . ' &ndash; ' . date_i18n(get_option('time_format'), $eventEnd). '</span>');
+                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $eventEnd) . '" />';
+
+                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $tsStartLocal) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEndLocal). '</span>');
                     if ($location != '' && $vc_url == '') {
                         // Offline Event
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';

@@ -401,6 +401,13 @@ class CalendarEvent
             'type' => 'textarea_small',
             'classes'   => ['repeat'],
         ]);
+        $cmb_schedule->add_field([
+            'name' => __('Event Items', 'rrze-calendar'),
+            //'desc'    => __('', 'rrze-calendar'),
+            'id' => 'event-items',
+            'type' => 'event_items',
+            'classes'   => ['repeat'],
+        ]);
     }
 
     public static function save($post_id)
@@ -564,21 +571,24 @@ class CalendarEvent
                     continue;
                 }
                 $TSend = $item['end'];
+                $offset = Utils::getTimezoneOffset('seconds');
+                $tsStartLocal = $TSstart + $offset;
+                $tsEndLocal = $TSend + $offset;
                 $startDay = date('Y-m-d', $TSstart);
                 $endDay = date('Y-m-d', $TSend);
                 if ($data['allDay'] == 'on' || $startDay != $endDay) {
                     $data['eventItemsFormatted'][] = [
-                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $TSstart)
+                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $tsStartLocal)
                             . ' &ndash; '
-                            . date_i18n(get_option('date_format'), $TSend)),
+                            . date_i18n(get_option('date_format'), $tsEndLocal)),
                         'time' => '',
                         'startISO' => $startDay,
                         'endISO' => $endDay,
                     ];
                 } else {
                     $data['eventItemsFormatted'][] = [
-                        'date' => date_i18n(get_option('date_format'), $TSstart),
-                        'time' => date_i18n(get_option('time_format'), $TSstart) . ' &ndash; ' . date_i18n(get_option('time_format'), $TSend),
+                        'date' => date_i18n(get_option('date_format'), $tsStartLocal),
+                        'time' => date_i18n(get_option('time_format'), $tsStartLocal) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEndLocal),
                         'startISO' => date_i18n('c', $TSstart),
                         'endISO' => date_i18n('c', $TSend),
                     ];

@@ -477,8 +477,11 @@ class Calendar
                 foreach ($events as $event) {
                     $eventStart = $ts;
                     $eventEnd = $event['end'];
-                    $eventStartDate = date('Y-m-d', $eventStart);
-                    $eventEndDate = date('Y-m-d', $eventEnd);
+                    $offset = Utils::getTimezoneOffset('seconds');
+                    $eventStartLocal = $eventStart + $offset;
+                    $eventEndLocal = $eventEnd + $offset;
+                    $eventStartDate = date('Y-m-d', $eventStartLocal);
+                    $eventEndDate = date('Y-m-d', $eventEndLocal);
                     if ($calDay != $eventStartDate) {
                         continue;
                     }
@@ -515,13 +518,13 @@ class Calendar
                         // Events starting on this day
                         array_push($eventClasses, 'event-start', 'event-end');
                         $dateClasses = ['event-date'];
-                        $span = floor(($eventEnd - $eventStart) / (60 * 60 * 24) + 1);
+                        $span = floor(($eventEndLocal - $eventStartLocal) / (60 * 60 * 24) + 1);
                         if ($span < 1) $span = 1;
                         if ($span > 1) {
                             $timeOut = '';
                         } else {
                             $dateClasses[] = 'hide-desktop';
-                            $timeOut = '<span class="event-time">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '<br /></span>';
+                            $timeOut = '<span class="event-time">' . date('H:i', $eventStartLocal) . ' - ' . date('H:i', $eventEndLocal) . '<br /></span>';
                         }
                         if (($col + $span) > 8) {
                             $span = 8 - $col + 1; // trim if event longer than week
@@ -539,9 +542,9 @@ class Calendar
 
                         // Set row counter
                         for ($i = 0 ; $i <= $span; $i++) {
-                            $startDay = date('d', $eventStart);
+                            $startDay = date('d', $eventStartLocal);
                             $countDay = (int)$startDay + $i;
-                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                            $countDate = date('Y-m-', $eventStartLocal) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
                             if (isset($eventsPerDay[$countDate])) {
                                 $eventsPerDay[$countDate]++;
                             } else {
@@ -549,9 +552,9 @@ class Calendar
                             }
                         }
                         if ($eventStartDate == $eventEndDate) {
-                            $dateOut = date('d.m.Y', $eventStart);
+                            $dateOut = date('d.m.Y', $eventStartLocal);
                         } else {
-                            $dateOut = date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd);
+                            $dateOut = date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal);
                         }
                         $thumbnail = get_the_post_thumbnail($event['id'], 'medium');
                         $content = get_post_meta($event['id'], 'description', true);
@@ -578,11 +581,11 @@ class Calendar
 
                     } elseif (($col == 1 || $day == 1) && $calDay > $eventStartDate && $calDay <= $eventEndDate) {
                         // Event continuing from past week (or past month)
-                        if ((($eventEnd - strtotime($calDay)) / (60 * 60 * 24)) < 0.3) {
+                        if ((($eventEndLocal - strtotime($calDay)) / (60 * 60 * 24)) < 0.3) {
                             // Don't show event that end before 6:00, because it is probably the rest of a previous' day event
                             continue;
                         }
-                        $span = floor(($eventEnd - strtotime($calDay)) / (60 * 60 * 24) + 1);
+                        $span = floor(($eventEndLocal - strtotime($calDay)) / (60 * 60 * 24) + 1);
                         if ($span > 7) {
                             $span = 7; // trim if event longer than week
                             array_push($eventClasses, 'event-week');
@@ -594,9 +597,9 @@ class Calendar
                         }
                         // Set row counter
                         for ($i = 0 ; $i <= $span; $i++) {
-                            $startDay = date('d', $eventStart);
+                            $startDay = date('d', $eventStartLocal);
                             $countDay = (int)$startDay + $i;
-                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                            $countDate = date('Y-m-', $eventStartLocal) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
                             if (isset($eventsPerDay[$countDate])) {
                                 $eventsPerDay[$countDate]++;
                             } else {
@@ -605,11 +608,11 @@ class Calendar
                         }
 
                         if ($eventStartDate == $eventEndDate) {
-                            $dateOut = date('d.m.Y', $eventStart);
+                            $dateOut = date('d.m.Y', $eventStartLocal);
                         } else {
-                            $dateOut = date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd);
+                            $dateOut = date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal);
                         }
-                        $timeOut = '<span class="event-time">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '<br /></span>';
+                        $timeOut = '<span class="event-time">' . date('H:i', $eventStartLocal) . ' - ' . date('H:i', $eventEndLocal) . '<br /></span>';
                         $thumbnail = get_the_post_thumbnail($event['id'], 'medium');
                         $content = get_post_meta($event['id'], 'description', true);
                         $excerpt = strip_tags($content);
@@ -619,7 +622,7 @@ class Calendar
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 1) . ';">'
-                            . '<span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
+                            . '<span class="event-date">' . date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
                             . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
