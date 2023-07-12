@@ -657,11 +657,11 @@ class CalendarEvent
                 <?php echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
 
                 // Date
-                echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['date'] : $data['nextOccurrenceFormatted'][$i]['date']) . '</dd>';
+                echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['date'] : $data['eventItemsFormatted'][$i]['date']) . '</dd>';
 
                 // Time
                 if ($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) {
-                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['time'] : $data['nextOccurrenceFormatted'][$i]['time']) . '</dd>';
+                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['time'] : $data['eventItemsFormatted'][$i]['time']) . '</dd>';
                 }
 
                 // Location
