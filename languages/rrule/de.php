@@ -76,13 +76,13 @@ return [
     ],
     'byweekday' => ' %{weekdays}',
     'weekdays' => [
-        1 => 'Montags',
-        2 => 'Dienstags',
-        3 => 'Mittwochs',
-        4 => 'Donnerstags',
-        5 => 'Freitags',
-        6 => 'Samstags',
-        7 => 'Sonntags',
+        1 => 'montags',
+        2 => 'dienstags',
+        3 => 'mittwochs',
+        4 => 'donnerstags',
+        5 => 'freitags',
+        6 => 'samstags',
+        7 => 'sonntags',
     ],
     'nth_weekday' => [
         '1' => 'der erste %{weekday}', // e.g. the first Monday

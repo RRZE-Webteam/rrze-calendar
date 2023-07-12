@@ -37,6 +37,10 @@ class CalendarEvent
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
         add_action('updated_post_meta', [__CLASS__, 'updatedMeta'], 10, 4);
+        // List Table Columns
+        add_filter('manage_' . self::POST_TYPE . '_posts_columns', [__CLASS__, 'listTableHead'], 10);
+        add_action('manage_' . self::POST_TYPE . '_posts_custom_column', [__CLASS__, 'listTableContent'], 10, 2);
+
         // Templates
         add_filter('single_template', [__CLASS__, 'includeSingleTemplate']);
         add_filter('archive_template', [__CLASS__, 'includeArchiveTemplate']);
@@ -540,8 +544,9 @@ class CalendarEvent
 
     public static function getEventData($post_id) {
         $meta = get_post_meta($post_id);
-        $eventItems = Utils::buildEventsArray([get_post($post_id)], date('Y-m-d', time()));
+        $eventItems = Utils::buildEventsArray([get_post($post_id)]/*, date('Y-m-d', time())*/);
         $data['allDay'] = Utils::getMeta($meta, 'all-day');
+        $data['repeat'] = Utils::getMeta($meta, 'repeat');
         $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
         $data['location'] = Utils::getMeta($meta, 'location');
         $data['vcUrl'] = Utils::getMeta($meta, 'vc-url');
@@ -564,12 +569,14 @@ class CalendarEvent
         $data['description'] = Utils::getMeta($meta, 'description');
 
         $data['eventItemsFormatted'] = [];
+        $data['nextOccurrenceFormatted'] = [];
+        $nextOccurenceFound = false;
         foreach ($eventItems as $TSstart => $items) {
             foreach ($items as $item) {
                 //var_dump($data);
-                if ($TSstart < time()) {
-                    continue;
-                }
+                //if ($data['repeat'] == 'on' && $TSstart < time()) {
+                //    continue;
+                //}
                 $TSend = $item['end'];
                 $offset = Utils::getTimezoneOffset('seconds');
                 $tsStartLocal = $TSstart + $offset;
@@ -577,7 +584,7 @@ class CalendarEvent
                 $startDay = date('Y-m-d', $TSstart);
                 $endDay = date('Y-m-d', $TSend);
                 if ($data['allDay'] == 'on' || $startDay != $endDay) {
-                    $data['eventItemsFormatted'][] = [
+                    $eventItemsFormatted = [
                         'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $tsStartLocal)
                             . ' &ndash; '
                             . date_i18n(get_option('date_format'), $tsEndLocal)),
@@ -586,12 +593,17 @@ class CalendarEvent
                         'endISO' => $endDay,
                     ];
                 } else {
-                    $data['eventItemsFormatted'][] = [
+                    $eventItemsFormatted = [
                         'date' => date_i18n(get_option('date_format'), $tsStartLocal),
                         'time' => date_i18n(get_option('time_format'), $tsStartLocal) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEndLocal),
                         'startISO' => date_i18n('c', $TSstart),
                         'endISO' => date_i18n('c', $TSend),
                     ];
+                }
+                $data['eventItemsFormatted'][] = $eventItemsFormatted;
+                if (!$nextOccurenceFound && $TSstart >= time()) {
+                    $data['nextOccurrenceFormatted'] = $eventItemsFormatted;
+                    $nextOccurenceFound = true;
                 }
             }
         }
@@ -600,18 +612,29 @@ class CalendarEvent
 
     public static function displayEventMain($data) {
         // Schedule
-        echo '<div class="rrze-event-schedule">'
-            . '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][0]['date'] . '</span>'
-            . '<meta itemprop="startDate" content="'. $data['eventItemsFormatted'][0]['startISO'] . '">'
-            . '<meta itemprop="endDate" content="'. $data['eventItemsFormatted'][0]['endISO'] . '">'
-            . (($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][0]['time'] . '</span>' : '')
-            . ($data['location'] != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $data['location'] . '</span>' : '')
-            . '</p>';
-        if (count($data['eventItemsFormatted']) > 1) {
+        $numItems = count($data['eventItemsFormatted']);
+        echo '<div class="rrze-event-schedule">';
+        if (!empty($data['nextOccurrenceFormatted'])) {
+            echo '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $data['nextOccurrenceFormatted']['date'] . '</span>'
+                . '<meta itemprop="startDate" content="' . $data['nextOccurrenceFormatted']['startISO'] . '">'
+                . '<meta itemprop="endDate" content="' . $data['nextOccurrenceFormatted']['endISO'] . '">'
+                . (($data['allDay'] != 'on' && ! strpos($data['nextOccurrenceFormatted']['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['nextOccurrenceFormatted']['time'] . '</span>' : '')
+                . ($data['location'] != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $data['location'] . '</span>' : '')
+                . '</p>';
+        } else {
+            $i = $numItems - 1;
+            echo '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][$i]['date'] . '</span>'
+                . '<meta itemprop="startDate" content="' . $data['eventItemsFormatted'][$i]['startISO'] . '">'
+                . '<meta itemprop="endDate" content="' . $data['eventItemsFormatted'][$i]['endISO'] . '">'
+                . (($data['allDay'] != 'on' && ! strpos($data['eventItemsFormatted'][$i]['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['eventItemsFormatted'][$i]['time'] . '</span>' : '')
+                . ($data['location'] != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $data['location'] . '</span>' : '')
+                . '</p>';
+        }
+        if ($numItems > 1) {
             $upcomingItems = '';
-            foreach ($data['eventItemsFormatted'] as $k => $eventItemFormatted) {
-                if ($k == 0 ) continue;
-                $upcomingItems .= '<li><span class="dashicons dashicons-calendar"></span><span class="rrze--event-date">' . $eventItemFormatted['date'] . '</span>'
+            foreach ($data['eventItemsFormatted'] as $eventItemFormatted) {
+                $class = $eventItemFormatted['startISO'] < date('c', time()) ? 'past' : 'future';
+                $upcomingItems .= '<li class="'.$class.'"><span class="dashicons dashicons-calendar"></span><span class="rrze--event-date">' . $eventItemFormatted['date'] . '</span>'
                     . '<meta itemprop="startDate" content="'. $eventItemFormatted['startISO'] . '">'
                     . '<meta itemprop="endDate" content="'. $eventItemFormatted['endISO'] . '">'
                     .'</li>';
@@ -627,17 +650,18 @@ class CalendarEvent
     }
 
     public static function displayEventDetails($data) {
-        if (strlen($data['location'] . $data['prices'] . $data['registrationUrl']) . $data['categories'] > 0 || !empty($data['downloads'])) { ?>
+        if (strlen($data['location'] . $data['prices'] . $data['registrationUrl']) . $data['categories'] > 0 || !empty($data['downloads'])) {
+            $i = count($data['eventItemsFormatted']) - 1; ?>
             <div class="rrze-event-details">
 
                 <?php echo '<h2>' . __('Event Details', 'rrze-calendar') . '</h2>';
 
                 // Date
-                echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . $data['eventItemsFormatted'][0]['date'] . '</dd>';
+                echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['date'] : $data['nextOccurrenceFormatted'][$i]['date']) . '</dd>';
 
                 // Time
                 if ($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) {
-                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . $data['eventItemsFormatted'][0]['time'] . '</dd>';
+                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['time'] : $data['nextOccurrenceFormatted'][$i]['time']) . '</dd>';
                 }
 
                 // Location
@@ -706,5 +730,42 @@ class CalendarEvent
         }
 
         return $allCaps;
+    }
+
+    public static function listTableHead($columns) {
+        if (isset($columns['date'])) unset($columns['date']);
+        if (isset($columns['author'])) unset($columns['author']);
+        if (isset($columns['taxonomy-rrze-calendar-category'])) unset($columns['taxonomy-rrze-calendar-category']);
+        if (isset($columns['taxonomy-rrze-calendar-tag'])) unset($columns['taxonomy-rrze-calendar-tag']);
+        $columns['event_date']  = __('Date', 'rrze-calendar');
+        $columns['event_recurrence'] = __('Recurrence', 'rrze-calendar');
+        $columns['event_location'] = __('Location', 'rrze-calendar');
+        $columns['taxonomy-rrze-calendar-category'] = __('Categories', 'rrze-calendar');
+        $columns['taxonomy-rrze-calendar-tag'] = __('Tags', 'rrze-calendar');
+        print_r($columns);
+        return $columns;
+    }
+
+    public static function listTableContent($column_name, $post_id) {
+        $data = CalendarEvent::getEventData($post_id);
+        $meta = get_post_meta($post_id);
+        switch ($column_name) {
+            case 'event_date':
+                echo ($data["eventItemsFormatted"][0]['date'] ?? '') . (isset($data["eventItemsFormatted"][0]['time']) ? ', ' . $data["eventItemsFormatted"][0]['time'] : '');
+                break;
+            case 'event_recurrence':
+                if ($data['repeat']  == 'on') {
+                    $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+                    if ($rruleArgs != '') {
+                        $rruleArgs = json_decode($rruleArgs, TRUE);
+                        $rule = new RRule($rruleArgs);
+                        echo Utils::humanReadableRecurrence($rule);
+                    }
+                }
+                break;
+            case 'event_location':
+                echo ($data['location'] ?? '');
+                break;
+        }
     }
 }

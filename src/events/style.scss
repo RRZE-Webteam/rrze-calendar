@@ -204,6 +204,9 @@
             }
             li {
                 list-style-type: none;
+                &.past {
+                    text-decoration: line-through;
+                }
             }
         }
         .dashicons {
