@@ -182,7 +182,14 @@ class Events
                             . $metaAttendance;
                         wp_enqueue_style( 'dashicons' );
                     } else {
-                        $output .= '<div class="event-date">'
+                        $bgColor = '';
+                        $categoryObjects = wp_get_object_terms($event['id'], 'rrze-calendar-category');
+                        if (!is_wp_error($categoryObjects) && !empty($categoryObjects)) {
+                            $cat = $categoryObjects[0];
+                            $bgColor = get_term_meta($cat->term_id, 'color', true);
+                            $color = $bgColor ? Utils::getContrastYIQ($bgColor) : '#222';
+                        }
+                        $output .= '<div class="event-date" ' . ($bgColor != '' ? ' style="background-color: ' . $bgColor . '; color: ' . $color . ';"' : '') . '>'
                             . '<div class="day-month">'
                             . '<div class="day">' . date('d', $timestamp) . '</div>'
                             . '<div class="month">' . date_i18n('M', $timestamp) . '</div>'
@@ -206,9 +213,13 @@ class Events
             }
             $output .= '</ul>';
 
-            if (is_numeric($atts['page_link']) && is_string(get_post_status((int)$atts['page_link']))) {
-                $label = sanitize_text_field($atts['page_link_label']);
-                $output .= do_shortcode('[button link="' . get_permalink((int)$atts['page_link']) . '"]' . $label . '[/button]');
+            if (strlen($output) < 100) {
+                $output = '<p>' . __('No events scheduled.', 'rrze-calendar') . '</p>';
+            } else {
+                if (is_numeric($atts['page_link']) && is_string(get_post_status((int)$atts['page_link']))) {
+                    $label = sanitize_text_field($atts['page_link_label']);
+                    $output .= do_shortcode('[button link="' . get_permalink((int)$atts['page_link']) . '"]' . $label . '[/button]');
+                }
             }
         } else {
             $output .= '<p>' . __('No events scheduled.', 'rrze-calendar') . '</p>';

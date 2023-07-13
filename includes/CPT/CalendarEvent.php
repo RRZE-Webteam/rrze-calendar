@@ -527,7 +527,7 @@ class CalendarEvent
     public static function includeSingleTemplate($singleTemplate)
     {
         global $post;
-        if ($post->post_type != 'calendar_event')
+        if (!$post || $post->post_type != 'calendar_event')
             return $singleTemplate;
 
         return Templates::getCptCalendarEventSingleTpl();
@@ -536,7 +536,7 @@ class CalendarEvent
     public static function includeArchiveTemplate($archiveTemplate)
     {
         global $post;
-        if ($post->post_type != 'calendar_event')
+        if (!$post || $post->post_type != 'calendar_event')
             return $archiveTemplate;
 
         return Templates::getCptCalendarEventTpl();
@@ -634,7 +634,7 @@ class CalendarEvent
             $upcomingItems = '';
             foreach ($data['eventItemsFormatted'] as $eventItemFormatted) {
                 $class = $eventItemFormatted['startISO'] < date('c', time()) ? 'past' : 'future';
-                $upcomingItems .= '<li class="'.$class.'"><span class="dashicons dashicons-calendar"></span><span class="rrze--event-date">' . $eventItemFormatted['date'] . '</span>'
+                $upcomingItems .= '<li class="'.$class.'"><span class="dashicons dashicons-calendar"></span><span class="rrze-event-date">' . $eventItemFormatted['date'] . '</span>'
                     . '<meta itemprop="startDate" content="'. $eventItemFormatted['startISO'] . '">'
                     . '<meta itemprop="endDate" content="'. $eventItemFormatted['endISO'] . '">'
                     .'</li>';

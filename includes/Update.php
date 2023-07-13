@@ -77,6 +77,7 @@ class Update
                 wp_insert_post($postArr);
             }
         }
+        flush_rewrite_rules();
     }
 
     public static function legacyRegisterTaxonomies()

@@ -206,6 +206,10 @@
                 list-style-type: none;
                 &.past {
                     text-decoration: line-through;
+                    filter: brightness(2);
+                }
+                .rrze-event-date {
+                    display: inline;
                 }
             }
         }

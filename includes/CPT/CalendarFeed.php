@@ -44,7 +44,7 @@ class CalendarFeed
         add_filter('manage_edit-' . CalendarEvent::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
         add_filter('manage_' . CalendarEvent::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
         // List Table Stuff.  
-        add_action('pre_get_posts', [__CLASS__, 'maybeDisplayPublicArchivePosts']);
+        //add_action('pre_get_posts', [__CLASS__, 'maybeDisplayPublicArchivePosts']);
         add_action('template_redirect', [__CLASS__, 'maybeDisplayPublicPost']);
         add_filter('post_row_actions', [__CLASS__, 'displayViewOrPreviewLink']);
         add_filter('post_row_actions', [__CLASS__, 'removeQuickEditFields'], 10, 2);
