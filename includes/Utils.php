@@ -665,7 +665,12 @@ class Utils
     {
         $meta = get_post_meta($event->ID);
         $repeat = self::getMeta($meta, 'repeat');
-        if  ($repeat != 'on') return [];
+        if ($repeat != 'on')
+            return [];
+        if (self::getMeta($meta, 'repeat-interval') == 'week' && self::getMeta($meta, 'repeat-weekly-interval') == '')
+            return [];
+        if (self::getMeta($meta, 'repeat-interval') == 'month' && self::getMeta($meta, 'repeat-monthly-type') == '')
+            return [];
         $startTS = self::getMeta($meta, 'start');
         if ($startTS == '') return [];
         if ($startTS >= strtotime('-1 year')) {
