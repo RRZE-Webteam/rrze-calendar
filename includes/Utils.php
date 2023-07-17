@@ -621,8 +621,8 @@ class Utils
             $isImport = get_post_meta($event->ID, 'ics_feed_id', TRUE) != '';
             $repeat = Utils::getMeta($meta, 'repeat');
             if ($repeat != 'on') {
-                $startTS = Utils::getMeta($meta, 'start');
-                $endTS = Utils::getMeta($meta, 'end');
+                $startTS = absint(Utils::getMeta($meta, 'start'));
+                $endTS = absint(Utils::getMeta($meta, 'end'));
                 if (!$isImport) {
                     // convert to UTC
                     $newStartTS = new DateTime(date('Y-m-d H:i', $startTS), new DateTimeZone(wp_timezone_string()));
@@ -638,7 +638,7 @@ class Utils
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
                 foreach($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
-                    $endTStmp = Utils::getMeta($meta, 'end');
+                    $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
                     if (!$isImport) {
                         // convert to UTC
@@ -740,11 +740,14 @@ class Utils
     {
         $meta = get_post_meta($event_id);
         $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+        if (empty($rruleArgs) || $rruleArgs == '[]') {
+            return [];
+        }
         if ($rruleArgs != '') {
             $rruleArgs = json_decode($rruleArgs, true);
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
-            $startTS = Utils::getMeta($meta, 'start');
+            $startTS = absint(Utils::getMeta($meta, 'start'));
             $startTime = date('H:i', $startTS);
 
             // Exceptions

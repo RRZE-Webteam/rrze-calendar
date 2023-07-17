@@ -19,10 +19,10 @@ class Main
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
         add_action('wp_enqueue_scripts', [$this, 'wpEnqueueScripts']);
 
-        Update::init();
-
         CalendarEvent::init();
         CalendarFeed::init();
+
+        Update::init();
 
         Shortcode::init();
 

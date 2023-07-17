@@ -159,6 +159,7 @@ class CalendarEvent
                 'data-timepicker' => json_encode(array(
                     'timeFormat' => 'HH:mm',
                 )),
+                'required'    => 'required',
             ),
         ]);
         $cmb_info->add_field([
@@ -181,10 +182,11 @@ class CalendarEvent
                 'data-timepicker' => json_encode(array(
                     'timeFormat' => 'HH:mm',
                 )),
+                'required'    => 'required',
             ),
         ]);
         $cmb_info->add_field([
-            'name' => __('All day event', 'rrze-calendar'),
+            'name' => __('All day event', 'rrze-calendar') . '<br /><span style="font-weight: normal;color: #666;font-size: 13px;">' . __('(Time settings will be ignored.)', 'rrze-calendar') . '</span>',
             'id' => 'all-day',
             'type' => 'checkbox',
         ]);
