@@ -2,7 +2,9 @@
 
 ## Wordpress-Plugin
 
-Import und Veröffentlichung öffentlicher Veranstaltungen der FAU sowie anderer Quellen, die das iCalendar-Datenformat unterstützen.
+Verwaltung und Darstellung von Veranstaltungen: 
+* Erstellung und Verwaltung von Veranstaltungen direkt in WordPress
+* Import und Veröffentlichung öffentlicher Veranstaltungen der FAU sowie anderer Quellen, die das iCalendar-Datenformat unterstützen.
 
 ### Einstellungsmenü
 
