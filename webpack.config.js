@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
                 },
             }),
         ],
-        devtool: isDevelopment() ? "cheap-module-source-map" : "source-map",
+        devtool: isDevelopment() ? "cheap-module-source-map" : false,
         module: {
             rules: [
                 {
