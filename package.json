@@ -1,0 +1,44 @@
+{
+    "name": "rrze-calendar",
+    "version": "2.0.0",
+    "main": "rrze-calendar.php",
+    "scripts": {
+        "start": "webpack --mode=development --watch",
+        "build": "webpack --mode=production",
+        "clean": "rm -rf build/",
+        "major": "gulp major",
+        "minor": "gulp minor",
+        "patch": "gulp patch",
+        "prerelease": "gulp prerelease"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/RRZE-Webteam/rrze-calendar.git"
+    },
+    "license": "GPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/RRZE-Webteam/rrze-calendar/issues"
+    },
+    "homepage": "https://github.com/RRZE-Webteam/rrze-calendar#readme",
+    "devDependencies": {
+        "@babel/core": "7",
+        "@babel/preset-env": "7",
+        "autoprefixer": "10",
+        "babel-loader": "8",
+        "clean-webpack-plugin": "4",
+        "css-loader": "6",
+        "css-minimizer-webpack-plugin": "4",
+        "gulp": "4",
+        "gulp-bump": "3",
+        "gulp-touch-cmd": "0",
+        "mini-css-extract-plugin": "2",
+        "postcss-loader": "7",
+        "sass": "1",
+        "sass-loader": "13",
+        "semver": "7",
+        "style-loader": "3",
+        "terser-webpack-plugin": "5",
+        "webpack": "5",
+        "webpack-cli": "4"
+    }
+}

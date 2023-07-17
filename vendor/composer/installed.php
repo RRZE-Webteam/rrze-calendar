@@ -1,85 +1,68 @@
-<?php return array (
-  'root' => 
-  array (
-    'pretty_version' => '1.11.26',
-    'version' => '1.11.26.0',
-    'aliases' => 
-    array (
+<?php return array(
+    'root' => array(
+        'name' => 'rrze/rrze-calendar',
+        'pretty_version' => '2.0.1',
+        'version' => '2.0.1.0',
+        'reference' => NULL,
+        'type' => 'wordpress-plugin',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
     ),
-    'reference' => NULL,
-    'name' => 'rrze/rrze-calendar',
-  ),
-  'versions' => 
-  array (
-    'nesbot/carbon' => 
-    array (
-      'pretty_version' => '2.66.0',
-      'version' => '2.66.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '496712849902241f04902033b0441b269effe001',
+    'versions' => array(
+        'cmb2/cmb2' => array(
+            'pretty_version' => 'v2.10.1',
+            'version' => '2.10.1.0',
+            'reference' => '4afc4bb7b92ab6d93aac2247c9a84af773e42532',
+            'type' => 'wordpress-plugin',
+            'install_path' => __DIR__ . '/../cmb2/cmb2',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'johngrogg/ics-parser' => array(
+            'pretty_version' => 'v3.2.1',
+            'version' => '3.2.1.0',
+            'reference' => 'a3a291c51c378cc4a7f3aec6cd2478bdbd110575',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../johngrogg/ics-parser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'jsvrcek/ics' => array(
+            'pretty_version' => '0.8.5',
+            'version' => '0.8.5.0',
+            'reference' => '11a24ac95648d720a1370c5bb20988b1739a63a4',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../jsvrcek/ics',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'rlanvin/php-rrule' => array(
+            'pretty_version' => 'v2.4.1',
+            'version' => '2.4.1.0',
+            'reference' => '7ddef3d49b7a6461dc070f671f0d94509c9a537b',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../rlanvin/php-rrule',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'rrze/rrze-calendar' => array(
+            'pretty_version' => '2.0.1',
+            'version' => '2.0.1.0',
+            'reference' => NULL,
+            'type' => 'wordpress-plugin',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'rrze/wp' => array(
+            'pretty_version' => '1.2.0',
+            'version' => '1.2.0.0',
+            'reference' => 'be3c13c0c263623fc14332cb6fe699d43f90fb35',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../rrze/wp',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
     ),
-    'rlanvin/php-rrule' => 
-    array (
-      'pretty_version' => 'v2.4.0',
-      'version' => '2.4.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '2acd9950e803ea65514d6440212d39096df9c528',
-    ),
-    'rrze/rrze-calendar' => 
-    array (
-      'pretty_version' => '1.11.26',
-      'version' => '1.11.26.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => NULL,
-    ),
-    'symfony/polyfill-mbstring' => 
-    array (
-      'pretty_version' => 'v1.27.0',
-      'version' => '1.27.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '8ad114f6b39e2c98a8b0e3bd907732c207c2b534',
-    ),
-    'symfony/polyfill-php80' => 
-    array (
-      'pretty_version' => 'v1.27.0',
-      'version' => '1.27.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '7a6ff3f1959bb01aefccb463a0f2cd3d3d2fd936',
-    ),
-    'symfony/translation' => 
-    array (
-      'pretty_version' => 'v6.0.19',
-      'version' => '6.0.19.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '9c24b3fdbbe9fb2ef3a6afd8bbaadfd72dad681f',
-    ),
-    'symfony/translation-contracts' => 
-    array (
-      'pretty_version' => 'v3.0.2',
-      'version' => '3.0.2.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'acbfbb274e730e5a0236f619b6168d9dedb3e282',
-    ),
-    'symfony/translation-implementation' => 
-    array (
-      'provided' => 
-      array (
-        0 => '2.3|3.0',
-      ),
-    ),
-  ),
 );

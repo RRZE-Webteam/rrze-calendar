@@ -1,0 +1,228 @@
+.rrze-calendar {
+    ul.events-list  {
+        margin: 0;
+        padding: 0;
+        background: none;
+        li.event-item {
+            list-style: none;
+            margin-bottom: 1em;
+            display: flex;
+            flex-direction: row;
+            gap: 1em;
+            align-items: flex-start;
+        }
+        .event-date {
+            flex: 0 0 60px;
+            margin: 0;
+            padding: 0.5em;
+            text-align: center;
+            width: auto;
+            height: auto;
+            background: var(--color-primary-ci-hell, #003366);
+            color: var(--color-primary-ci-hell-kontrast, #fff);
+            line-height: 1.5;
+            .rrze-2019 & {
+                background-color: #00458c;
+            }
+            .day-month {
+                padding: 0;
+                float: none;
+                height: auto;
+                .day {
+                    font-weight: bold;
+                    font-size: 1.4rem;
+                    //margin-bottom: 0.2em;
+                }
+                .month {
+                    font-size: 1rem;
+                    //text-transform: uppercase;
+                }
+            }
+        }
+        .event-info {
+
+        }
+        .event-title {
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            a {
+                color: var(--color-Text, #222);
+                box-shadow: none;
+                text-decoration: none;
+                &:hover, &:focus, &:active {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+    ul.events-list-short {
+        margin-left: 0;
+        li {
+            list-style: none;
+            margin-bottom: .5em;
+        }
+        .event-date {
+            float: none;
+            display: inline;
+            background: unset;
+            color: unset;
+            padding: 0;
+        }
+        .event-title {
+            font-weight: bold;
+        }
+        .dashicons {
+            color: #333;
+            position: relative;
+            top: 2px;
+            &.dashicons-clock {
+                margin-left: .5em;
+            }
+        }
+    }
+}
+
+.event-allday {
+    text-transform: uppercase;
+}
+
+.event-label {
+    font-weight: 700;
+    margin: 0.5rem 0 0.2rem;
+}
+
+.single-calendar_event {
+    main {
+        padding-left: 15px;
+        padding-right: 15px;
+        @media (min-width: 768px) {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+    }
+    .rrze-event {
+        margin-top: 20px;
+        @media (min-width: 1024px) {
+            display: grid;
+            column-gap: var(--gap-width, 30px);
+            grid-template-columns: 1fr var(--min-width-aside, 300px);
+        }
+        .entry-header {
+            @media (min-width: 1024px) {
+                grid-column: 1 / span 2;
+            }
+        }
+    }
+    .rrze-event-details {
+        @media (min-width: 1024px) {
+            border-left: 2px solid var(--color-primary-ci-hell2,#ced9e7);
+            padding-left: 15px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        p {
+            margin-bottom: .5em;
+        }
+        dt, dd, dt *, dd * {
+            font-size: 0.875rem;
+            line-height: 1.313rem;
+        }
+        dd {
+            margin-left: 0;
+            margin-bottom: 1em;
+            p {
+                margin: 0;
+                padding: 0;
+            }
+        }
+        ul.downloads {
+            margin-left: 0;
+            overflow: hidden;
+            padding-left: 20px;
+        }
+        div.prices {
+            overflow: hidden;
+        }
+        span.label {
+            display: block;
+            //min-width: 140px;
+            font-weight: bold;
+        }
+    }
+    .post-image {
+        @media (min-width: 480px) {
+            max-width: 50%;
+            margin-top: 0;
+        }
+        @media (min-width: 992px) {
+            max-width: 30%;
+        }
+    }
+    figure.post-thumbnail {
+        @media (min-width: 480px) {
+            float: right;
+            margin: 0 0 1em 1em;
+        }
+        .wp-caption-text {
+            margin-bottom: 0;
+        }
+        @media (min-width: 480px) {
+            width: auto;
+        }
+    }
+    .rrze-event-schedule {
+        margin-bottom: 1em;
+        .rrze-event-date,
+        .rrze-event-time,
+        .rrze-event-location {
+            display: block;
+        }
+        .rrze-event-date,
+        .rrze-event-time {
+            @media (min-width: 768px) {
+                display: inline-block;
+                margin-right: 2em;
+            }
+        }
+        .rrze-event-location {
+            margin-top: .5em;
+        }
+        ul {
+            margin-bottom: 0;
+            margin-left: 0;
+            padding-left: 0;
+            &.cols-3 {
+                columns: 300px 3;
+                column-gap: 20px;
+                orphans: 3;
+                widows: 3;
+            }
+            li {
+                list-style-type: none;
+                &.past {
+                    text-decoration: line-through;
+                    filter: brightness(2);
+                }
+                .rrze-event-date {
+                    display: inline;
+                }
+            }
+        }
+        .dashicons {
+            margin-right: 5px;
+            color: #333;
+            position: relative;
+            top: 2px;
+        }
+    }
+    .rrze-event-description {
+        span.label {
+            font-weight: bold;
+        }
+    }
+}
