@@ -22,10 +22,6 @@ if (isset($event->category)) {
  $currentTheme = wp_get_theme();		
 $vers = $currentTheme->get( 'Version' );
  
-$post = get_post();
-if (isset($post)) {
-    $post->post_title = $event->summary;
-}
 
 
 get_header(); 
