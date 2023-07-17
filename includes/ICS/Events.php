@@ -592,6 +592,7 @@ class Events
 
         foreach ($items as $event) {
             $args = [
+                'post_author' => $post->post_author,
                 'post_title' => $event['summary'],
                 'post_content' => '',
                 'post_excerpt' => $event['description'],
