@@ -714,7 +714,7 @@ class CalendarEvent
             return $allCaps;
         }
         $post = get_post($args[2]);
-        if (get_post_type($post->ID) != self::POST_TYPE) {
+        if ($post == NULL || get_post_type($post->ID) != self::POST_TYPE) {
             return $allCaps;
         }
 

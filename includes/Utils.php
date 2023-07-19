@@ -617,7 +617,9 @@ class Utils
         $eventsArray = [];
         $i = 0;
         foreach ($events as $event) {
+            if ($event == NULL) continue;
             $meta = get_post_meta($event->ID);
+            if (empty($meta)) continue;
             $isImport = get_post_meta($event->ID, 'ics_feed_id', TRUE) != '';
             $repeat = Utils::getMeta($meta, 'repeat');
             if ($repeat != 'on') {

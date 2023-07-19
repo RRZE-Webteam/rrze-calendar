@@ -195,7 +195,7 @@ class Calendar
                     . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
                 . '</p>';
         }
-        $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging);
+        $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging, $taxQuery);
         $output .= '</div>';
 
         wp_enqueue_style('rrze-calendar-sc-calendar');
@@ -221,7 +221,7 @@ class Calendar
      * @param   bool    $paging     Allow skipping to next/previous month/year
      * @return  string
      */
-    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true): string {
+    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = []): string {
         $output = '';
         if ($day != '') {
             $output .= '<div class="calendar-wrapper cal-day" data-period="'.$year.'-'.$month.'-'.$day.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '">';
@@ -231,9 +231,9 @@ class Calendar
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
             $output .= '<div class="calendar-wrapper cal-month" data-period="'.$year.'-'.$month.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '">';
             if ($layout == 'full') {
-                $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging);
+                $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging, $taxQuery);
             } else {
-                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, true);
+                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, true, $taxQuery);
             }
             $output .= '</div>';
         } else {
@@ -253,7 +253,7 @@ class Calendar
                 .'<div class="calendar-year">';
             for ($i = 1; $i <= 12; $i++) {
                 $month = str_pad((string)$i, 2, '0', STR_PAD_LEFT);
-                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, false);
+                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, false, $taxQuery);
             }
             $output .= '</div></div>';
         }
@@ -264,7 +264,7 @@ class Calendar
      * Render list of events on one day
      * @param array $events
      */
-    private static function renderDayList($year, $month, $day, $eventsArray = []) {
+    private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = []) {
         $calDay = $year.'-'.str_pad($month, 2, '0', STR_PAD_LEFT).'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
         $calDayTs = strtotime($calDay);
         $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option( 'date_format' ), $calDayTs) . '</h2>';
@@ -336,7 +336,7 @@ class Calendar
      * @return  string
      */
 
-    private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false) {
+    private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = []) {
         global $wp_locale;
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
@@ -416,7 +416,7 @@ class Calendar
      * @return string
      */
 
-    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true) {
+    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = []) {
         //var_dump($eventsArray);
         /*foreach ($eventsArray as $ts => $events) {
             print date('Y-m-d', $ts) . '<br />';
@@ -434,15 +434,18 @@ class Calendar
         }
         $day_names = Utils::getDaysOfWeek('full');
 
+        $taxQueryJSON = json_encode($taxQuery);
+        $taxQueryBase64 = base64_encode($taxQueryJSON);
+
         // Calender Header (Title + Nav)
         $output = '<div class="calendar-header"><h2 class="title-year">' . $month_name . ' ' . $year . '</h2>';
         if ($paging) {
             $output .= '<ul class="calendar-pager">
             <li class="date-prev">
-                <a href="#" title="' . __('Go to previous month', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
+                <a href="#" title="' . __('Go to previous month', 'rrze-calendar') . '" rel="nofollow" data-direction="prev" data-taxquery="'.$taxQueryBase64.'">« ' . __('Previous', 'rrze-calendar') . '</a>
             </li>
             <li class="date-next">
-                <a href="#" title="' . __('Go to next month', 'rrze-calendar') . '" rel="nofollow" data-direction="next">' . __('Next', 'rrze-calendar') . ' »</a>
+                <a href="#" title="' . __('Go to next month', 'rrze-calendar') . '" rel="nofollow" data-direction="next" data-taxquery="'.$taxQueryBase64.'">' . __('Next', 'rrze-calendar') . ' »</a>
             </li>
         </ul>';
         }
@@ -737,7 +740,7 @@ class Calendar
         $endTS = $endObj->getTimestamp();
         $startTS = $startObj->getTimestamp();
         // Get events in calendar period
-        $events = get_posts([
+        $args = [
             'post_type' => CalendarEvent::POST_TYPE,
             'posts_per_page' => -1,
             'meta_query' => [
@@ -752,11 +755,22 @@ class Calendar
                     'compare' => '>='
                 ],
             ],
-        ]);
+        ];
+        $taxQueryBase64 = '';
+        if ($_POST['taxquery'] != '') {
+            $taxQueryBase64 = sanitize_text_field($_POST['taxquery']);
+            $taxQueryJSON = base64_decode($taxQueryBase64);
+            $taxQuery = json_decode($taxQueryJSON, true);
+        }
+        if ($taxQuery) {
+            $taxQuery = array_merge(['relation' => 'AND'], $taxQuery);
+            $args = array_merge($args, ['tax_query' => $taxQuery]);
+        }
+        $events = get_posts($args);
 
         $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
 
-        $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout);
+        $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout, true, $taxQuery);
         echo $output;
         wp_die();
     }

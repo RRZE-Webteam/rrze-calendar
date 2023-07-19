@@ -16,12 +16,14 @@ jQuery(document).ready(function($){
         var period = calendar.data('period');
         var layout = calendar.data('layout');
         var direction = $(this).data('direction');
+        var taxquery = $(this).data('taxquery');
         $.post(rrze_calendar_ajax.ajax_url, {         //POST request
             _ajax_nonce: rrze_calendar_ajax.nonce,     //nonce
             action: "rrze-calendar-update-calendar",            //action
             period: period,                  //data
             layout: layout,
             direction: direction,
+            taxquery: taxquery,
         }, function(result) {
             calendar.remove();
             $('div.rrze-calendar').append(result);
