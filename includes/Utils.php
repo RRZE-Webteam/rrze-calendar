@@ -581,6 +581,19 @@ class Utils
     }
 
     /**
+     * Generates a random UID.
+     *
+     * @param string $prefix
+     * @return string
+     */
+    public static function createUid(string $prefix = '')
+    {
+        $prefix = $prefix ? $prefix : str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST));
+        $uid = vsprintf('%s-%s-%s-%s', str_split(bin2hex(random_bytes(16)), 4));
+        return sprintf('%s-%s', $prefix, $uid);
+    }
+
+    /**
      * Sanitize Hexcolor.
      *
      * @param string $hexcolor
@@ -638,7 +651,7 @@ class Utils
                 $eventsArray[$startTS][$i]['end'] = $endTS;
             } else {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
-                foreach($occurrences as $occurrence) {
+                foreach ($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
@@ -708,7 +721,6 @@ class Utils
                 $dows[$i] = $daysOfWeek[$dow];
             }
             $rruleArgs['BYDAY'] = $dows;
-
         } elseif ($repeatInterval == 'month') {
             $rruleArgs['FREQ'] = 'monthly';
 
@@ -730,7 +742,6 @@ class Utils
                 $rruleArgs['BYDAY'] = $daysOfWeek[$monthlyDow["day"]];
                 $rruleArgs['BYSETPOS'] = ($monthlyDow["daycount"] ?? 1);
             }
-
         }
         //$rrule = new RRule($rruleArgs);
         //var_dump($rrule);
@@ -819,16 +830,17 @@ class Utils
      * @param $format "string"|"seconds"
      * @return int|string
      */
-    public static function getTimezoneOffset($format = 'string') {
-        $offset  = (float) get_option( 'gmt_offset' );
+    public static function getTimezoneOffset($format = 'string')
+    {
+        $offset  = (float) get_option('gmt_offset');
         if ($format == 'seconds') {
             return (int)($offset * 60 * 60);
         } else {
             $hours   = (int) $offset;
-            $minutes = ( $offset - $hours );
-            $sign      = ( $offset < 0 ) ? '-' : '+';
-            $abs_hour  = abs( $hours );
-            $abs_mins  = abs( $minutes * 60 );
+            $minutes = ($offset - $hours);
+            $sign      = ($offset < 0) ? '-' : '+';
+            $abs_hour  = abs($hours);
+            $abs_mins  = abs($minutes * 60);
             return sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
         }
     }
