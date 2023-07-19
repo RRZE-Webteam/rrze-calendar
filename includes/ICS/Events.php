@@ -600,10 +600,12 @@ class Events
                 'post_status' => 'publish'
             ];
 
-            $eventId = wp_insert_post($args);
-            if ($eventId == 0 || is_wp_error($eventId)) {
+            $eventId = wp_insert_post($args, false, false);
+            if (!$eventId) {
                 continue;
             }
+
+            update_post_meta($eventId, 'event-uid', $event['uid']);
 
             $terms = get_the_terms($postId, CalendarEvent::TAX_CATEGORY);
             if ($terms && !is_wp_error($terms)) {
