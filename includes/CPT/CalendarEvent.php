@@ -425,6 +425,8 @@ class CalendarEvent
         $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
         update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
 
+        add_post_meta($post_id, 'event-uid', Utils::createUid(), true);
+
         // unhook this function to prevent infinite looping
         /* remove_action( 'save_post', 'saveEvent' );
 

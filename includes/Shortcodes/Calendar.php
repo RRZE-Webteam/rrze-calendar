@@ -584,10 +584,10 @@ class Calendar
                             . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
                             . $locationMeta
                             . '<div role="tooltip" aria-hidden="true">'
-                            . '<p style="margin: 0;">' . $thumbnail . '</p>'
-                            . '<div class="event-title">' . $eventTitle . '</div>'
-                            . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
-                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
+                                . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
+                                . '<div class="event-title">' . $eventTitle . '</div>'
+                                . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
+                                . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
                             . '</div>'
                             . '</div>';
 
