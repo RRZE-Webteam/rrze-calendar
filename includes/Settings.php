@@ -32,7 +32,8 @@ class Settings
                 'hourly'     => __('Hourly', 'rrze-calendar'),
                 'twicedaily' => __('Twice daily', 'rrze-calendar'),
                 'daily'      => __('Daily', 'rrze-calendar')
-            ]
+            ],
+            'default' => 'hourly'
         ]);
 
         $this->settings->build();
@@ -40,7 +41,12 @@ class Settings
 
     public function getOption($option)
     {
-        $this->settings->getOption($option);
+        return $this->settings->getOption($option);
+    }
+
+    public function getOptions()
+    {
+        return $this->settings->getOptions();
     }
 
     /**
