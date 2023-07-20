@@ -581,16 +581,16 @@ class Utils
     }
 
     /**
-     * Generates a random UID.
+     * Generates a random UUID based on the post ID and website host.
      *
-     * @param string $prefix
+     * @param integer $postId
      * @return string
      */
-    public static function createUid(string $prefix = '')
+    public static function createUuid(int $postId = 0)
     {
-        $prefix = $prefix ? $prefix : str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST));
-        $uid = vsprintf('%s-%s-%s-%s', str_split(bin2hex(random_bytes(16)), 4));
-        return sprintf('%s-%s', $prefix, $uid);
+        $host = parse_url(site_url(), PHP_URL_HOST);
+        $uid = vsprintf('%s-%s-%s', str_split(self::createId(), 4));
+        return sprintf('%s-%s@%s', $uid, $postId, $host);
     }
 
     /**
