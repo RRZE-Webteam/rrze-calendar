@@ -562,7 +562,7 @@ class Calendar
                                 . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
                                 . __('More&hellip;', 'rrze-calendar')
                                 . '</a></div>';
-                            continue 2;
+                            continue 3;
                         }
                         if ($eventStartDate == $eventEndDate) {
                             $dateOut = date('d.m.Y', $eventStartLocal);
@@ -577,18 +577,18 @@ class Calendar
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
-                            . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
-                            . $timeOut
-                            . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
-                            . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
-                            . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
-                            . $locationMeta
-                            . '<div role="tooltip" aria-hidden="true">'
-                                . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
-                                . '<div class="event-title">' . $eventTitle . '</div>'
-                                . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
-                                . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
-                            . '</div>'
+                                . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
+                                . $timeOut
+                                . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
+                                . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
+                                . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
+                                . $locationMeta
+                                . '<div role="tooltip" aria-hidden="true">'
+                                    . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
+                                    . '<div class="event-title">' . $eventTitle . '</div>'
+                                    . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
+                                    . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
+                                . '</div>'
                             . '</div>';
 
                     } elseif (($col == 1 || $day == 1) && $calDay > $eventStartDate && $calDay <= $eventEndDate) {
