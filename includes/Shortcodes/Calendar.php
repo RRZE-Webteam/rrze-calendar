@@ -478,6 +478,9 @@ class Calendar
             $week .= '<div class="no-event" style="grid-column-start: day-'.$col.'; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
 
             foreach ($eventsArray as $ts => $events) {
+                if (isset($eventsPerDay[$date]) && $eventsPerDay[$date] > 3) {
+                    continue;
+                }
                 //var_dump($eventsArray);
                 foreach ($events as $event) {
                     $eventStart = $ts;
@@ -557,12 +560,12 @@ class Calendar
                             }
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
-                        if ($eventsPerDay[$countDate] > 3) {
+                        if (isset($eventsPerDay[$countDate]) && $eventsPerDay[$countDate] > 3) {
                             $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
                                 . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
                                 . __('More&hellip;', 'rrze-calendar')
                                 . '</a></div>';
-                            continue 3;
+                            continue 2;
                         }
                         if ($eventStartDate == $eventEndDate) {
                             $dateOut = date('d.m.Y', $eventStartLocal);
