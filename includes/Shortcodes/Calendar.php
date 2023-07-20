@@ -291,16 +291,19 @@ class Calendar
                 if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
                     continue;
                 }
+                $isAllDay = Utils::getMeta($meta, 'all-day') == 'on';
                 $timeText = '';
 
                 $eventTitle = get_the_title($event['id']);
                 $eventURL = get_the_permalink($event['id']);
                 $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
                 // Date/Time
-                if ($eventStartDate == $eventEndDate) {
-                    $timeText = '<span class="event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i \U\h\r', $eventEnd) . '</span>';
+                if ($eventStartDate == $eventEndDate && !$isAllDay) {
+                    $timeText = '<span class="event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '</span>';
+                } elseif ($isAllDay) {
+                    $timeText = '<span class="event-date">' . __('All Day', 'rrze-calendar') . '</span>';
                 } else {
-                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r,', $eventStart) . ' bis ' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r', $eventEnd) . '</span>';
+                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ) . ', H:i,', $eventStart) . ' bis ' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r', $eventEnd) . '</span>';
                 }
                 // Location
                 $location = Utils::getMeta($meta, 'location');
@@ -494,6 +497,7 @@ class Calendar
                         continue;
                     }
                     $meta = get_post_meta($event['id']);
+                    $isAllDay = Utils::getMeta($meta, 'all-day') == 'on';
                     $eventTitle = get_the_title($event['id']);
                     $eventURL = get_the_permalink($event['id']);
                     $categories = get_the_terms($event['id'], CalendarEvent::TAX_CATEGORY);
@@ -528,11 +532,15 @@ class Calendar
                         $dateClasses = ['event-date'];
                         $span = floor(($eventEndLocal - $eventStartLocal) / (60 * 60 * 24) + 1);
                         if ($span < 1) $span = 1;
-                        if ($span > 1) {
+                        if ($span > 1 || $isAllDay) {
                             $timeOut = '';
                         } else {
                             $dateClasses[] = 'hide-desktop';
                             $timeOut = '<span class="event-time">' . date('H:i', $eventStartLocal) . ' - ' . date('H:i', $eventEndLocal) . '<br /></span>';
+                        }
+                        if ($isAllDay) {
+                            $dateClasses[] = 'hide-desktop';
+                            $timeOut = '<span class="event-time">' . __('All Day', 'rrze-calendar') . '<br /></span>';
                         }
                         if (($col + $span) > 8) {
                             $span = 8 - $col + 1; // trim if event longer than week
