@@ -506,7 +506,7 @@ class Calendar
                     if ($catColor == '') $catColor = 'var(--color-primary-ci-hell, #003366)';
                     $eventTitleShort = $eventTitle;
                     if (strlen($eventTitle) > 40) {
-                        $eventTitleShort = substr($eventTitle, 0, 37) . '&hellip;';
+                        $eventTitleShort = mb_substr($eventTitle, 0, 37) . '&hellip;';
                     }
                     $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
                     $eventTitleShort = '<a href="' . $eventURL . '">' . $eventTitleShort . '</a>';
