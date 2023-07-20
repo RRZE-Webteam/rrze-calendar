@@ -19,7 +19,6 @@ class Update
         $version = get_option(static::VERSION_OPTION_NAME, '0');
 
         if (version_compare($version, '2.0.0', '<')) {
-            //add_action('init', [__CLASS__, 'legacyRegisterTaxonomies']);
             add_action('init', [__CLASS__, 'updateToVersion200']);
             update_option(static::VERSION_OPTION_NAME, '2.0.0');
         }
@@ -38,9 +37,6 @@ class Update
             $users = get_users(['role' => 'administrator']);
             foreach ($users as $user) {
                 $admins[] = $user->ID;
-            }
-            if (empty($admins)) {
-                $admins[] = get_current_user_id();
             }
             $adminId = array_rand(array_flip($admins), 1);
 
@@ -78,17 +74,7 @@ class Update
             }
         }
         flush_rewrite_rules();
-    }
-
-    public static function legacyRegisterTaxonomies()
-    {
-        $args = [
-            'public' => false,
-            'rewrite' => false,
-        ];
-
-        register_taxonomy(static::LEGACY_TAX_CAT_KEY, 'post', $args);
-        register_taxonomy(static::LEGACY_TAX_TAG_KEY, 'post', $args);
+        Events::updateFeedsItems();
     }
 
     protected static function legacyGetFeedCategory($feedId)
