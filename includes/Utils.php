@@ -581,6 +581,19 @@ class Utils
     }
 
     /**
+     * Generates a random UUID based on the post ID and website host.
+     *
+     * @param integer $postId
+     * @return string
+     */
+    public static function createUuid(int $postId = 0)
+    {
+        $host = parse_url(site_url(), PHP_URL_HOST);
+        $uid = vsprintf('%s-%s-%s', str_split(self::createId(), 4));
+        return sprintf('%s-%s@%s', $uid, $postId, $host);
+    }
+
+    /**
      * Sanitize Hexcolor.
      *
      * @param string $hexcolor
@@ -617,7 +630,9 @@ class Utils
         $eventsArray = [];
         $i = 0;
         foreach ($events as $event) {
+            if ($event == NULL) continue;
             $meta = get_post_meta($event->ID);
+            if (empty($meta)) continue;
             $isImport = get_post_meta($event->ID, 'ics_feed_id', TRUE) != '';
             $repeat = Utils::getMeta($meta, 'repeat');
             if ($repeat != 'on') {
@@ -636,7 +651,7 @@ class Utils
                 $eventsArray[$startTS][$i]['end'] = $endTS;
             } else {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
-                foreach($occurrences as $occurrence) {
+                foreach ($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
@@ -706,7 +721,6 @@ class Utils
                 $dows[$i] = $daysOfWeek[$dow];
             }
             $rruleArgs['BYDAY'] = $dows;
-
         } elseif ($repeatInterval == 'month') {
             $rruleArgs['FREQ'] = 'monthly';
 
@@ -728,7 +742,6 @@ class Utils
                 $rruleArgs['BYDAY'] = $daysOfWeek[$monthlyDow["day"]];
                 $rruleArgs['BYSETPOS'] = ($monthlyDow["daycount"] ?? 1);
             }
-
         }
         //$rrule = new RRule($rruleArgs);
         //var_dump($rrule);
@@ -817,16 +830,17 @@ class Utils
      * @param $format "string"|"seconds"
      * @return int|string
      */
-    public static function getTimezoneOffset($format = 'string') {
-        $offset  = (float) get_option( 'gmt_offset' );
+    public static function getTimezoneOffset($format = 'string')
+    {
+        $offset  = (float) get_option('gmt_offset');
         if ($format == 'seconds') {
             return (int)($offset * 60 * 60);
         } else {
             $hours   = (int) $offset;
-            $minutes = ( $offset - $hours );
-            $sign      = ( $offset < 0 ) ? '-' : '+';
-            $abs_hour  = abs( $hours );
-            $abs_mins  = abs( $minutes * 60 );
+            $minutes = ($offset - $hours);
+            $sign      = ($offset < 0) ? '-' : '+';
+            $abs_hour  = abs($hours);
+            $abs_mins  = abs($minutes * 60);
             return sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
         }
     }

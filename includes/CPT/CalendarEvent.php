@@ -425,6 +425,8 @@ class CalendarEvent
         $rruleArgs = Utils::makeRRuleArgs(get_post($post_id));
         update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
 
+        add_post_meta($post_id, 'event-uid', Utils::createUuid($post_id), true);
+
         // unhook this function to prevent infinite looping
         /* remove_action( 'save_post', 'saveEvent' );
 
@@ -714,7 +716,7 @@ class CalendarEvent
             return $allCaps;
         }
         $post = get_post($args[2]);
-        if (get_post_type($post->ID) != self::POST_TYPE) {
+        if ($post == NULL || get_post_type($post->ID) != self::POST_TYPE) {
             return $allCaps;
         }
 
@@ -744,7 +746,7 @@ class CalendarEvent
         $columns['event_location'] = __('Location', 'rrze-calendar');
         $columns['taxonomy-rrze-calendar-category'] = __('Categories', 'rrze-calendar');
         $columns['taxonomy-rrze-calendar-tag'] = __('Tags', 'rrze-calendar');
-        print_r($columns);
+        $columns['event-feed'] = __('Feed', 'rrze-calendar');
         return $columns;
     }
 
@@ -767,6 +769,14 @@ class CalendarEvent
                 break;
             case 'event_location':
                 echo ($data['location'] ?? '');
+                break;
+            case 'event-feed':
+                $feedID = Utils::getMeta($meta, 'ics_feed_id');
+                if ($feedID != '') {
+                    $feedURL = get_edit_post_link($feedID);
+                    $feedName = get_the_title($feedID);
+                    echo '<a href="' . esc_url($feedURL) . '">' . esc_attr($feedName) . '</a>';
+                }
                 break;
         }
     }
