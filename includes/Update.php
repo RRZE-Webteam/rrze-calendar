@@ -5,6 +5,7 @@ namespace RRZE\Calendar;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
+use RRZE\Calendar\ICS\Events;
 
 class Update
 {
