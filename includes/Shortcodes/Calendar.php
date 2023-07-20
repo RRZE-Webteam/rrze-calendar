@@ -538,7 +538,7 @@ class Calendar
                             $dateClasses[] = 'hide-desktop';
                             $timeOut = '<span class="event-time">' . date('H:i', $eventStartLocal) . ' - ' . date('H:i', $eventEndLocal) . '<br /></span>';
                         }
-                        if ($isAllDay) {
+                        if ($isAllDay && $eventStartDate == $eventEndDate) {
                             $dateClasses[] = 'hide-desktop';
                             $timeOut = '<span class="event-time">' . __('All Day', 'rrze-calendar') . '<br /></span>';
                         }
