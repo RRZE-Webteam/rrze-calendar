@@ -746,7 +746,7 @@ class CalendarEvent
         $columns['event_location'] = __('Location', 'rrze-calendar');
         $columns['taxonomy-rrze-calendar-category'] = __('Categories', 'rrze-calendar');
         $columns['taxonomy-rrze-calendar-tag'] = __('Tags', 'rrze-calendar');
-        print_r($columns);
+        $columns['event-feed'] = __('Feed', 'rrze-calendar');
         return $columns;
     }
 
@@ -769,6 +769,14 @@ class CalendarEvent
                 break;
             case 'event_location':
                 echo ($data['location'] ?? '');
+                break;
+            case 'event-feed':
+                $feedID = Utils::getMeta($meta, 'ics_feed_id');
+                if ($feedID != '') {
+                    $feedURL = get_edit_post_link($feedID);
+                    $feedName = get_the_title($feedID);
+                    echo '<a href="' . esc_url($feedURL) . '">' . esc_attr($feedName) . '</a>';
+                }
                 break;
         }
     }
