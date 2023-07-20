@@ -84,7 +84,7 @@ class Update
 
         if (!empty($allCategories)) {
             foreach ($allCategories as $category) {
-                if (!in_array($feedId, $category->feed_ids)) {
+                if (empty($category->feed_ids) || !in_array($feedId, $category->feed_ids)) {
                     continue;
                 }
 
@@ -105,7 +105,7 @@ class Update
         if (!empty($allTags)) {
             $tagIds = [];
             foreach ($allTags as $tag) {
-                if (!in_array($feedId, $tag->feed_ids)) {
+                if (empty($tag->feed_ids) || !in_array($feedId, $tag->feed_ids)) {
                     continue;
                 }
                 $tagIds[] = (int) $tag->term_id;
