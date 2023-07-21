@@ -39,4 +39,3 @@ gulp.task("prerelease", async () => {
         .pipe(gulp.dest("./"))
         .pipe(touch());
 });
-
