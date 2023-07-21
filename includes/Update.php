@@ -19,19 +19,12 @@ class Update
         $version = get_option(static::VERSION_OPTION_NAME, '0');
 
         if (version_compare($version, '2.0.0', '<')) {
-            add_action('init', [__CLASS__, 'deleteAllPosts']);
-            add_action('init', [__CLASS__, 'updateToVersion200'], PHP_INT_MAX);
+            add_action('init', [__CLASS__, 'updateToVersion200']);
             update_option(static::VERSION_OPTION_NAME, '2.0.0');
         } elseif (version_compare($version, '2.0.1', '<')) {
-            add_action('init', [__CLASS__, 'deleteAllPosts']);
-            add_action('init', [__CLASS__, 'updateToVersion201'], PHP_INT_MAX);
+            // Nothing to do
             update_option(static::VERSION_OPTION_NAME, '2.0.1');
         }
-    }
-
-    public static function updateToVersion201()
-    {
-        self::updateToVersion200();
     }
 
     public static function updateToVersion200()
