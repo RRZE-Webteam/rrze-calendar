@@ -19,9 +19,19 @@ class Update
         $version = get_option(static::VERSION_OPTION_NAME, '0');
 
         if (version_compare($version, '2.0.0', '<')) {
-            add_action('init', [__CLASS__, 'updateToVersion200']);
+            add_action('init', [__CLASS__, 'deleteAllPosts']);
+            add_action('init', [__CLASS__, 'updateToVersion200'], PHP_INT_MAX);
             update_option(static::VERSION_OPTION_NAME, '2.0.0');
+        } elseif (version_compare($version, '2.0.1', '<')) {
+            add_action('init', [__CLASS__, 'deleteAllPosts']);
+            add_action('init', [__CLASS__, 'updateToVersion201'], PHP_INT_MAX);
+            update_option(static::VERSION_OPTION_NAME, '2.0.1');
         }
+    }
+
+    public static function updateToVersion201()
+    {
+        self::updateToVersion200();
     }
 
     public static function updateToVersion200()
@@ -59,8 +69,6 @@ class Update
                     'post_content'  => '',
                     'post_status'   => $row->active ? 'publish' : 'draft',
                     'post_type'     => CalendarFeed::POST_TYPE,
-                    'post_date'     => $row->created,
-                    'post_modified' => $row->modified,
                     'tax_input'     => [
                         CalendarEvent::TAX_CATEGORY => $hierarchicalTax,
                         CalendarEvent::TAX_TAG      => $nonHierarchicalTerms,
@@ -77,7 +85,7 @@ class Update
         Cron::clearSchedule();
     }
 
-    protected static function legacyGetFeedCategory($feedId)
+    private static function legacyGetFeedCategory($feedId)
     {
         $allCategories = self::legacyGetCategories();
 
@@ -97,7 +105,7 @@ class Update
         return false;
     }
 
-    protected static function legacyGetFeedTags($feedId)
+    private static function legacyGetFeedTags($feedId)
     {
         $allTags = self::legacyGetTags();
 
@@ -115,7 +123,7 @@ class Update
         }
     }
 
-    protected static function legacyGetCategories($args = [])
+    private static function legacyGetCategories($args = [])
     {
 
         if (!isset($args['hide_empty'])) {
@@ -137,7 +145,7 @@ class Update
         return $categories;
     }
 
-    protected static function legacyGetTags($args = [])
+    private static function legacyGetTags($args = [])
     {
 
         if (!isset($args['hide_empty'])) {
@@ -159,7 +167,7 @@ class Update
         return $tags;
     }
 
-    protected static function legacyGetCategoryBy($field, $value)
+    private static function legacyGetCategoryBy($field, $value)
     {
 
         $category = get_term_by($field, $value, static::LEGACY_TAX_CAT_KEY);
@@ -178,7 +186,7 @@ class Update
         return $category;
     }
 
-    protected static function legacyGetTagBy($field, $value)
+    private static function legacyGetTagBy($field, $value)
     {
 
         $tag = get_term_by($field, $value, static::LEGACY_TAX_TAG_KEY);
@@ -197,8 +205,60 @@ class Update
         return $tag;
     }
 
-    protected static function unencodedDescription($string)
+    private static function unencodedDescription($string)
     {
         return maybe_unserialize(base64_decode($string));
+    }
+
+    public static function deleteAllPosts()
+    {
+        self::deletePostsByPostMetaKey(CalendarEvent::POST_TYPE, 'ics_feed_id');
+        self::deleteAllPostsOfCustomPostType(CalendarFeed::POST_TYPE);
+    }
+
+    private static function deleteAllPostsOfCustomPostType($postType)
+    {
+        $args = [
+            'post_type' => $postType,
+            'posts_per_page' => -1,
+        ];
+
+        $query = new \WP_Query($args);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $postId = get_the_ID();
+                wp_delete_post($postId, true);
+            }
+        }
+
+        wp_reset_postdata();
+    }
+
+    private static function deletePostsByPostMetaKey($postType, $metaKey)
+    {
+        $args = [
+            'post_type' => $postType,
+            'posts_per_page' => -1,
+            'meta_query' => [
+                [
+                    'key' => $metaKey,
+                    'compare' => 'EXISTS'
+                ]
+            ]
+        ];
+
+        $query = new \WP_Query($args);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $postId = get_the_ID();
+                wp_delete_post($postId, true);
+            }
+        }
+
+        wp_reset_postdata();
     }
 }
