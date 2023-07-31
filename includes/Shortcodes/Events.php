@@ -214,7 +214,7 @@ class Events
             $output .= '</ul>';
 
             if (strlen($output) < 100) {
-                $output = '<p>' . __('No events scheduled.', 'rrze-calendar') . '</p>';
+                $output .= '<p>' . __('No events scheduled.', 'rrze-calendar') . '</p>';
             } else {
                 if (is_numeric($atts['page_link']) && is_string(get_post_status((int)$atts['page_link']))) {
                     $label = sanitize_text_field($atts['page_link_label']);
