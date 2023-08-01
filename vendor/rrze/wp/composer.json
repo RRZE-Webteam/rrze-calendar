@@ -1,7 +1,7 @@
 {
     "name": "rrze/wp",
     "description": "A general purpose library for WordPress.",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "type": "library",
     "keywords": [
         "wordpress"
