@@ -24,6 +24,20 @@ class Settings
 
         $this->settings->addSection(__('ICS Feed', 'rrze-calendar'));
 
+        $this->settings->addOption('text', [
+            'name' => 'endpoint_slug',
+            'label' => __('Archive Slug', 'rrze-calendar'),
+            'description' => __('Enter the archive slug that will display the event list.', 'rrze-calendar'),
+            'default' => 'events',
+            'sanitize' => 'sanitize_title',
+            'validate' => [
+                [
+                    'feedback' => __('The archive slug is too short.', 'textdomain'),
+                    'callback' => [$this, 'validateEndpointSlug']
+                ]
+            ]
+        ]);
+
         $this->settings->addOption('select', [
             'name' => 'schedule_recurrence',
             'label' => __('Schedule', 'rrze-calendar'),
@@ -33,10 +47,18 @@ class Settings
                 'twicedaily' => __('Twice daily', 'rrze-calendar'),
                 'daily'      => __('Daily', 'rrze-calendar')
             ],
-            'default' => 'hourly'
+            'default' => 'daily'
         ]);
 
         $this->settings->build();
+    }
+
+    public function validateEndpointSlug($value)
+    {
+        if ($validation = strlen(sanitize_title($value)) > 4) {
+            flush_rewrite_rules();
+        }
+        return $validation;
     }
 
     public function getOption($option)
