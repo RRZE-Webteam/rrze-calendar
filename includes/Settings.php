@@ -14,11 +14,11 @@ class Settings
 
     public function __construct()
     {
-        $this->settings = new RRZEWPSettings(__('Calendar Settings', 'rrze-settings'), 'rrze-calendar');
+        $this->settings = new RRZEWPSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
 
         $this->settings->setCapability('manage_options')
             ->setOptionName(self::OPTION_NAME)
-            ->setMenuTitle(__('Calendar', 'rrze-settings'))
+            ->setMenuTitle(__('Calendar', 'rrze-calendar'))
             ->setMenuPosition(6)
             ->setMenuParentSlug('options-general.php');
 
@@ -32,7 +32,7 @@ class Settings
             'sanitize' => 'sanitize_title',
             'validate' => [
                 [
-                    'feedback' => __('The archive slug is too short.', 'textdomain'),
+                    'feedback' => __('The archive slug can have between 4 and 32 alphanumeric characters.', 'rrze-calendar'),
                     'callback' => [$this, 'validateEndpointSlug']
                 ]
             ]
