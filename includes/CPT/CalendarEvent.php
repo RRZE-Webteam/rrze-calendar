@@ -13,7 +13,7 @@ use RRule\RSet;
 use RRZE\Calendar\Templates;
 use RRZE\Calendar\Utils;
 
-use function RRZE\Calendar\plugin;
+use function RRZE\Calendar\settings;
 
 class CalendarEvent
 {
@@ -70,15 +70,18 @@ class CalendarEvent
         ];
 
         $args = [
-            'labels'              => $labels,
-            'hierarchical'        => false,
-            'public'              => true,
-            'supports'            => ['title', 'author', 'excerpt', 'thumbnail'],
-            'menu_icon'           => 'dashicons-calendar-alt',
+            'labels'             => $labels,
+            'hierarchical'       => false,
+            'public'             => true,
+            'supports'           => ['title', 'author', 'excerpt', 'thumbnail'],
+            'menu_icon'          => 'dashicons-calendar-alt',
             'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
             'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
             'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE),
             'has_archive'        => true,
+            'rewrite'            => [
+                'slug'           => settings()->getOption('endpoint_slug')
+            ]
         ];
 
         register_post_type(self::POST_TYPE, $args);
