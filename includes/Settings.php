@@ -28,7 +28,7 @@ class Settings
             'name' => 'endpoint_slug',
             'label' => __('Archive Slug', 'rrze-calendar'),
             'description' => __('Enter the archive slug that will display the event list.', 'rrze-calendar'),
-            'default' => 'events',
+            'default' => __('events', 'rrze-calendar'),
             'sanitize' => 'sanitize_title',
             'validate' => [
                 [
