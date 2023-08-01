@@ -24,6 +24,9 @@ class Update
         } elseif (version_compare($version, '2.0.1', '<')) {
             // Nothing to do
             update_option(static::VERSION_OPTION_NAME, '2.0.1');
+        } elseif (version_compare($version, '2.0.2', '<')) {
+            flush_rewrite_rules();
+            update_option(static::VERSION_OPTION_NAME, '2.0.2');
         }
     }
 
