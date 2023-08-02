@@ -327,7 +327,8 @@ class CalendarFeed
                 esc_attr(__('Deactivate ICS Feed', 'rrze-calendar')),
                 __('Deactivate', 'rrze-calendar')
             );
-            $lastKey = array_pop(array_keys($actions));
+            $keys = array_keys($actions);
+            $lastKey = array_pop($keys);
             $actions = array_merge(array_slice($actions, 0, -1), $action, [$lastKey => $actions[$lastKey]]);
         }
 
