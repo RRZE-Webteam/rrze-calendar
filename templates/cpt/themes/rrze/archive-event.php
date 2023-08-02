@@ -13,8 +13,9 @@ if (isset($_GET['format']) && $_GET['format'] == 'embedded') {
     get_template_part('template-parts/archive', 'embedded');
     return;
 }
-
 get_header();
+global $wp_query;
+
 ?>
 
     <?php if ( !is_front_page() ) { ?>
@@ -30,7 +31,14 @@ get_header();
                 <h1 class="page-title" ><?php _e('Events', 'rrze-calendar'); ?></h1>
 			</header><!-- .page-header -->
 
-			<?php echo Events::shortcode([]); ?>
+			<?php
+            $atts = [];
+            $queryVars = $wp_query->query_vars;
+            if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
+                $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
+            }
+            echo Events::shortcode($atts);
+            ?>
 
 		</main><!-- #main -->
 	</div><!-- #primary -->
