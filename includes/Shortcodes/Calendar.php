@@ -300,10 +300,10 @@ class Calendar
                 // Date/Time
                 if ($eventStartDate == $eventEndDate && !$isAllDay) {
                     $timeText = '<span class="event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '</span>';
-                } elseif ($isAllDay) {
+                } elseif ($eventStartDate == $eventEndDate && $isAllDay) {
                     $timeText = '<span class="event-date">' . __('All Day', 'rrze-calendar') . '</span>';
                 } else {
-                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ) . ', H:i,', $eventStart) . ' bis ' . date_i18n(get_option( 'date_format' ) . ', H:i \U\h\r', $eventEnd) . '</span>';
+                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ), $eventStart) . ' - ' . date_i18n(get_option( 'date_format' ), $eventEnd) . '</span>';
                 }
                 // Location
                 $location = Utils::getMeta($meta, 'location');
@@ -420,12 +420,6 @@ class Calendar
      */
 
     private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = []) {
-        //var_dump($eventsArray);
-        /*foreach ($eventsArray as $ts => $events) {
-            print date('Y-m-d', $ts) . '<br />';
-        }
-        exit;*/
-        global $wp_locale;
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
@@ -484,7 +478,6 @@ class Calendar
                 if (isset($eventsPerDay[$date]) && $eventsPerDay[$date] > 3) {
                     continue;
                 }
-                //var_dump($eventsArray);
                 foreach ($events as $event) {
                     $eventStart = $ts;
                     $eventEnd = $event['end'];
@@ -493,7 +486,7 @@ class Calendar
                     $eventEndLocal = $eventEnd + $offset;
                     $eventStartDate = date('Y-m-d', $eventStartLocal);
                     $eventEndDate = date('Y-m-d', $eventEndLocal);
-                    if ($calDay != $eventStartDate) {
+                    if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
                         continue;
                     }
                     $meta = get_post_meta($event['id']);
@@ -645,8 +638,8 @@ class Calendar
                         }
                         $rowNum = $eventsPerDay[$eventStartDate];
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
-                            . '<span class="event-date">' . date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal) . '<br /></span>'
-                            . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span>'
+                            . '<p><span class="event-date">' . date('d.m.Y', $eventStartLocal) . ' - ' . date('d.m.Y', $eventEndLocal) . '<br /></span>'
+                            . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStart) . '">'
                             . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEnd) . '">'
                             . $locationMeta

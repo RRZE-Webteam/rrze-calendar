@@ -22,9 +22,10 @@ class Settings
             ->setMenuPosition(6)
             ->setMenuParentSlug('options-general.php');
 
-        $this->settings->addSection(__('ICS Feed', 'rrze-calendar'));
+        $sectionEvent = $this->settings->addSection(__('Events', 'rrze-calendar'));
+        $sectionFeed = $this->settings->addSection(__('ICS Feed', 'rrze-calendar'));
 
-        $this->settings->addOption('text', [
+        $sectionEvent->addOption('text', [
             'name' => 'endpoint_slug',
             'label' => __('Archive Slug', 'rrze-calendar'),
             'description' => __('Enter the archive slug that will display the event list.', 'rrze-calendar'),
@@ -38,7 +39,7 @@ class Settings
             ]
         ]);
 
-        $this->settings->addOption('select', [
+        $sectionFeed->addOption('select', [
             'name' => 'schedule_recurrence',
             'label' => __('Schedule', 'rrze-calendar'),
             'description' => __('Choose the recurrence to check for new events.', 'rrze-calendar'),

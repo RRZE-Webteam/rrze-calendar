@@ -17,6 +17,7 @@ if ( is_active_sidebar( 'news-sidebar' ) ) {
     fau_use_sidebar(true);
 }
 get_header();
+global $wp_query;
 
 ?>
 
@@ -30,7 +31,12 @@ get_header();
                     <?php } else { ?>
                         <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
                     <?php }
-                    echo Events::shortcode([]);
+                    $atts = [];
+                    $queryVars = $wp_query->query_vars;
+                    if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
+                        $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
+                    }
+                    echo Events::shortcode($atts);
                     ?>
 
                 </main>

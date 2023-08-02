@@ -44,8 +44,8 @@ class CalendarFeed
         add_filter('manage_edit-' . CalendarEvent::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
         add_filter('manage_' . CalendarEvent::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
         // List Table Stuff.
-        add_action('admin_init', [__CLASS__, 'handleActivateOrDeactivateAction']);
-        add_filter('post_row_actions', [__CLASS__, 'activateOrDeactivateActionLink'], 10, 2);
+        add_action('admin_init', [__CLASS__, 'handleActionLinks']);
+        add_filter('post_row_actions', [__CLASS__, 'addActionLinks'], 10, 2);
         add_filter('post_row_actions', [__CLASS__, 'removeQuickEditFields'], 10, 2);
         add_filter('months_dropdown_results', [__CLASS__, 'removeMonthsDropdown'], 10, 2);
         // Hide publishing actions.
@@ -290,7 +290,7 @@ class CalendarFeed
         return false;
     }
 
-    public static function activateOrDeactivateActionLink($actions, $post)
+    public static function addActionLinks($actions, $post)
     {
         if (get_post_type() != self::POST_TYPE) {
             return $actions;
@@ -305,34 +305,45 @@ class CalendarFeed
         $adminUrl = admin_url('admin.php?id=' . $post->ID);
         $nonce = self::POST_TYPE . '_action_nonce';
         if ($postStatus != 'publish') {
-            $action = sprintf(
+            $action['activate'] = sprintf(
                 '<a href="%1$s" aria-label="%2$s">%3$s</a>',
                 esc_url(wp_nonce_url(add_query_arg(['action' => 'activate'], $adminUrl), $nonce)),
                 esc_attr(__('Activate ICS Feed', 'rrze-calendar')),
                 __('Activate', 'rrze-calendar')
             );
         } else {
-            $action = sprintf(
+            $action['update'] = sprintf(
+                '<a href="%1$s" aria-label="%2$s">%3$s</a>',
+                esc_url(wp_nonce_url(add_query_arg(['action' => 'update'], $adminUrl), $nonce)),
+                esc_attr(__('Update ICS Feed', 'rrze-calendar')),
+                __('Update', 'rrze-calendar')
+            );
+        }
+        $actions = array_merge($action, $actions);
+        if ($postStatus == 'publish') {
+            $action['deactivate'] = sprintf(
                 '<a href="%1$s" aria-label="%2$s">%3$s</a>',
                 esc_url(wp_nonce_url(add_query_arg(['action' => 'deactivate'], $adminUrl), $nonce)),
                 esc_attr(__('Deactivate ICS Feed', 'rrze-calendar')),
                 __('Deactivate', 'rrze-calendar')
             );
+            $lastKey = array_pop(array_keys($actions));
+            $actions = array_merge(array_slice($actions, 0, -1), $action, [$lastKey => $actions[$lastKey]]);
         }
-        array_unshift($actions, $action);
 
         return $actions;
     }
 
-    public static function handleActivateOrDeactivateAction()
+    public static function handleActionLinks()
     {
         if (
-            isset($_GET['action']) && in_array($_GET['action'], ['activate', 'deactivate'])
+            isset($_GET['action']) && in_array($_GET['action'], ['activate', 'update', 'deactivate'])
             && isset($_GET['id']) && is_numeric($_GET['id'])
             && isset($_REQUEST['_wpnonce']) && wp_verify_nonce($_REQUEST['_wpnonce'], self::POST_TYPE . '_action_nonce')
         ) {
             $postId = absint($_GET['id']);
-            if (get_post_type($postId) != self::POST_TYPE) {
+            $post = get_post($postId);
+            if (is_null($post) || get_post_type($postId) != self::POST_TYPE) {
                 wp_die(__('Invalid access', 'rrze-calendar'));
             }
 
@@ -342,13 +353,18 @@ class CalendarFeed
             }
 
             $action = $_GET['action'];
-            if ($action == 'activate') {
+            if ($action == 'activate' && $post->post_status != 'publish') {
                 wp_publish_post($postId);
+            } elseif ($action == 'update' && $post->post_status == 'publish') {
+                $data = [
+                    'ID' => $postId
+                ];
+                wp_update_post($data);
             } else {
-                $data = array(
+                $data = [
                     'ID' => $postId,
                     'post_status' => 'draft',
-                );
+                ];
                 wp_update_post($data);
             }
 
