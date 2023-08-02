@@ -14,15 +14,29 @@ class Settings
 
     public function __construct()
     {
-        $this->settings = new RRZEWPSettings(__('Calendar Settings', 'rrze-settings'), 'rrze-calendar');
+        $this->settings = new RRZEWPSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
 
         $this->settings->setCapability('manage_options')
             ->setOptionName(self::OPTION_NAME)
-            ->setMenuTitle(__('Calendar', 'rrze-settings'))
+            ->setMenuTitle(__('Calendar', 'rrze-calendar'))
             ->setMenuPosition(6)
             ->setMenuParentSlug('options-general.php');
 
         $this->settings->addSection(__('ICS Feed', 'rrze-calendar'));
+
+        $this->settings->addOption('text', [
+            'name' => 'endpoint_slug',
+            'label' => __('Archive Slug', 'rrze-calendar'),
+            'description' => __('Enter the archive slug that will display the event list.', 'rrze-calendar'),
+            'default' => __('events', 'rrze-calendar'),
+            'sanitize' => 'sanitize_title',
+            'validate' => [
+                [
+                    'feedback' => __('The archive slug can have between 4 and 32 alphanumeric characters.', 'rrze-calendar'),
+                    'callback' => [$this, 'validateEndpointSlug']
+                ]
+            ]
+        ]);
 
         $this->settings->addOption('select', [
             'name' => 'schedule_recurrence',
@@ -33,10 +47,18 @@ class Settings
                 'twicedaily' => __('Twice daily', 'rrze-calendar'),
                 'daily'      => __('Daily', 'rrze-calendar')
             ],
-            'default' => 'hourly'
+            'default' => 'daily'
         ]);
 
         $this->settings->build();
+    }
+
+    public function validateEndpointSlug($value)
+    {
+        if ($validation = strlen(sanitize_title($value)) > 4) {
+            flush_rewrite_rules();
+        }
+        return $validation;
     }
 
     public function getOption($option)

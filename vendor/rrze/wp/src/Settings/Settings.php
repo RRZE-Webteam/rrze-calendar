@@ -295,13 +295,13 @@ class Settings
             foreach ($section->options as $option) {
                 $value = $submittedOptions[$option->implementation->getName()] ?? null;
 
-                $valid = $option->implementation->validate($value);
+                $valid = $option->validate($value);
 
                 if (!$valid) {
                     continue;
                 }
 
-                $value = apply_filters('rrze_wp_settings_new_options_' . $option->implementation->getName(), $option->implementation->sanitize($value), $option->implementation);
+                $value = apply_filters('rrze_wp_settings_new_options_' . $option->implementation->getName(), $option->sanitize($value), $option->implementation);
 
                 $newOptions[$option->implementation->getName()] = $value;
             }

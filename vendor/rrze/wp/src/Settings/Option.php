@@ -32,7 +32,7 @@ class Option
         $this->type = $type;
         $this->args = $args;
 
-        $type_map = apply_filters('rrze_wp_settings_option_type_map', [
+        $typeMap = apply_filters('rrze_wp_settings_option_type_map', [
             'text' => Text::class,
             'checkbox' => Checkbox::class,
             'choices' => Choices::class,
@@ -44,7 +44,7 @@ class Option
             'color' => Color::class,
         ]);
 
-        $this->implementation = new $type_map[$this->type]($section, $args);
+        $this->implementation = new $typeMap[$this->type]($section, $args);
     }
 
     public function getArg($key, $fallback = null)

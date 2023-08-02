@@ -43,10 +43,9 @@ class CalendarFeed
         // Taxonomy Terms Custom Columns.
         add_filter('manage_edit-' . CalendarEvent::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
         add_filter('manage_' . CalendarEvent::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
-        // List Table Stuff.  
-        //add_action('pre_get_posts', [__CLASS__, 'maybeDisplayPublicArchivePosts']);
-        add_action('template_redirect', [__CLASS__, 'maybeDisplayPublicPost']);
-        add_filter('post_row_actions', [__CLASS__, 'displayViewOrPreviewLink']);
+        // List Table Stuff.
+        add_action('admin_init', [__CLASS__, 'handleActivateOrDeactivateAction']);
+        add_filter('post_row_actions', [__CLASS__, 'activateOrDeactivateActionLink'], 10, 2);
         add_filter('post_row_actions', [__CLASS__, 'removeQuickEditFields'], 10, 2);
         add_filter('months_dropdown_results', [__CLASS__, 'removeMonthsDropdown'], 10, 2);
         // Hide publishing actions.
@@ -291,91 +290,78 @@ class CalendarFeed
         return false;
     }
 
-    public static function maybeDisplayPublicArchivePosts($query)
+    public static function activateOrDeactivateActionLink($actions, $post)
     {
-        if (
-            is_admin() ||
-            !$query->is_main_query() ||
-            (!is_tax(CalendarEvent::TAX_CATEGORY) &&
-                !is_post_type_archive(self::POST_TYPE))
-        ) {
-            return;
-        }
-
-        if (is_tax(CalendarEvent::TAX_CATEGORY) || empty($query->get('post_type'))) {
-            $query->set('post_type', ['post', self::POST_TYPE]);
-        }
-
-        $metaQuery = $query->get('meta_query', []);
-        $metaQueryParams = [
-            [
-                'key'     => 'rrze_calendar_is_public',
-                'value'   => true,
-                'compare' => '=',
-            ],
-        ];
-
-        if (is_tax(CalendarEvent::TAX_CATEGORY)) {
-            $metaQueryParams['relation'] = 'OR';
-            $metaQueryParams[] = [
-                'key'     => 'rrze_calendar_is_public',
-                'compare' => 'NOT EXISTS',
-            ];
-        }
-
-        $metaQuery[] = $metaQueryParams;
-        $query->set('meta_query', $metaQuery);
-    }
-
-    public static function maybeDisplayPublicPost()
-    {
-        if (
-            current_user_can('edit_others_posts') ||
-            !is_singular(self::POST_TYPE)
-        ) {
-            return;
-        }
-
-        $isPublic = get_post_meta(get_the_ID(), 'rrze_calendar_is_public', true);
-        if (empty($isPublic)) {
-            add_filter(
-                'wpseo_title',
-                function ($title) {
-                    return str_replace(get_the_title(), __('Page not found', 'rrze-calendar'), $title);
-                }
-            );
-
-            status_header(404);
-            nocache_headers();
-            include get_query_template('404');
-            die();
-        }
-    }
-
-    public static function displayViewOrPreviewLink($actions)
-    {
-        if ('publish' !== get_post_status() || self::POST_TYPE !== get_post_type()) {
+        if (get_post_type() != self::POST_TYPE) {
             return $actions;
         }
 
-        $isPublic = get_post_meta(get_the_ID(), 'rrze_calendar_is_public', true);
-
-        if (empty($isPublic) && isset($actions['view'])) {
-            $actions['view'] = sprintf(
-                '<a href="%1$s" rel="bookmark" aria-label="%2$s">%3$s</a>',
-                esc_url(get_the_permalink()),
-                esc_attr(get_the_title()),
-                __('Preview', 'rrze-calendar')
-            );
+        $postTypeObject = get_post_type_object(self::POST_TYPE);
+        if (!current_user_can($postTypeObject->cap->publish_posts, $post->ID)) {
+            return $actions;
         }
 
+        $postStatus = get_post_status();
+        $adminUrl = admin_url('admin.php?id=' . $post->ID);
+        $nonce = self::POST_TYPE . '_action_nonce';
+        if ($postStatus != 'publish') {
+            $action = sprintf(
+                '<a href="%1$s" aria-label="%2$s">%3$s</a>',
+                esc_url(wp_nonce_url(add_query_arg(['action' => 'activate'], $adminUrl), $nonce)),
+                esc_attr(__('Activate ICS Feed', 'rrze-calendar')),
+                __('Activate', 'rrze-calendar')
+            );
+        } else {
+            $action = sprintf(
+                '<a href="%1$s" aria-label="%2$s">%3$s</a>',
+                esc_url(wp_nonce_url(add_query_arg(['action' => 'deactivate'], $adminUrl), $nonce)),
+                esc_attr(__('Deactivate ICS Feed', 'rrze-calendar')),
+                __('Deactivate', 'rrze-calendar')
+            );
+        }
+        array_unshift($actions, $action);
+
         return $actions;
+    }
+
+    public static function handleActivateOrDeactivateAction()
+    {
+        if (
+            isset($_GET['action']) && in_array($_GET['action'], ['activate', 'deactivate'])
+            && isset($_GET['id']) && is_numeric($_GET['id'])
+            && isset($_REQUEST['_wpnonce']) && wp_verify_nonce($_REQUEST['_wpnonce'], self::POST_TYPE . '_action_nonce')
+        ) {
+            $postId = absint($_GET['id']);
+            if (get_post_type($postId) != self::POST_TYPE) {
+                wp_die(__('Invalid access', 'rrze-calendar'));
+            }
+
+            $postTypeObject = get_post_type_object(self::POST_TYPE);
+            if (!current_user_can($postTypeObject->cap->publish_posts, $postId)) {
+                wp_die(__('You do not have permissions to perform this action'));
+            }
+
+            $action = $_GET['action'];
+            if ($action == 'activate') {
+                wp_publish_post($postId);
+            } else {
+                $data = array(
+                    'ID' => $postId,
+                    'post_status' => 'draft',
+                );
+                wp_update_post($data);
+            }
+
+            $redirectTo = admin_url('edit.php?post_type=' . self::POST_TYPE);
+            wp_redirect($redirectTo);
+            exit;
+        }
     }
 
     public static function removeQuickEditFields($actions)
     {
         if (self::POST_TYPE === get_post_type()) {
-            //unset($actions['inline hide-if-no-js']);
+            unset($actions['inline hide-if-no-js']);
             echo '
                 <style type="text/css">
                     .inline-edit-date,
