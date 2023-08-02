@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-08-01T15:19:45+00:00\n"
+"POT-Creation-Date: 2023-08-02T14:22:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.7.1\n"
 "X-Domain: rrze-calendar\n"
@@ -414,11 +414,12 @@ msgstr ""
 #: includes/CPT/CalendarFeed.php:114
 #: includes/ICS/EventsListTable.php:16
 #: includes/ICS/Metabox.php:34
-#: templates/cpt/archive-event.php:27
-#: templates/cpt/archive-event.php:29
-#: templates/cpt/themes/fau/archive-event.php:29
-#: templates/cpt/themes/fau/archive-event.php:31
-#: templates/cpt/themes/rrze/archive-event.php:30
+#: includes/Settings.php:25
+#: templates/cpt/archive-event.php:30
+#: templates/cpt/archive-event.php:32
+#: templates/cpt/themes/fau/archive-event.php:30
+#: templates/cpt/themes/fau/archive-event.php:32
+#: templates/cpt/themes/rrze/archive-event.php:31
 msgid "Events"
 msgstr ""
 
@@ -445,14 +446,22 @@ msgid "Activate"
 msgstr ""
 
 #: includes/CPT/CalendarFeed.php:318
-msgid "Deactivate ICS Feed"
+msgid "Update ICS Feed"
 msgstr ""
 
 #: includes/CPT/CalendarFeed.php:319
+msgid "Update"
+msgstr ""
+
+#: includes/CPT/CalendarFeed.php:327
+msgid "Deactivate ICS Feed"
+msgstr ""
+
+#: includes/CPT/CalendarFeed.php:328
 msgid "Deactivate"
 msgstr ""
 
-#: includes/CPT/CalendarFeed.php:336
+#: includes/CPT/CalendarFeed.php:348
 msgid "Invalid access"
 msgstr ""
 
@@ -498,43 +507,43 @@ msgstr ""
 msgid "Calendar"
 msgstr ""
 
-#: includes/Settings.php:25
+#: includes/Settings.php:26
 msgid "ICS Feed"
 msgstr ""
 
-#: includes/Settings.php:29
+#: includes/Settings.php:30
 msgid "Archive Slug"
 msgstr ""
 
-#: includes/Settings.php:30
+#: includes/Settings.php:31
 msgid "Enter the archive slug that will display the event list."
 msgstr ""
 
-#: includes/Settings.php:31
+#: includes/Settings.php:32
 msgid "events"
 msgstr ""
 
-#: includes/Settings.php:35
+#: includes/Settings.php:36
 msgid "The archive slug can have between 4 and 32 alphanumeric characters."
 msgstr ""
 
-#: includes/Settings.php:43
+#: includes/Settings.php:44
 msgid "Schedule"
 msgstr ""
 
-#: includes/Settings.php:44
+#: includes/Settings.php:45
 msgid "Choose the recurrence to check for new events."
 msgstr ""
 
-#: includes/Settings.php:46
+#: includes/Settings.php:47
 msgid "Hourly"
 msgstr ""
 
-#: includes/Settings.php:47
+#: includes/Settings.php:48
 msgid "Twice daily"
 msgstr ""
 
-#: includes/Settings.php:48
+#: includes/Settings.php:49
 msgid "Daily"
 msgstr ""
 
@@ -563,7 +572,7 @@ msgid "Year"
 msgstr ""
 
 #: includes/Shortcodes/Calendar.php:304
-#: includes/Shortcodes/Calendar.php:543
+#: includes/Shortcodes/Calendar.php:536
 #: includes/Shortcodes/Shortcode.php:69
 #: includes/Shortcodes/Shortcode.php:176
 #: templates/shortcodes/calendar.php:138
@@ -581,28 +590,28 @@ msgstr ""
 msgid "View Details"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:448
+#: includes/Shortcodes/Calendar.php:442
 msgid "Go to previous month"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:448
+#: includes/Shortcodes/Calendar.php:442
 msgid "Previous"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:451
+#: includes/Shortcodes/Calendar.php:445
 msgid "Go to next month"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:451
+#: includes/Shortcodes/Calendar.php:445
 msgid "Next"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:574
+#: includes/Shortcodes/Calendar.php:567
 msgid "More&hellip;"
 msgstr ""
 
-#: includes/Shortcodes/Calendar.php:601
-#: includes/Shortcodes/Calendar.php:657
+#: includes/Shortcodes/Calendar.php:594
+#: includes/Shortcodes/Calendar.php:650
 msgid "Read more"
 msgstr ""
 

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
-"POT-Creation-Date: 2023-08-01T15:19:45+00:00\n"
-"PO-Revision-Date: 2023-08-01 17:20+0200\n"
+"POT-Creation-Date: 2023-08-02T14:22:34+00:00\n"
+"PO-Revision-Date: 2023-08-02 16:24+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -409,11 +409,11 @@ msgid "No ics feeds found in Trash."
 msgstr "Keine Feeds im Papierkorb gefunden."
 
 #: includes/CPT/CalendarFeed.php:114 includes/ICS/EventsListTable.php:16
-#: includes/ICS/Metabox.php:34 templates/cpt/archive-event.php:27
-#: templates/cpt/archive-event.php:29
-#: templates/cpt/themes/fau/archive-event.php:29
-#: templates/cpt/themes/fau/archive-event.php:31
-#: templates/cpt/themes/rrze/archive-event.php:30
+#: includes/ICS/Metabox.php:34 includes/Settings.php:25
+#: templates/cpt/archive-event.php:30 templates/cpt/archive-event.php:32
+#: templates/cpt/themes/fau/archive-event.php:30
+#: templates/cpt/themes/fau/archive-event.php:32
+#: templates/cpt/themes/rrze/archive-event.php:31
 msgid "Events"
 msgstr "Veranstaltungen"
 
@@ -439,14 +439,22 @@ msgid "Activate"
 msgstr "Aktivieren"
 
 #: includes/CPT/CalendarFeed.php:318
+msgid "Update ICS Feed"
+msgstr "ICS-Feed aktualisieren"
+
+#: includes/CPT/CalendarFeed.php:319
+msgid "Update"
+msgstr "Aktualisieren"
+
+#: includes/CPT/CalendarFeed.php:327
 msgid "Deactivate ICS Feed"
 msgstr "ICS-Feed deaktivieren"
 
-#: includes/CPT/CalendarFeed.php:319
+#: includes/CPT/CalendarFeed.php:328
 msgid "Deactivate"
 msgstr "Deaktivieren"
 
-#: includes/CPT/CalendarFeed.php:336
+#: includes/CPT/CalendarFeed.php:348
 msgid "Invalid access"
 msgstr "Unzulässiger Zugriff"
 
@@ -490,44 +498,44 @@ msgstr "Einstellungen &rsaquo; Kalender"
 msgid "Calendar"
 msgstr "Kalender"
 
-#: includes/Settings.php:25
+#: includes/Settings.php:26
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
-#: includes/Settings.php:29
+#: includes/Settings.php:30
 msgid "Archive Slug"
 msgstr "Archiv-Slug"
 
-#: includes/Settings.php:30
+#: includes/Settings.php:31
 msgid "Enter the archive slug that will display the event list."
 msgstr "Geben Sie den Archiv-Slug ein, der die Veranstaltungsliste anzeigt."
 
-#: includes/Settings.php:31
+#: includes/Settings.php:32
 msgid "events"
 msgstr "veranstaltungen"
 
-#: includes/Settings.php:35
+#: includes/Settings.php:36
 msgid "The archive slug can have between 4 and 32 alphanumeric characters."
 msgstr ""
 "Der Archiv-Slug kann zwischen 4 und 32 alphanumerische Zeichen enthalten."
 
-#: includes/Settings.php:43
+#: includes/Settings.php:44
 msgid "Schedule"
 msgstr "Zeitplan"
 
-#: includes/Settings.php:44
+#: includes/Settings.php:45
 msgid "Choose the recurrence to check for new events."
 msgstr "Wiederholung auswählen, um nach neuen Veranstaltungen zu suchen."
 
-#: includes/Settings.php:46
+#: includes/Settings.php:47
 msgid "Hourly"
 msgstr "Stündlich"
 
-#: includes/Settings.php:47
+#: includes/Settings.php:48
 msgid "Twice daily"
 msgstr "Zweimal täglich"
 
-#: includes/Settings.php:48
+#: includes/Settings.php:49
 msgid "Daily"
 msgstr "Täglich"
 
@@ -555,7 +563,7 @@ msgstr "Jahreskalender ansehen"
 msgid "Year"
 msgstr "Jahr"
 
-#: includes/Shortcodes/Calendar.php:304 includes/Shortcodes/Calendar.php:543
+#: includes/Shortcodes/Calendar.php:304 includes/Shortcodes/Calendar.php:536
 #: includes/Shortcodes/Shortcode.php:69 includes/Shortcodes/Shortcode.php:176
 #: templates/shortcodes/calendar.php:138 templates/shortcodes/events.php:124
 #: templates/shortcodes/themes/fau-events/events.php:42
@@ -571,27 +579,27 @@ msgstr "An diesem Tag finden keine Veranstaltungen statt."
 msgid "View Details"
 msgstr "Details ansehen"
 
-#: includes/Shortcodes/Calendar.php:448
+#: includes/Shortcodes/Calendar.php:442
 msgid "Go to previous month"
 msgstr "Zum vorherigen Monat wechseln"
 
-#: includes/Shortcodes/Calendar.php:448
+#: includes/Shortcodes/Calendar.php:442
 msgid "Previous"
 msgstr "Zurück"
 
-#: includes/Shortcodes/Calendar.php:451
+#: includes/Shortcodes/Calendar.php:445
 msgid "Go to next month"
 msgstr "Zum nächsten Monat wechseln"
 
-#: includes/Shortcodes/Calendar.php:451
+#: includes/Shortcodes/Calendar.php:445
 msgid "Next"
 msgstr "Weiter"
 
-#: includes/Shortcodes/Calendar.php:574
+#: includes/Shortcodes/Calendar.php:567
 msgid "More&hellip;"
 msgstr "Mehr&hellip;"
 
-#: includes/Shortcodes/Calendar.php:601 includes/Shortcodes/Calendar.php:657
+#: includes/Shortcodes/Calendar.php:594 includes/Shortcodes/Calendar.php:650
 msgid "Read more"
 msgstr "Weiterlesen"
 
