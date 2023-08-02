@@ -7,6 +7,8 @@
  * @since FAU 1.0
  */
 
+use RRZE\Calendar\Shortcodes\Events;
+
 if (isset($_GET['format']) && $_GET['format'] == 'embedded') {
     get_template_part('template-parts/index', 'embedded');
     return;
@@ -15,6 +17,7 @@ if ( is_active_sidebar( 'news-sidebar' ) ) {
     fau_use_sidebar(true);    
 }
 get_header();
+global $wp_query;
 
 ?>
 
@@ -28,7 +31,12 @@ get_header();
                     <?php } else { ?>
                         <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
                     <?php }
-                    echo \RRZE\Calendar\Shortcodes\Events::shortcode([]);
+                    $atts = [];
+                    $queryVars = $wp_query->query_vars;
+                    if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
+                        $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
+                    }
+                    echo Events::shortcode($atts);
                     ?>
 
 			    </main>
