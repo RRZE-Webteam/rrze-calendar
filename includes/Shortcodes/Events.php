@@ -129,26 +129,24 @@ class Events
             }
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
-            foreach ($eventsArray as $timestamp => $events) {
-                if ($timestamp < time()) continue;
+            foreach ($eventsArray as $tsStart => $events) {
+                if ($tsStart < time()) continue;
 
                 foreach ($events as $event) {
-                    $eventEnd = $event['end'];
-                    $offset = Utils::getTimezoneOffset('seconds');
-                    $tsStartLocal = $timestamp + $offset;
-                    $tsEndLocal = $eventEnd + $offset;
+                    $tsEnd = $event['end'];
+                    $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
+                    $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
                     $eventTitle = get_the_title($event['id']);
                     $eventURL = get_the_permalink($event['id']);
                     $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
                     $location = get_post_meta($event['id'], 'location', TRUE);
                     $vc_url = get_post_meta($event['id'], 'vc-url', TRUE);
                     $allDay = get_post_meta($event['id'], 'all-day', TRUE) == 'on';
-                    $isImport = get_post_meta($event['id'], 'ics_feed_id', TRUE) != '';
 
-                    $metaStart = '<meta itemprop="startDate" content="'. date('c', $timestamp) . '" />';
-                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $eventEnd) . '" />';
+                    $metaStart = '<meta itemprop="startDate" content="'. date('c', $tsStartUTC) . '" />';
+                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $tsEndUTC) . '" />';
 
-                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $tsStartLocal) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEndLocal). '</span>');
+                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>');
                     if ($location != '' && $vc_url == '') {
                         // Offline Event
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
@@ -173,7 +171,7 @@ class Events
 
                     $output .= '<li class="event-item" itemscope itemtype="https://schema.org/Event">';
                     if ($display == 'list') {
-                        $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . date_i18n(get_option('date_format'), $timestamp)
+                        $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . date_i18n(get_option('date_format'), $tsStart)
                             . '<span class="dashicons dashicons-clock"></span>' . $timeOut . '<br />'
                             . '<span class="event-title" itemprop="name">' . $eventTitle . '</span>'
                             . $metaStart
@@ -191,10 +189,10 @@ class Events
                         }
                         $output .= '<div class="event-date" ' . ($bgColor != '' ? ' style="background-color: ' . $bgColor . '; color: ' . $color . ';"' : '') . '>'
                             . '<div class="day-month">'
-                            . '<div class="day">' . date('d', $timestamp) . '</div>'
-                            . '<div class="month">' . date_i18n('M', $timestamp) . '</div>'
+                            . '<div class="day">' . date('d', $tsStart) . '</div>'
+                            . '<div class="month">' . date_i18n('M', $tsStart) . '</div>'
                             . '</div>'
-                            //. '<div class="year">' . date('Y', $timestamp) .'</div>'
+                            //. '<div class="year">' . date('Y', $tsStart) .'</div>'
                             . '</div>'
                             . '<div class="event-info">'
                             . '<div class="event-time">' . $timeOut . '</div>'

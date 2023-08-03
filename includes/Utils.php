@@ -638,15 +638,6 @@ class Utils
             if ($repeat != 'on') {
                 $startTS = absint(Utils::getMeta($meta, 'start'));
                 $endTS = absint(Utils::getMeta($meta, 'end'));
-                if (!$isImport) {
-                    // convert to UTC
-                    $newStartTS = new DateTime(date('Y-m-d H:i', $startTS), new DateTimeZone(wp_timezone_string()));
-                    $newStartTS->setTimezone(new DateTimeZone("UTC"));
-                    $startTS = $newStartTS->getTimestamp();
-                    $newEndTS = new DateTime(date('Y-m-d H:i', $endTS), new DateTimeZone(wp_timezone_string()));
-                    $newEndTS->setTimezone(new DateTimeZone("UTC"));
-                    $endTS = $newEndTS->getTimestamp();
-                }
                 $eventsArray[$startTS][$i]['id'] = $event->ID;
                 $eventsArray[$startTS][$i]['end'] = $endTS;
             } else {
@@ -655,15 +646,6 @@ class Utils
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
-                    if (!$isImport) {
-                        // convert to UTC
-                        $newStartTS = new DateTime(date('Y-m-d H:i', $startTS), new DateTimeZone(wp_timezone_string()));
-                        $newStartTS->setTimezone(new DateTimeZone("UTC"));
-                        $startTS = $newStartTS->getTimestamp();
-                        $newEndTS = new DateTime(date('Y-m-d H:i', $endTS), new DateTimeZone(wp_timezone_string()));
-                        $newEndTS->setTimezone(new DateTimeZone("UTC"));
-                        $endTS = $newEndTS->getTimestamp();
-                    }
                     $eventsArray[$startTS][$i]['id'] = $event->ID;
                     $eventsArray[$startTS][$i]['end'] = $endTS;
                 }
