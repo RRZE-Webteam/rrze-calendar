@@ -618,8 +618,8 @@ class Events
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
             }
 
-            $dtStart = strtotime($event['dt_start']);
-            $dtEnd = strtotime($event['dt_end']);
+            $dtStart = strtotime(get_date_from_gmt($event['dt_start']));
+            $dtEnd = strtotime(get_date_from_gmt($event['dt_end']));
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
 

@@ -580,37 +580,36 @@ class CalendarEvent
         $data['eventItemsFormatted'] = [];
         $data['nextOccurrenceFormatted'] = [];
         $nextOccurenceFound = false;
-        foreach ($eventItems as $TSstart => $items) {
+        foreach ($eventItems as $tsStart => $items) {
             foreach ($items as $item) {
                 //var_dump($data);
-                //if ($data['repeat'] == 'on' && $TSstart < time()) {
+                //if ($data['repeat'] == 'on' && $tsStart < time()) {
                 //    continue;
                 //}
-                $TSend = $item['end'];
-                $offset = Utils::getTimezoneOffset('seconds');
-                $tsStartLocal = $TSstart + $offset;
-                $tsEndLocal = $TSend + $offset;
-                $startDay = date('Y-m-d', $TSstart);
-                $endDay = date('Y-m-d', $TSend);
+                $tsEnd = $item['end'];
+                $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
+                $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
+                $startDay = date('Y-m-d', $tsStart);
+                $endDay = date('Y-m-d', $tsEnd);
                 if ($data['allDay'] == 'on' || $startDay != $endDay) {
                     $eventItemsFormatted = [
-                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $TSstart) : date_i18n(get_option('date_format'), $tsStartLocal)
+                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
                             . ' &ndash; '
-                            . date_i18n(get_option('date_format'), $tsEndLocal)),
+                            . date_i18n(get_option('date_format'), $tsEnd)),
                         'time' => '',
                         'startISO' => $startDay,
                         'endISO' => $endDay,
                     ];
                 } else {
                     $eventItemsFormatted = [
-                        'date' => date_i18n(get_option('date_format'), $tsStartLocal),
-                        'time' => date_i18n(get_option('time_format'), $tsStartLocal) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEndLocal),
-                        'startISO' => date_i18n('c', $TSstart),
-                        'endISO' => date_i18n('c', $TSend),
+                        'date' => date_i18n(get_option('date_format'), $tsStart),
+                        'time' => date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd),
+                        'startISO' => date_i18n('c', $tsStartUTC, true),
+                        'endISO' => date_i18n('c', $tsEndUTC),
                     ];
                 }
                 $data['eventItemsFormatted'][] = $eventItemsFormatted;
-                if (!$nextOccurenceFound && $TSstart >= time()) {
+                if (!$nextOccurenceFound && $tsStart >= time()) {
                     $data['nextOccurrenceFormatted'] = $eventItemsFormatted;
                     $nextOccurenceFound = true;
                 }
