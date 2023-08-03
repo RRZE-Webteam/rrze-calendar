@@ -5,6 +5,7 @@ namespace RRZE\Calendar;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
+use RRZE\Calendar\ICS\Events;
 
 class Update
 {
@@ -47,10 +48,10 @@ class Update
             $adminId = array_rand(array_flip($admins), 1);
 
             foreach ($result as $row) {
-                $hierarchicalTax = [];
+                $hierarchicalTerms = [];
                 $category = self::legacyGetFeedCategory($row->id);
                 if ($category && isset($category->term_id)) {
-                    $hierarchicalTax[] = $category->term_id;
+                    $hierarchicalTerms[] = $category->term_id;
                 }
 
                 $nonHierarchicalTerms = [];
@@ -65,16 +66,34 @@ class Update
                     'post_content'  => '',
                     'post_status'   => $row->active ? 'publish' : 'draft',
                     'post_type'     => CalendarFeed::POST_TYPE,
-                    'tax_input'     => [
-                        CalendarEvent::TAX_CATEGORY => $hierarchicalTax,
-                        CalendarEvent::TAX_TAG      => $nonHierarchicalTerms,
-                    ],
-                    'meta_input'    => [
-                        CalendarFeed::FEED_URL => $row->url,
-                    ]
+                    // 'tax_input'     => [
+                    //     CalendarEvent::TAX_CATEGORY => $hierarchicalTerms,
+                    //     CalendarEvent::TAX_TAG      => $nonHierarchicalTerms,
+                    // ],
+                    // 'meta_input'    => [
+                    //     CalendarFeed::FEED_URL => $row->url,
+                    // ]
                 ];
 
-                wp_insert_post($postArr);
+                $postId = wp_insert_post($postArr);
+                if (!$postId) {
+                    continue;
+                }
+
+                if (!empty($hierarchicalTerms)) {
+                    wp_set_post_terms($postId, $hierarchicalTerms, CalendarEvent::TAX_CATEGORY);
+                }
+
+                if (!empty($nonHierarchicalTerms)) {
+                    wp_set_post_terms($postId, $nonHierarchicalTerms, CalendarEvent::TAX_TAG);
+                }
+
+                add_post_meta($postId, CalendarFeed::FEED_URL, $row->url, true);
+
+                if ($row->active) {
+                    Events::updateItems($postId);
+                    Events::insertData($postId);
+                }
             }
         }
         flush_rewrite_rules();
