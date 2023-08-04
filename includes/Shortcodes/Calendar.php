@@ -6,7 +6,6 @@ defined('ABSPATH') || exit;
 
 use DateInterval;
 use RRZE\Calendar\Utils;
-use RRZE\Calendar\Templates;
 use RRZE\Calendar\CPT\CalendarEvent;
 
 class Calendar
@@ -340,7 +339,6 @@ class Calendar
      */
 
     private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = []) {
-        global $wp_locale;
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
@@ -358,15 +356,11 @@ class Calendar
         $output = '<div class="calendar-month mini">';
         $output .= '<table>';
         $output .= '<tr><th colspan="7">' . $month_name . '</th></tr>';
-        $output .= '<tr class="days">'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(1)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(2)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(3)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(4)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(5)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(6)).'</td>'
-            .'<td>'.$wp_locale->get_weekday_abbrev($wp_locale->get_weekday(0)).'</td>'
-            .'<tr>';
+        $output .= '<tr class="days">';
+        foreach (Utils::getDaysOfWeek('short') as $dayOfWeek) {
+            $output .= '<td>' . $dayOfWeek . '</td>';
+        }
+        $output .= '<tr>';
 
         for($i = 1; $i < $first_day_in_month; $i++) {
             $output .= '<td> </td>';
@@ -449,8 +443,10 @@ class Calendar
         $output .= '</div>';
         $output .= '<div class="calendar-month full">';
         $output .= '<div class="days">';
-        foreach ($day_names as $i => $day_name) {
-            $output .= '<div style="grid-column-start: day-'.($i+1).'; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
+        $gridIdex = 1;
+        foreach ($day_names as $day_name) {
+            $output .= '<div style="grid-column-start: day-'.($gridIdex).'; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
+            $gridIdex++;
         }
         $output .='</div>';
 
