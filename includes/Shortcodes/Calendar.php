@@ -339,15 +339,17 @@ class Calendar
      */
 
     private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = []) {
+        $startOfWeek = get_option('start_of_week', 0);
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
         $month_name = $month_names[(int)$month-1];
         // in PHP, Sunday is the first day in the week with number zero (0)
         // to make our calendar works we will change this to (7)
-        if ($first_day_in_month == 0){
-            $first_day_in_month = 7;
-        }
+        // if ($first_day_in_month == 0){
+        //     $first_day_in_month = 7;
+        // }
         if ($showYear) {
             $month_name .= ' ' . $year;
         } else {
@@ -362,12 +364,12 @@ class Calendar
         }
         $output .= '<tr>';
 
-        for($i = 1; $i < $first_day_in_month; $i++) {
+        for($i = 0; $i < $first_day_in_month; $i++) {
             $output .= '<td> </td>';
         }
         //var_dump($eventsArray);
         for($day = 1; $day <= $month_days; $day++) {
-            $pos = ($day + $first_day_in_month - 1) % 7;
+            $pos = ($day + $first_day_in_month) % 7;
             $date = $year.'-'.$month.'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
             $calDay = strtotime($date);
             $linkOpen = '';
@@ -414,15 +416,17 @@ class Calendar
      */
 
     private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = []) {
+        $startOfWeek = get_option('start_of_week', 0);
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
         $month_name = $month_names[(int)$month-1];
         // in PHP, Sunday is the first day in the week with number zero (0)
         // to make our calendar works we will change this to (7)
-        if ($first_day_in_month == 0){
-            $first_day_in_month = 7;
-        }
+        // if ($first_day_in_month == 0){
+        //     $first_day_in_month = 7;
+        // }
         $day_names = Utils::getDaysOfWeek('full');
 
         $taxQueryJSON = json_encode($taxQuery);
@@ -443,23 +447,24 @@ class Calendar
         $output .= '</div>';
         $output .= '<div class="calendar-month full">';
         $output .= '<div class="days">';
-        $gridIdex = 1;
+        $gridIndex = 1;
         foreach ($day_names as $day_name) {
-            $output .= '<div style="grid-column-start: day-'.($gridIdex).'; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
-            $gridIdex++;
+            $output .= '<div style="grid-column-start: day-'.($gridIndex).'; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
+            $gridIndex++;
         }
         $output .='</div>';
 
         // Weeks
         $output .= '<div class="week">';
-        for($i = 1; $i < $first_day_in_month; $i++) {
-            $output .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
+        for($i = 0; $i < $first_day_in_month; $i++) {
+            $gridIndex = $i + 1;
+            $output .= '<div class="empty-day" style="grid-column: day-'.$gridIndex.' / day-'.$gridIndex.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
         }
         $weekNum = 1;
         $eventsPerDay = [];
 
         for($day = 1; $day <= $month_days; $day++) {
-            $pos = ($day + $first_day_in_month - 1) % 7;
+            $pos = ($day + $first_day_in_month) % 7;
             $date = $year.'-'.$month.'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
             $col = $pos == 0 ? 7 : $pos;
             $calDay = $date;

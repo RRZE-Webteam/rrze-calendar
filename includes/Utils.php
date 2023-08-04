@@ -633,14 +633,17 @@ class Utils
             if ($event == NULL) continue;
             $meta = get_post_meta($event->ID);
             if (empty($meta)) continue;
-            $isImport = get_post_meta($event->ID, 'ics_feed_id', TRUE) != '';
-            $repeat = Utils::getMeta($meta, 'repeat');
-            if ($repeat != 'on') {
-                $startTS = absint(Utils::getMeta($meta, 'start'));
-                $endTS = absint(Utils::getMeta($meta, 'end'));
-                $eventsArray[$startTS][$i]['id'] = $event->ID;
-                $eventsArray[$startTS][$i]['end'] = $endTS;
-            } else {
+            $isImport = get_post_meta($event->ID, 'ics_feed_id', true);
+            if ($isImport && $occurrences = get_post_meta($event->ID, 'ics_event_ocurrences', true)) {
+                foreach ($occurrences as $startDt) {
+                    $startTStmp = absint(Utils::getMeta($meta, 'start'));
+                    $endTStmp = absint(Utils::getMeta($meta, 'end'));
+                    $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
+                    $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
+                    $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                }                
+            } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
                 foreach ($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
@@ -649,6 +652,11 @@ class Utils
                     $eventsArray[$startTS][$i]['id'] = $event->ID;
                     $eventsArray[$startTS][$i]['end'] = $endTS;
                 }
+            } else {
+                $startTS = absint(Utils::getMeta($meta, 'start'));
+                $endTS = absint(Utils::getMeta($meta, 'end'));
+                $eventsArray[$startTS][$i]['id'] = $event->ID;
+                $eventsArray[$startTS][$i]['end'] = $endTS;
             }
             $i++;
         }
@@ -697,12 +705,13 @@ class Utils
 
             $rruleArgs['FREQ'] = 'weekly';
             $rruleArgs['INTERVAL'] = self::getMeta($meta, 'repeat-weekly-interval');
-            $dows = self::getMeta($meta, 'repeat-weekly-day');
-            $daysOfWeek = self::daysOfWeek('rrule');
-            foreach ($dows as $i => $dow) {
-                $dows[$i] = $daysOfWeek[$dow];
+            if ($dows = self::getMeta($meta, 'repeat-weekly-day')) {
+                $daysOfWeek = self::daysOfWeek('rrule');
+                foreach ($dows as $i => $dow) {
+                    $dows[$i] = $daysOfWeek[$dow];
+                }
+                $rruleArgs['BYDAY'] = $dows;
             }
-            $rruleArgs['BYDAY'] = $dows;
         } elseif ($repeatInterval == 'month') {
             $rruleArgs['FREQ'] = 'monthly';
 
