@@ -5,9 +5,7 @@ namespace RRZE\Calendar\Shortcodes;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
-use RRZE\Calendar\Templates;
 use RRZE\Calendar\CPT\CalendarEvent;
-use RRZE\Projects\Util\Util;
 
 class Events
 {

@@ -395,14 +395,14 @@ class Utils
 
     public static function getDaysOfWeek($format = null)
     {
+        $days = [];
         $daysOfWeek = self::daysOfWeek($format);
         $startOfWeek = get_option('start_of_week', 0);
-        for ($i = 0; $i < $startOfWeek; $i++) {
-            $day = $daysOfWeek[$i];
-            unset($daysOfWeek[$i]);
-            $daysOfWeek[$i] = $day;
+        for ($i = 0; $i < 7; $i++) {
+            $weekDay = ($i + $startOfWeek) % 7;
+            $days[$weekDay] = $daysOfWeek[$weekDay];
         }
-        return $daysOfWeek;
+        return $days;
     }
 
     public static function daysOfWeek($format = null)
