@@ -13,23 +13,23 @@ class Capabilities
                 'capability_type' => CalendarEvent::POST_TYPE,
                 'capabilities' => [
                     // Meta capabilities
-                    'edit_post'              => 'edit_page',
-                    'read_post'              => 'read_page',
-                    'delete_post'            => 'delete_page',
+                    'edit_post'              => 'edit_post',
+                    'read_post'              => 'read_post',
+                    'delete_post'            => 'delete_post',
                     // Primitive capabilities used outside of map_meta_cap()
-                    'edit_posts'             => 'edit_pages',
-                    'edit_others_posts'      => 'edit_others_pages',
-                    'publish_posts'          => 'publish_pages',
-                    'read_private_posts'     => 'read_private_pages',
-                    // // Primitive capabilities used within map_meta_cap()
+                    'edit_posts'             => 'edit_posts',
+                    'edit_others_posts'      => 'edit_others_posts',
+                    'publish_posts'          => 'publish_posts',
+                    'read_private_posts'     => 'read_private_posts',
+                    // Primitive capabilities used within map_meta_cap()
                     'read'                   => 'read',
-                    'delete_posts'           => 'delete_pages',
-                    'delete_private_posts'   => 'delete_private_pages',
-                    'delete_published_posts' => 'delete_published_pages',
-                    'delete_others_posts'    => 'delete_others_pages',
-                    'edit_private_posts'     => 'edit_private_pages',
-                    'edit_published_posts'   => 'edit_published_pages',
-                    'create_posts'           => 'edit_pages'
+                    'delete_posts'           => 'delete_posts',
+                    'delete_private_posts'   => 'delete_private_posts',
+                    'delete_published_posts' => 'delete_published_posts',
+                    'delete_others_posts'    => 'delete_others_posts',
+                    'edit_private_posts'     => 'edit_private_posts',
+                    'edit_published_posts'   => 'edit_published_posts',
+                    'create_posts'           => 'edit_posts'
                 ],
                 'map_meta_cap' => true
             ],
@@ -45,7 +45,7 @@ class Capabilities
                     'edit_others_posts'      => 'edit_others_pages',
                     'publish_posts'          => 'publish_pages',
                     'read_private_posts'     => 'read_private_pages',
-                    // // Primitive capabilities used within map_meta_cap()
+                    // Primitive capabilities used within map_meta_cap()
                     'read'                   => 'read',
                     'delete_posts'           => 'delete_pages',
                     'delete_private_posts'   => 'delete_private_pages',
