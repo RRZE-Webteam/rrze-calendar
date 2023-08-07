@@ -98,10 +98,10 @@ class CalendarFeed
             'delete_with_user'    => false,
             'supports'            => ['title'],
             'menu_icon'           => 'dashicons-calendar-alt',
-            'capability_type'     => 'page'
-            // 'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
-            // 'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
-            // 'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE),
+            // 'capability_type'     => 'page'
+            'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
+            'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
+            'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE)
         ];
 
         register_post_type(self::POST_TYPE, $args);
