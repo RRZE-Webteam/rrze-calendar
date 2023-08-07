@@ -13,6 +13,7 @@ class ICS
     protected $properties = [];
 
     private $availableProperties = [
+        'uid',
         'description',
         'dtend',
         'dtstart',
@@ -61,7 +62,6 @@ class ICS
         }
 
         $props['DTSTAMP'] = $this->formatTimestamp('now');
-        $props['UID'] = Utils::createUid();
 
         foreach ($props as $k => $v) {
             $icsProps[] = "$k:$v";
