@@ -8,10 +8,8 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\{Templates, Utils};
 use RRule\RRule;
-use RRule\RSet;
-use RRZE\Calendar\Templates;
-use RRZE\Calendar\Utils;
 
 use function RRZE\Calendar\settings;
 
@@ -75,10 +73,10 @@ class CalendarEvent
             'public'             => true,
             'supports'           => ['title', 'author', 'excerpt', 'thumbnail'],
             'menu_icon'          => 'dashicons-calendar-alt',
-            'capability_type'    => 'post',
-            // 'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
-            // 'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
-            // 'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE),
+            // 'capability_type'    => 'post',
+            'capability_type'    => Capabilities::getCptCapabilityType(self::POST_TYPE),
+            'capabilities'       => (array) Capabilities::getCptCaps(self::POST_TYPE),
+            'map_meta_cap'       => Capabilities::getCptMapMetaCap(self::POST_TYPE),
             'has_archive'        => true,
             'rewrite'            => [
                 'slug'           => settings()->getOption('endpoint_slug')
