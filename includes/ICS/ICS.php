@@ -83,6 +83,8 @@ class ICS
                 break;
             default:
                 $value = $this->escStr($value);
+                $value = str_replace("\r\n", "\\n", $value);
+                $value = $this->split($value);
         }
 
         return $value;
@@ -97,5 +99,21 @@ class ICS
     private function escStr($str)
     {
         return preg_replace('/([\,;])/', '\\\$1', $str);
+    }
+
+    private function split($value)
+    {
+        $value = trim($value);
+        $lines = array();
+        while (strlen($value) > (75)) {
+            $line = mb_substr($value, 0, 75);
+            $llength = mb_strlen($line);
+            $lines[] = $line . chr(13) . chr(10) . chr(32);
+            $value = mb_substr($value, $llength);
+        }
+        if (!empty($value)) {
+            $lines[] = $value;
+        }
+        return (implode($lines));
     }
 }
