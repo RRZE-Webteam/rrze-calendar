@@ -4,13 +4,11 @@ namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\Utils;
-
 class ICS
 {
     const DT_FORMAT = 'Ymd\THis\Z';
 
-    protected $properties = [];
+    protected $data = [];
 
     private $availableProperties = [
         'uid',
@@ -18,58 +16,71 @@ class ICS
         'dtend',
         'dtstart',
         'location',
-        'summary',
-        'url'
+        'summary'
     ];
 
-    public function __construct($props)
+    public function __construct(array $data)
     {
-        $this->set($props);
+        $this->setData($data);
     }
 
-    public function set($key, $value = false)
+    public function setData(array $data)
     {
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                $this->data[$k] = $this->setProps($v);
+            }
+        }
+    }
+
+    public function setProps($key, string $value = '')
+    {
+        $properties = [];
         if (is_array($key)) {
             foreach ($key as $k => $v) {
-                $this->set($k, $v);
+                $this->setProps($k, $v);
             }
         } else {
             if (in_array($key, $this->availableProperties)) {
-                $this->properties[$key] = $this->sanitizeValue($value, $key);
+                $properties[$key] = $this->sanitizeValue($value, $key);
             }
         }
+        return $properties;
     }
 
-    public function make()
+    public function build()
     {
-        $rows = $this->build();
+        $rows = $this->render();
         return implode("\r\n", $rows);
     }
 
-    private function build()
+    private function render()
     {
+        $locale = strtoupper(substr(get_locale(), 0, 2));
+        $prodid = str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST)) . '//Events//' . $locale;
         $icsProps = [
             'BEGIN:VCALENDAR',
             'METHOD:PUBLISH',
-            'PRODID:' . str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST)) . '//Events',
-            'VERSION:2.0',
-            'BEGIN:VEVENT'
+            'PRODID:' . $this->split($prodid),
+            'VERSION:2.0'
         ];
 
-        $props = [];
-        foreach ($this->properties as $k => $v) {
-            $props[strtoupper($k . ($k === 'url' ? ';VALUE=URI' : ''))] = $v;
+        if (!empty($this->data)) {
+            foreach ($this->data as $properties) {
+                $icsProps[] = 'BEGIN:VEVENT';
+                $props = [];
+                foreach ($properties as $k => $v) {
+                    $props[strtoupper($k)] = $v;
+                }
+                $props['DTSTAMP'] = $this->formatTimestamp('now');
+                foreach ($props as $k => $v) {
+                    $icsProps[] = "$k:$v";
+                }
+                $icsProps[] = 'END:VEVENT';
+            }
         }
 
-        $props['DTSTAMP'] = $this->formatTimestamp('now');
-
-        foreach ($props as $k => $v) {
-            $icsProps[] = "$k:$v";
-        }
-
-        $icsProps[] = 'END:VEVENT';
         $icsProps[] = 'END:VCALENDAR';
-
         return $icsProps;
     }
 
