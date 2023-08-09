@@ -9,7 +9,6 @@
         "rrze/wp": "^1.2.1",
         "johngrogg/ics-parser": "^3.2.1",
         "rlanvin/php-rrule": "^2.4.1",
-        "jsvrcek/ics": "^0.8.4",
         "cmb2/cmb2": "^2.10.1"
     },
     "suggest": {
