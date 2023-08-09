@@ -137,9 +137,12 @@ class Export
     public static function makeIcsLink(array $args)
     {
         $args['ids'] = $args['ids'] ?? false;
-        $args['cats'] = $args['cats'] ?? false;
-        $args['tags'] = $args['tags'] ?? false;
-        $qArgs = ['ical-plugin' => plugin()->getSlug()];
+        $args['cats'] = $args['cats'] ?? false; // array of term id(s)
+        $args['tags'] = $args['tags'] ?? false; // array of term id(s)
+        $qArgs = [
+            'ical-plugin' => plugin()->getSlug(),
+            'action' => 'export'
+            ];
 
         foreach ($args as $k => $v) {
             if ($v && is_array($v)) {
