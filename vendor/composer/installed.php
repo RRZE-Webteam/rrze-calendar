@@ -28,15 +28,6 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'jsvrcek/ics' => array(
-            'pretty_version' => '0.8.5',
-            'version' => '0.8.5.0',
-            'reference' => '11a24ac95648d720a1370c5bb20988b1739a63a4',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../jsvrcek/ics',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'rlanvin/php-rrule' => array(
             'pretty_version' => 'v2.4.1',
             'version' => '2.4.1.0',
