@@ -26,11 +26,15 @@ class Export
             $plugin === sanitize_title(plugin()->getSlug())
             && $action === 'export'
         ) {
+            $postIds = $_GET['ids'] ?? '';
+            $cats = $_GET['cats'] ?? '';
+            $tags = $_GET['tags'] ?? '';
             $args = [
-                'postIds' => $_GET['ids'] ?: false,
-                'categories' => $_GET['cats'] ?: false,
-                'tags' => $_GET['tags'] ?: false
+                'postIds' => array_filter(explode(',', $postIds)),
+                'categories' => array_filter(explode(',', $cats)),
+                'tags' => array_filter(explode(',', $tags)),
             ];
+
             $this->set($args);
             $this->stream();
         }
@@ -79,7 +83,7 @@ class Export
         ];
 
         if (!empty($postIn)) {
-            $args = array_merge($args, ['post__in' => $postIds]);
+            $args = array_merge($args, ['post__in' => $postIn]);
         }
         if (!empty($taxQuery)) {
             $taxQuery = array_merge(['relation' => 'AND'], $taxQuery);
@@ -100,10 +104,10 @@ class Export
             $meta = get_post_meta($post->ID, '', true);
             $data[$post->ID] = [
                 'summary' => $post->post_title,
-                'uid' => $meta['event-uid'],
-                'description' => $meta['description'],
-                'dstart' => $meta['start'],
-                'dtend' => $meta['end']
+                'uid' => $meta['event-uid'][0],
+                'description' => $meta['description'][0],
+                'dtstart' => date('Y-m-d H:i:s', $meta['start'][0]),
+                'dtend' => date('Y-m-d H:i:s', $meta['end'][0]),
             ];
         }
         return $data;
@@ -136,13 +140,13 @@ class Export
 
     public static function makeIcsLink(array $args)
     {
-        $args['ids'] = $args['ids'] ?? false;
+        $args['ids'] = $args['ids'] ?? false;   // array of post id(s)
         $args['cats'] = $args['cats'] ?? false; // array of term id(s)
         $args['tags'] = $args['tags'] ?? false; // array of term id(s)
         $qArgs = [
             'ical-plugin' => plugin()->getSlug(),
             'action' => 'export'
-            ];
+        ];
 
         foreach ($args as $k => $v) {
             if ($v && is_array($v)) {
