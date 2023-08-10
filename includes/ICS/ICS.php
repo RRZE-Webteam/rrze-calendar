@@ -26,21 +26,15 @@ class ICS
 
     public function setData(array $data)
     {
-        foreach ($data as $k => $v) {
-            if (is_array($v)) {
-                $this->data[$k] = $this->setProps($v);
-            }
+        foreach ($data as $postId => $props) {
+            $this->data[$postId] = $this->setProps($props);
         }
     }
 
-    public function setProps($key, string $value = '')
+    private function setProps(array $props)
     {
         $properties = [];
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                $this->setProps($k, $v);
-            }
-        } else {
+        foreach ($props as $key => $value) {
             if (in_array($key, $this->availableProperties)) {
                 $properties[$key] = $this->sanitizeValue($value, $key);
             }
