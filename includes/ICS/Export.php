@@ -128,8 +128,8 @@ class Export
         $urlPath = parse_url(site_url(), PHP_URL_PATH);
         $filename = sprintf(
             '%1$s%2$s.ics',
-            $urlHost,
-            $urlPath ? '-' . $urlPath : ''
+            sanitize_title($urlHost),
+            $urlPath ? '-' . sanitize_title($urlPath) : ''
         );
 
         header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
