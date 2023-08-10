@@ -6,6 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 use RRZE\Calendar\Shortcodes\Shortcode;
+use RRZE\Calendar\ICS\Export;
 
 class Main
 {
@@ -23,6 +24,8 @@ class Main
         CalendarFeed::init();
 
         Update::init();
+
+        new Export();
 
         Shortcode::init();
 

@@ -468,10 +468,10 @@ class Events
                                 if ($time !== 'all-day') {
                                     if (!empty($event['start'])) {
                                         $mtime = ' ' . $event['start'];
-                                        $dtStart = get_gmt_from_date($dtStart . ' ' . $event['start']);
+                                        $dtStart = $dtStart . ' ' . $event['start'];
                                         if (!empty($event['end']) && $event['end'] != $event['start']) {
                                             $mtime .= ' &#8211; ' . $event['end'];
-                                            $dtEnd = get_gmt_from_date($dtEnd . ' ' . $event['end']);
+                                            $dtEnd = $dtEnd . ' ' . $event['end'];
                                         } else {
                                             $dtEnd = $dtStart;
                                         }
@@ -618,8 +618,8 @@ class Events
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
             }
 
-            $dtStart = strtotime(get_date_from_gmt($event['dt_start']));
-            $dtEnd = strtotime(get_date_from_gmt($event['dt_end']));
+            $dtStart = strtotime($event['dt_start']);
+            $dtEnd = strtotime($event['dt_end']);
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
 

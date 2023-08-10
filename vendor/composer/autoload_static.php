@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c
+class ComposerStaticInitd9af71ad6204b40402673742c70fad18
 {
     public static $files = array (
         'e4e11a001002b1c747a45db4ce1ccc3a' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
@@ -16,10 +16,6 @@ class ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c
             'RRule\\' => 6,
             'RRZE\\WP\\' => 8,
             'RRZE\\Calendar\\' => 14,
-        ),
-        'J' => 
-        array (
-            'Jsvrcek\\ICS\\' => 12,
         ),
     );
 
@@ -36,10 +32,6 @@ class ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c
         'RRZE\\Calendar\\' => 
         array (
             0 => __DIR__ . '/../..' . '/includes',
-        ),
-        'Jsvrcek\\ICS\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/jsvrcek/ics/src',
         ),
     );
 
@@ -61,10 +53,10 @@ class ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit1e6c2074e7b5370bfbea723e8399514c::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -575,7 +575,7 @@ class Calendar
                         }
                         $thumbnail = get_the_post_thumbnail($event['id'], 'medium');
                         $content = get_post_meta($event['id'], 'description', true);
-                        $excerpt = strip_tags($content);
+                        $excerpt = strip_tags(do_shortcode($content));
                         if (strlen($excerpt) > 100) {
                             $excerpt = substr($excerpt, 0, 100);
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
