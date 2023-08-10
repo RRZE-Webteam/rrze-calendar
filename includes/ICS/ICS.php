@@ -44,7 +44,10 @@ class ICS
 
     public function build()
     {
-        $rows = $this->render();
+        $rows = array_map(
+            fn ($row): string => $this->split($row),
+            $this->render()
+        );
         return implode("\r\n", $rows);
     }
 
@@ -89,7 +92,6 @@ class ICS
             default:
                 $value = $this->escStr($value);
                 $value = str_replace("\r\n", "\\n", $value);
-                $value = $this->split($value);
         }
 
         return $value;
