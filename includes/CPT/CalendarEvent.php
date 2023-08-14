@@ -589,22 +589,46 @@ class CalendarEvent
                 $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
                 $startDay = date('Y-m-d', $tsStart);
                 $endDay = date('Y-m-d', $tsEnd);
-                if ($data['allDay'] == 'on' || $startDay != $endDay) {
-                    $eventItemsFormatted = [
-                        'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
-                            . ' &ndash; '
-                            . date_i18n(get_option('date_format'), $tsEnd)),
-                        'time' => '',
-                        'startISO' => $startDay,
-                        'endISO' => $endDay,
-                    ];
+                if ($startDay != $endDay) {
+                    // multiday
+                    if ($data['allDay'] == 'on') {
+                        $eventItemsFormatted = [
+                            'date' => date_i18n(get_option('date_format'), $tsStart)
+                                . ' &ndash; '
+                                . date_i18n(get_option('date_format'), $tsEnd),
+                            'time' => __('All Day', 'rrze-calendar'),
+                            'startISO' => $startDay,
+                            'endISO' => $endDay,
+                        ];
+                    } else {
+                        $eventItemsFormatted = [
+                            'date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
+                                . ' &ndash; '
+                                . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd),
+                            'time' => '',
+                            'startISO' => date_i18n('c', $tsStartUTC, true),
+                            'endISO' => date_i18n('c', $tsEndUTC),
+                        ];
+                    }
                 } else {
-                    $eventItemsFormatted = [
-                        'date' => date_i18n(get_option('date_format'), $tsStart),
-                        'time' => date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd),
-                        'startISO' => date_i18n('c', $tsStartUTC, true),
-                        'endISO' => date_i18n('c', $tsEndUTC),
-                    ];
+                    // single day
+                    if ($data['allDay'] == 'on') {
+                        $eventItemsFormatted = [
+                            'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
+                                . ' &ndash; '
+                                . date_i18n(get_option('date_format'), $tsEnd)),
+                            'time' => __('All day', 'rrze-calendar'),
+                            'startISO' => $startDay,
+                            'endISO' => $endDay,
+                        ];
+                    } else {
+                        $eventItemsFormatted = [
+                            'date' => date_i18n(get_option('date_format'), $tsStart),
+                            'time' => date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd),
+                            'startISO' => date_i18n('c', $tsStartUTC, true),
+                            'endISO' => date_i18n('c', $tsEndUTC),
+                        ];
+                    }
                 }
                 $data['eventItemsFormatted'][] = $eventItemsFormatted;
                 if (!$nextOccurenceFound && $tsStart >= time()) {
@@ -622,10 +646,11 @@ class CalendarEvent
         $numItems = count($data['eventItemsFormatted']);
         echo '<div class="rrze-event-schedule">';
         if (!empty($data['nextOccurrenceFormatted'])) {
-            echo '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>' . $data['nextOccurrenceFormatted']['date'] . '</span>'
+            echo '<p><span class="rrze-event-date"><span class="dashicons dashicons-calendar"></span><span class="sr-only">' . __('Date', 'rrze-calendar') . ': </span>'
+                . $data['nextOccurrenceFormatted']['date'] . '</span>'
                 . '<meta itemprop="startDate" content="' . $data['nextOccurrenceFormatted']['startISO'] . '">'
                 . '<meta itemprop="endDate" content="' . $data['nextOccurrenceFormatted']['endISO'] . '">'
-                . (($data['allDay'] != 'on' && !strpos($data['nextOccurrenceFormatted']['date'], '&ndash;')) ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['nextOccurrenceFormatted']['time'] . '</span>' : '')
+                . ($data['nextOccurrenceFormatted']['time'] != '' ? '<span class="rrze-event-time"><span class="dashicons dashicons-clock"></span><span class="sr-only">' . __('Time', 'rrze-calendar') . ': </span>' . $data['nextOccurrenceFormatted']['time'] . '</span>' : '')
                 . ($data['location'] != '' ? '<span class="rrze-event-location" itemprop="location" itemscope><span class="dashicons dashicons-location"></span><span class="sr-only">' . __('Location', 'rrze-calendar') . ': </span>' . $data['location'] . '</span>' : '')
                 . '</p>';
         } else {
@@ -668,9 +693,7 @@ class CalendarEvent
                 echo '<dt>' . __('Date', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['date'] : $data['eventItemsFormatted'][$i]['date']) . '</dd>';
 
                 // Time
-                if ($data['allDay'] != 'on' && !strpos($data['eventItemsFormatted'][0]['date'], '&ndash;')) {
-                    echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['time'] : $data['eventItemsFormatted'][$i]['time']) . '</dd>';
-                }
+                echo '<dt>' . __('Time', 'rrze-calendar') . ':</dt><dd>' . (!empty($data['nextOccurrenceFormatted']) ? $data['nextOccurrenceFormatted']['time'] : $data['eventItemsFormatted'][$i]['time']) . '</dd>';
 
                 // Location
                 if ($data['location'] != '') {

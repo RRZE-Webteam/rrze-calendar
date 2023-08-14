@@ -140,11 +140,12 @@ class Events
                     $location = get_post_meta($event['id'], 'location', TRUE);
                     $vc_url = get_post_meta($event['id'], 'vc-url', TRUE);
                     $allDay = get_post_meta($event['id'], 'all-day', TRUE) == 'on';
+                    $startDate = date('Y-m-d', $tsStart);
+                    $endDate = date('Y-m-d', $tsEnd);
 
                     $metaStart = '<meta itemprop="startDate" content="'. date('c', $tsStartUTC) . '" />';
                     $metaEnd = '<meta itemprop="endDate" content="'. date('c', $tsEndUTC) . '" />';
 
-                    $timeOut = ($allDay == 'on' ? __('All-day', 'rrze-calendar') : date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>');
                     if ($location != '' && $vc_url == '') {
                         // Offline Event
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
@@ -169,8 +170,26 @@ class Events
 
                     $output .= '<li class="event-item" itemscope itemtype="https://schema.org/Event">';
                     if ($display == 'list') {
-                        $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . date_i18n(get_option('date_format'), $tsStart)
-                            . '<span class="dashicons dashicons-clock"></span>' . $timeOut . '<br />'
+                        if ($startDate == $endDate) {
+                            // single day
+                            if ($allDay) {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart);
+                                $timeOut = '';
+                            } else {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart);
+                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                            }
+                        } else {
+                            // multiday
+                            $timeOut = '';
+                            if ($allDay) {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart). ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
+                            } else {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                            }
+                        }
+                        $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . $dateOut
+                            . ($timeOut != '' ? '<span class="dashicons dashicons-clock"></span>' . $timeOut : '') . '</span><br />'
                             . '<span class="event-title" itemprop="name">' . $eventTitle . '</span>'
                             . $metaStart
                             . $metaEnd
@@ -178,6 +197,23 @@ class Events
                             . $metaAttendance;
                         wp_enqueue_style( 'dashicons' );
                     } else {
+                        if ($startDate == $endDate) {
+                            // single day
+                            $dateOut = '';
+                            if ($allDay) {
+                                $timeOut = '';
+                            } else {
+                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                            }
+                        } else {
+                            // multiday
+                            $timeOut = '';
+                            if ($allDay) {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart). ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
+                            } else {
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                            }
+                        }
                         $bgColor = '';
                         $categoryObjects = wp_get_object_terms($event['id'], 'rrze-calendar-category');
                         if (!is_wp_error($categoryObjects) && !empty($categoryObjects)) {
@@ -193,7 +229,8 @@ class Events
                             //. '<div class="year">' . date('Y', $tsStart) .'</div>'
                             . '</div>'
                             . '<div class="event-info">'
-                            . '<div class="event-time">' . $timeOut . '</div>'
+                            . ($dateOut != '' ? '<div class="event-time">' . $dateOut . '</div>' : '')
+                            . ($timeOut != '' ? '<div class="event-time">' . $timeOut . '</div>' : '')
                             . '<div class="event-title" itemprop="name">' . $eventTitle . '</div>'
                             . '<div class="event-location">' . $locationOut . '</div>'
                             . $metaStart
