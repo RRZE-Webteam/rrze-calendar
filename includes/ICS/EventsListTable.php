@@ -97,7 +97,7 @@ class EventsListTable extends ListTable
                 return $item['readable_date'];
                 break;
             case 'readable_rrule':
-                return $item['readable_rrule'] ?? '';
+                return $item['readable_rrule'] ?? '&mdash;';
                 break;
             case 'event_location':
                 return sanitize_text_field($item['location']);
