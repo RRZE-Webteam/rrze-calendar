@@ -782,29 +782,37 @@ class CalendarEvent
     {
         $data = CalendarEvent::getEventData($post_id);
         $meta = get_post_meta($post_id);
+        $feedID = get_post_meta($post_id, 'ics_feed_id', true);
         switch ($column_name) {
             case 'event_date':
                 echo ($data["eventItemsFormatted"][0]['date'] ?? '') . (isset($data["eventItemsFormatted"][0]['time']) ? ', ' . $data["eventItemsFormatted"][0]['time'] : '');
                 break;
             case 'event_recurrence':
-                if ($data['repeat']  == 'on') {
+                $readable_rrule = '&mdash;';
+                if (!$feedID && $data['repeat']  == 'on') {
                     $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
                     if ($rruleArgs != '') {
                         $rruleArgs = json_decode($rruleArgs, TRUE);
                         $rule = new RRule($rruleArgs);
-                        echo Utils::humanReadableRecurrence($rule);
+                        $readable_rrule = Utils::humanReadableRecurrence($rule);
+                    }
+                } elseif ($feedID && ($feedMeta = get_post_meta($post_id, 'ics_event_meta', true))) {
+                    if (!empty($feedMeta['readable_rrule'])) {
+                        $readable_rrule = $feedMeta['readable_rrule'];
                     }
                 }
+                echo $readable_rrule;
                 break;
             case 'event_location':
                 echo ($data['location'] ?? '');
                 break;
             case 'event-feed':
-                $feedID = Utils::getMeta($meta, 'ics_feed_id');
-                if ($feedID != '') {
+                if ($feedID) {
                     $feedURL = get_edit_post_link($feedID);
                     $feedName = get_the_title($feedID);
                     echo '<a href="' . esc_url($feedURL) . '">' . esc_attr($feedName) . '</a>';
+                } else {
+                    echo '&mdash;';
                 }
                 break;
         }
