@@ -20,22 +20,28 @@ class Import
      * @param integer $limitDays
      * @return mixed
      */
-    public static function getEvents(string $url, bool $cache = true, int $limitDays = 365)
+    public static function getEvents(string $url, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
+        $pastDays = abs($pastDays);
+        $limitDays = abs($limitDays);
         $startDate = date('Ymd', current_time('timestamp'));
 
-        // Add a month to $rangeStart to accommodate multi-day events that may begin out of range.
-        $rangeStart = Utils::dateFormat('Y/m/d', $startDate, null, '-30 days');
+        // Add a month to $pastDays to accommodate multi-day events that may begin out of range.
+        $rangeStart = Utils::dateFormat('Y/m/d', $startDate, null, '-' . ($pastDays + 30) . 'days');
         // Extend by one week past current date.
-        $rangeEnd = Utils::dateFormat('Y/m/d', $startDate, null, '+' . intval($limitDays + 7) . ' days');
+        $rangeEnd = Utils::dateFormat('Y/m/d', $startDate, null, '+' . ($limitDays + 7) . ' days');
+
+        // The value in years to use for indefinite, recurring events
+        $defaultSpan = intval(ceil($pastDays + $limitDays) / 365) ?: 365;
+
+        // WP Timezone
+        $urlTz = wp_timezone();
+        $defaultTimeZone = $urlTz->getName();
 
         // Get day counts for ICS Parser's range filters
         $nowDtm = new DateTime();
         $filterDaysAfter = $nowDtm->diff(new DateTime($rangeEnd))->format('%a');
         $filterDaysBefore = $nowDtm->diff(new DateTime($rangeStart))->format('%a');
-
-        // Get WP Timezone
-        $urlTz = wp_timezone();
 
         // Fix URL protocol
         if (strpos($url, 'webcal://') === 0) {
@@ -57,8 +63,8 @@ class Import
         if ($icsContent) {
             // Parse ICS contents
             $ICal = new ICal('ICal.ics', [
-                'defaultSpan'                 => 1,
-                'defaultTimeZone'             => $urlTz->getName(),
+                'defaultSpan'                 => $defaultSpan,
+                'defaultTimeZone'             => $defaultTimeZone,
                 'disableCharacterReplacement' => true,
                 'filterDaysAfter'             => $filterDaysAfter,
                 'filterDaysBefore'            => $filterDaysBefore,
@@ -71,7 +77,11 @@ class Import
             unset($icsContent);
 
             // Has events?
-            if ($ICal->hasEvents() && $events = $ICal->eventsFromRange($rangeStart, $rangeEnd)) {
+            if (
+                is_object($ICal)
+                && $ICal->hasEvents()
+                && $events = $ICal->eventsFromRange($rangeStart, $rangeEnd)
+            ) {
                 return [
                     'events' => $events,
                     'meta' => [

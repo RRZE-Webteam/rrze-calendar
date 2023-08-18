@@ -9,6 +9,10 @@ use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 
 class Events
 {
+    private static $pastDays = 365;
+
+    private static $limitDays = 365;
+
     public static function updateFeedsItems()
     {
         $feeds = self::getFeeds();
@@ -20,7 +24,7 @@ class Events
         }
     }
 
-    protected static function getFeeds(array $postIn = [])
+    private static function getFeeds(array $postIn = [])
     {
         $args = [
             'numberposts' => -1,
@@ -33,11 +37,12 @@ class Events
         return get_posts($args);
     }
 
-    public static function updateItems(int $postId, bool $cache = true)
+    public static function updateItems(int $postId, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
         $url = (string) get_post_meta($postId, CalendarFeed::FEED_URL, true);
 
-        $events = Import::getEvents($url, $cache);
+        $events = Import::getEvents($url, $cache, $pastDays, $limitDays);
+
         $error = !$events ? __('No events found.', 'rrze-calendar') : '';
         $items = !empty($events['events']) ? $events['events'] : [];
         $meta = !empty($events['meta']) ? $events['meta'] : [];
@@ -48,18 +53,15 @@ class Events
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
     }
 
-    public static function getItems(int $postId): array
-    {
-        return self::processItems($postId);
-    }
-
     /**
-     * processItems
+     * Get feed items
      *
      * @param integer $postId
-     * @return mixed
+     * @param integer $pastDays
+     * @param integer $limitDays
+     * @return void
      */
-    protected static function processItems($postId, int $pastDays = 0, int $limitDays = 365)
+    private static function getItems(int $postId, int $pastDays, int $limitDays)
     {
         $feedItems = [];
         if (
@@ -68,19 +70,15 @@ class Events
         ) {
             return $feedItems;
         }
-
         $feedItems['events'] = [];
         $feedItems['tz'] = get_option('timezone_string');
 
         // Set display date range.
-        $pastDays = $pastDays ? abs($pastDays) : 0;
+        $pastDays = abs($pastDays);
+        $limitDays = abs($limitDays);
         $startDate = date('Ymd', current_time('timestamp'));
-        if ($pastDays) {
-            $firstDate = Utils::dateFormat('Ymd', $startDate, null, '-' . abs($pastDays) . ' days');
-        } else {
-            $firstDate = $startDate;
-        }
-        $limitDate = Utils::dateFormat('Ymd', $firstDate, null, '+' . intval($limitDays - 1) . ' days');
+        $firstDate = Utils::dateFormat('Ymd', $startDate, null, '-' . $pastDays + 30 . ' days');
+        $limitDate = Utils::dateFormat('Ymd', $startDate, null, '+' . ($limitDays + 7) . ' days');
 
         // Set earliest and latest dates
         $feedItems['earliest'] = substr($firstDate, 0, 6);
@@ -101,11 +99,10 @@ class Events
 
         // Sort events and split into year/month/day groups
         ksort($feedItems['events']);
-        foreach ((array)$feedItems['events'] as $date => $events) {
 
+        foreach ((array)$feedItems['events'] as $date => $events) {
             // Only reorganize dates that are in the proper date range
             if ($date >= $firstDate && $date <= $limitDate) {
-
                 // Get the date's events in order
                 ksort($events);
 
@@ -124,7 +121,7 @@ class Events
         }
 
         // Add empty event arrays
-        for ($i = substr($feedItems['earliest'], 0, 6); $i <= substr($feedItems['latest'], 0, 6); $i++) {
+        for ($i = substr($firstDate, 0, 6); $i <= substr($limitDate, 0, 6); $i++) {
             $Y = substr($i, 0, 4);
             $m = substr($i, 4, 2);
             if (intval($m) < 1 || intval($m) > 12) {
@@ -144,7 +141,7 @@ class Events
         return $feedItems;
     }
 
-    protected static function assembleEvents($postId, $event, $eventKey, $urlTz, &$feedItems)
+    private static function assembleEvents($postId, $event, $eventKey, $urlTz, &$feedItems)
     {
         // Set start and end dates for event
         $dtstartDate = wp_date('Ymd', $event->dtstart_array[2], $urlTz);
@@ -307,11 +304,10 @@ class Events
                 global $post;
                 if (get_post_type($post) === CalendarFeed::POST_TYPE) {
                     $postId = $post->ID;
-                    $items = self::getItems($postId);
+                    $items = self::getItems($postId, self::$pastDays, self::$limitDays);
                 }
             }
         }
-        //\RRZE\WP\Debug::log(self::getListData($postId, $items));
         return count($items) ? self::getListData($postId, $items, $searchTerm) : $items;
     }
 
@@ -347,8 +343,8 @@ class Events
                 }
 
                 if (isset($items['events'][$year][$month])) {
-                    foreach ((array)$items['events'][$year][$month] as $day => $dayEvents) {
 
+                    foreach ((array)$items['events'][$year][$month] as $day => $dayEvents) {
                         // Pull out multi-day events and list them separately first
                         foreach ((array)$dayEvents as $time => $events) {
 
@@ -383,10 +379,10 @@ class Events
                                 $dtStart = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_start']));
                                 $dtEnd = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_end']));
                                 if ($time != 'all-day') {
-                                    $mdDtStart .= ' ' . Utils::timeFormat($event['multiday']['start_time']);
-                                    $mdDtEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time']);
-                                    $dtStart .= ' ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
-                                    $dtEnd .= ' ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
+                                    $mdDtStart .= ', ' . Utils::timeFormat($event['multiday']['start_time']);
+                                    $mdDtEnd .= ', ' . Utils::timeFormat($event['multiday']['end_time']);
+                                    $dtStart .= ', ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
+                                    $dtEnd .= ', ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
                                 } else {
                                     $data[$i]['allday'] = true;
                                 }
@@ -394,7 +390,7 @@ class Events
                                 // Date/time
                                 $data[$i]['dt_start'] = $dtStart;
                                 $data[$i]['dt_end'] = $dtEnd;
-                                $data[$i]['readable_date'] = $mdDtStart . ' &#8211; ' . $mdDtEnd;
+                                $data[$i]['readable_date'] = $mdDtStart . ' &mdash; ' . $mdDtEnd;
 
                                 // RRULE/FREQ
                                 if ($event['rrule']) {
@@ -434,15 +430,16 @@ class Events
                         foreach ((array)$dayEvents as $time => $events) {
 
                             foreach ((array)$events as $event) {
+
                                 if (!empty($event['multiday'])) {
                                     continue;
                                 }
 
-                                // If it is not an all day event and current time > event end datetime then skip
+                                // If it is not an all day event and limit date >= event end date then skip
                                 if (
                                     $time !== 'all-day'
                                     && !empty($event['end'])
-                                    && current_time('Y-m-d H:i:s') > sprintf('%1$s-%2$s-%3$s %4$s', $year, $month, $day, $event['end'])
+                                    && self::$limitDays >= $year . $month . $day
                                 ) {
                                     continue;
                                 }
@@ -470,7 +467,7 @@ class Events
                                         $mtime = ' ' . $event['start'];
                                         $dtStart = $dtStart . ' ' . $event['start'];
                                         if (!empty($event['end']) && $event['end'] != $event['start']) {
-                                            $mtime .= ' &#8211; ' . $event['end'];
+                                            $mtime .= ' &mdash; ' . $event['end'];
                                             $dtEnd = $dtEnd . ' ' . $event['end'];
                                         } else {
                                             $dtEnd = $dtStart;
@@ -538,7 +535,7 @@ class Events
      * @param array $events
      * @return array
      */
-    protected static function fixRecurrenceExceptions(array $events): array
+    private static function fixRecurrenceExceptions(array $events): array
     {
         $recurrenceExceptions = [];
         foreach ($events as $time => $timeEvents) {
@@ -580,9 +577,10 @@ class Events
         $items = [];
         $post = get_post($postId);
         if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-            $items = Events::getItems($postId);
+            $items = self::getItems($postId, self::$pastDays, self::$limitDays);
         }
-        $items = count($items) ? Events::getListData($postId, $items) : $items;
+
+        $items = count($items) ? self::getListData($postId, $items) : $items;
 
         if (count($items)) {
             self::deleteData($postId);
