@@ -280,17 +280,22 @@ class CalendarEvent
             'name' => __('Repeat until', 'rrze-calendar'),
             'desc'    => __('(optional)', 'rrze-calendar'),
             'id' => 'repeat-lastdate',
-            'type' => 'text_date_timestamp',
+            'type' => 'text_datetime_timestamp',
             'date_format' => 'd.m.Y',
+            'time_format' => 'H:i',
             'attributes' => array(
                 // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode(array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                    'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                )),
+                    'data-datepicker' => json_encode(array(
+                        'firstDay' => 1,
+                        'dayNames' => Utils::getDaysOfWeek('short'),
+                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                        'monthNamesShort' => Utils::getMonthNames('short'),
+                        'yearRange' => '-1:+10',
+                        'dateFormat' => 'dd.mm.yy',
+                    )),
+                    'data-timepicker' => json_encode(array(
+                        'timeFormat' => 'HH:mm',
+                    )),
             ),
             'classes'   => ['repeat'],
         ]);
