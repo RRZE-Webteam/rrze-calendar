@@ -749,11 +749,8 @@ class Utils
     {
         $meta = get_post_meta($event_id);
         $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
-        if (empty($rruleArgs) || $rruleArgs == '[]') {
-            return [];
-        }
-        if ($rruleArgs != '') {
-            $rruleArgs = json_decode($rruleArgs, true);
+
+        if ($rruleArgs = json_decode($rruleArgs, true)) {
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
             $startTS = absint(Utils::getMeta($meta, 'start'));
