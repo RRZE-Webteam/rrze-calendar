@@ -312,6 +312,7 @@ class CalendarEvent
             //'desc'    => __('', 'rrze-calendar'),
             'id' => 'repeat-weekly-interval',
             'type' => 'text_small',
+            'default' => '1',
             'attributes' => [
                 'type' => 'number',
                 'min' => '1',
@@ -791,8 +792,7 @@ class CalendarEvent
                 $readable_rrule = '&mdash;';
                 if (!$feedID && $data['repeat']  == 'on') {
                     $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
-                    if ($rruleArgs != '') {
-                        $rruleArgs = json_decode($rruleArgs, TRUE);
+                    if ($rruleArgs = json_decode($rruleArgs, true)) {
                         $rule = new RRule($rruleArgs);
                         $readable_rrule = Utils::humanReadableRecurrence($rule);
                     }
