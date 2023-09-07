@@ -124,14 +124,32 @@ class Events
                 $ulClass = 'events-list';
                 $iconDate = '';
                 $iconTime = '';
+                
+                // Add multiday items
+                foreach ($eventsArray as $tsStart => $events) {
+                    foreach ($events as $event) {
+                        $tsEnd = $event['end'];
+                        $startDate = date('Y-m-d', $tsStart);
+                        $endDate = date('Y-m-d', $tsEnd);
+                        $tsStartCounter = $tsStart;
+                        if ($endDate != $startDate) {
+                            while ($tsStartCounter < $tsEnd) {
+                                $tsStartCounter += (60 * 60 * 24);
+                                $eventsArray[$tsStartCounter][] = $event;
+                            }
+                        }
+                    }
+                }
+                ksort($eventsArray);
             }
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
-            foreach ($eventsArray as $tsStart => $events) {
-                if ($tsStart < time()) continue;
+            foreach ($eventsArray as $tsCount => $events) {
+                if ($tsCount < time()) continue;
 
                 foreach ($events as $event) {
                     $tsEnd = $event['end'];
+                    $tsStart = $event['start'];
                     $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
                     $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
                     $eventTitle = get_the_title($event['id']);
@@ -223,8 +241,8 @@ class Events
                         }
                         $output .= '<div class="event-date" ' . ($bgColor != '' ? ' style="background-color: ' . $bgColor . '; color: ' . $color . ';"' : '') . '>'
                             . '<div class="day-month">'
-                            . '<div class="day">' . date('d', $tsStart) . '</div>'
-                            . '<div class="month">' . date_i18n('M', $tsStart) . '</div>'
+                            . '<div class="day">' . date('d', $tsCount) . '</div>'
+                            . '<div class="month">' . date_i18n('M', $tsCount) . '</div>'
                             . '</div>'
                             //. '<div class="year">' . date('Y', $tsStart) .'</div>'
                             . '</div>'

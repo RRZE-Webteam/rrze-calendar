@@ -641,8 +641,9 @@ class Utils
                     $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
                     $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
                     $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['start'] = $startTS;
                     $eventsArray[$startTS][$i]['end'] = $endTS;
-                }                
+                }
             } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
                 foreach ($occurrences as $occurrence) {
@@ -650,12 +651,14 @@ class Utils
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
                     $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['start'] = $startTS;
                     $eventsArray[$startTS][$i]['end'] = $endTS;
                 }
             } else {
                 $startTS = absint(Utils::getMeta($meta, 'start'));
                 $endTS = absint(Utils::getMeta($meta, 'end'));
                 $eventsArray[$startTS][$i]['id'] = $event->ID;
+                $eventsArray[$startTS][$i]['start'] = $startTS;
                 $eventsArray[$startTS][$i]['end'] = $endTS;
             }
             $i++;
