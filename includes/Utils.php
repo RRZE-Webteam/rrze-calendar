@@ -858,4 +858,20 @@ class Utils
             return sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
         }
     }
+
+    public static function titleFilter($where, $wp_query){
+        global $wpdb;
+        $title_filter_relation = (strtoupper($wp_query->get( 'title_filter_relation'))=='OR' ? 'OR' : 'AND');
+        if ($search_term = $wp_query->get( 'title_filter' )){
+            $search_term = $wpdb->esc_like($search_term);
+            $search_term = ' \'%' . $search_term . '%\'';
+            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title LIKE '.$search_term;
+        }
+        if ($search_term_exclude = $wp_query->get( 'title_filter_exclude' )){
+            $search_term_exclude = $wpdb->esc_like($search_term_exclude);
+            $search_term_exclude = ' \'%' . $search_term_exclude . '%\'';
+            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title NOT LIKE '.$search_term_exclude;
+        }
+        return $where;
+    }
 }

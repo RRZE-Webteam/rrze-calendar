@@ -34,6 +34,8 @@ class Events
             'abonnement_link' => '',    // Display link to ICS Feed
             'start' => '',       // Start date of appointment list. Format: "Y-m-d" or use a PHP relative date format
             'end' => '',          // End date of appointment listing. Format: "Y-m-d" or use a PHP relative date format
+            'include' => '',
+            'exclude' => '',
         ];
         $atts = shortcode_atts( $atts_default, $atts );
         $display = $atts['display'] == 'list' ? 'list' : 'teaser';
@@ -107,7 +109,20 @@ class Events
             );
         }
 
+        $include = sanitize_text_field($atts['include']);
+        $exclude = sanitize_text_field($atts['exclude']);
+        if ($exclude != '' || $include != '') {
+            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'],10,2);
+            if ($include != '') $args['title_filter'] = $include;
+            if ($exclude != '') $args['title_filter_exclude'] = $exclude;
+            $args['suppress_filters'] = false;
+        }
+
         $events = get_posts($args );
+
+        if ($exclude != '' || $include != '') {
+            remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
+        }
 
         $output = '<div class="rrze-calendar">';
 

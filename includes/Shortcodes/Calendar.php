@@ -33,6 +33,8 @@ class Calendar
                 'day' => '',
                 'layout' => 'full',
                 'navigation' => 'ja',
+                'include' => '',
+                'exclude' => '',
             ],
             $atts
         );
@@ -181,8 +183,22 @@ class Calendar
             $args = array_merge($args, ['tax_query' => $taxQuery]);
         }
 
+        $include = sanitize_text_field($atts['include']);
+        $exclude = sanitize_text_field($atts['exclude']);
+        if ($exclude != '' || $include != '') {
+            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'],10,2);
+            if ($include != '') $args['title_filter'] = $include;
+            if ($exclude != '') $args['title_filter_exclude'] = $exclude;
+            $args['suppress_filters'] = false;
+        }
+
         // Get events in calendar period
         $events = get_posts($args);
+
+        if ($exclude != '' || $include != '') {
+            remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
+        }
+
         $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
 
         // Render calendar output
