@@ -501,12 +501,7 @@ class Calendar
                         $catColor = '';
                     }
                     if ($catColor == '') $catColor = 'var(--color-primary-ci-hell, #003366)';
-                    $eventTitleShort = $eventTitle;
-                    if (strlen($eventTitle) > 40) {
-                        $eventTitleShort = mb_substr($eventTitle, 0, 37) . '&hellip;';
-                    }
                     $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
-                    $eventTitleShort = '<a href="' . $eventURL . '">' . $eventTitleShort . '</a>';
 
                     $locationMeta = '';
                     $location = Utils::getMeta($meta, 'location');
@@ -583,7 +578,7 @@ class Calendar
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
                                 . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
                                 . $timeOut
-                                . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
+                                . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
                                 . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStartUTC) . '">'
                                 . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEndUTC) . '">'
                                 . $locationMeta
@@ -639,7 +634,7 @@ class Calendar
                         $rowNum = $eventsPerDay[$eventStartDate];
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
                             . '<p><span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
-                            . '<span itemprop="name" class="event-title">' . $eventTitleShort . '</span></p>'
+                            . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStartUTC) . '">'
                             . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEndUTC) . '">'
                             . $locationMeta
