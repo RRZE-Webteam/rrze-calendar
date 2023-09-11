@@ -106,8 +106,9 @@ class Export
                 'summary' => $post->post_title,
                 'uid' => $meta['event-uid'][0],
                 'description' => $meta['description'][0],
-                'dtstart' => date('Y-m-d H:i:s', $meta['start'][0]),
-                'dtend' => date('Y-m-d H:i:s', $meta['end'][0]),
+                'dtstart' => get_gmt_from_date(date('Y-m-d H:i', $meta['start'][0]), 'Y-m-d H:i:s'),
+                'dtend' => get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s'),
+                'location' => $meta['location'][0],
             ];
         }
         return $data;
