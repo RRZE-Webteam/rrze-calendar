@@ -629,6 +629,8 @@ class Utils
     {
         $eventsArray = [];
         $i = 0;
+        $identifiers = [];
+        $removeDuplicates = settings()->getOption('remove_duplicates') === '1';
         foreach ($events as $event) {
             if ($event == NULL) continue;
             $meta = get_post_meta($event->ID);
@@ -640,9 +642,16 @@ class Utils
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
                     $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
-                    $eventsArray[$startTS][$i]['id'] = $event->ID;
-                    $eventsArray[$startTS][$i]['start'] = $startTS;
-                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                    $eventTitle = get_the_title($event->ID);
+                    $location = get_post_meta($event->ID, 'location', TRUE);
+                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                        continue;
+                    } else {
+                        $eventsArray[$startTS][$i]['id'] = $event->ID;
+                        $eventsArray[$startTS][$i]['start'] = $startTS;
+                        $eventsArray[$startTS][$i]['end'] = $endTS;
+                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                    }
                 }
             } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
@@ -650,16 +659,30 @@ class Utils
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
-                    $eventsArray[$startTS][$i]['id'] = $event->ID;
-                    $eventsArray[$startTS][$i]['start'] = $startTS;
-                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                    $eventTitle = get_the_title($event->ID);
+                    $location = get_post_meta($event->ID, 'location', TRUE);
+                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                        continue;
+                    } else {
+                        $eventsArray[$startTS][$i]['id'] = $event->ID;
+                        $eventsArray[$startTS][$i]['start'] = $startTS;
+                        $eventsArray[$startTS][$i]['end'] = $endTS;
+                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                    }
                 }
             } else {
                 $startTS = absint(Utils::getMeta($meta, 'start'));
                 $endTS = absint(Utils::getMeta($meta, 'end'));
-                $eventsArray[$startTS][$i]['id'] = $event->ID;
-                $eventsArray[$startTS][$i]['start'] = $startTS;
-                $eventsArray[$startTS][$i]['end'] = $endTS;
+                $eventTitle = get_the_title($event->ID);
+                $location = get_post_meta($event->ID, 'location', TRUE);
+                if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                    continue;
+                } else {
+                    $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['start'] = $startTS;
+                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                    $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                }
             }
             $i++;
         }
