@@ -434,6 +434,7 @@ class Calendar
     private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = []) {
         $startOfWeek = get_option('start_of_week', 0);
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        if ($first_day_in_month == 0) $first_day_in_month = 7;
         $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
