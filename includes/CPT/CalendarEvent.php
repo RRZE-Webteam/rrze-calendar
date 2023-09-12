@@ -683,7 +683,7 @@ class CalendarEvent
 
         // Description
         echo '<div class="rrze-event-description" itemprop="description">';
-        echo wpautop(do_shortcode($data['description']));
+        echo wpautop(do_shortcode(make_clickable($data['description'])));
         echo '</div>';
 
         // Download ICS
