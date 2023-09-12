@@ -104,11 +104,11 @@ class Export
             $meta = get_post_meta($post->ID, '', true);
             $data[$post->ID] = [
                 'summary' => $post->post_title,
-                'uid' => $meta['event-uid'][0],
-                'description' => $meta['description'][0],
+                'uid' => $meta['event-uid'][0] ?? '',
+                'description' => $meta['description'][0] ?? '',
                 'dtstart' => get_gmt_from_date(date('Y-m-d H:i', $meta['start'][0]), 'Y-m-d H:i:s'),
                 'dtend' => get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s'),
-                'location' => $meta['location'][0],
+                'location' => $meta['location'][0] ?? '',
             ];
         }
         return $data;

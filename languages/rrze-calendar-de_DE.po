@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-08-02T14:22:34+00:00\n"
-"PO-Revision-Date: 2023-09-11 15:21+0000\n"
+"PO-Revision-Date: 2023-09-12 14:02+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -67,6 +67,14 @@ msgstr ""
 "Zusätzliche Termine hinzufügen (Format YYYY-MM-DD, z.B. 2023-12-31). Ein "
 "Datum pro Zeile."
 
+#: includes/Shortcodes/Events.php:303
+msgid "Add all events of this category to your calendar"
+msgstr "Alle Veranstaltungen dieser Kategorie zum Kalender hinzufügen"
+
+#: includes/Shortcodes/Events.php:310
+msgid "Add all events of this tag to your calendar"
+msgstr "Alle Veranstaltungen mit diesem Schlagwort zum Kalender hinzufügen"
+
 #: includes/CPT/CalendarEvent.php:59
 msgid "Add New Event"
 msgstr "Veranstaltung hinzufügen"
@@ -85,7 +93,8 @@ msgctxt "add new on admin bar"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
-#: includes/CPT/CalendarEvent.php:690
+#: includes/CPT/CalendarEvent.php:690 includes/Shortcodes/Events.php:293
+#: includes/Shortcodes/Calendar.php:350 includes/Shortcodes/Calendar.php:692
 msgid "Add to calendar"
 msgstr "Zum Kalender hinzufügen"
 
@@ -109,8 +118,8 @@ msgid "ICS Feeds"
 msgstr "ICS-Feeds"
 
 #: includes/CPT/CalendarEvent.php:605 includes/Shortcodes/Shortcode.php:69
-#: includes/Shortcodes/Shortcode.php:176 includes/Shortcodes/Calendar.php:319
-#: includes/Shortcodes/Calendar.php:547
+#: includes/Shortcodes/Shortcode.php:176 includes/Shortcodes/Calendar.php:326
+#: includes/Shortcodes/Calendar.php:549
 msgid "All Day"
 msgstr "Ganztägig"
 
@@ -122,7 +131,7 @@ msgstr "Ganztägig"
 msgid "All day event"
 msgstr "Ganztägig"
 
-#: includes/CPT/CalendarEvent.php:63 includes/Shortcodes/Events.php:33
+#: includes/CPT/CalendarEvent.php:63
 msgid "All Events"
 msgstr "Alle Veranstaltungen"
 
@@ -161,7 +170,7 @@ msgstr "Täglich"
 msgid "Date"
 msgstr "Datum"
 
-#: includes/Shortcodes/Calendar.php:208
+#: includes/Shortcodes/Calendar.php:213
 msgid "Day"
 msgstr "Tag"
 
@@ -286,11 +295,11 @@ msgstr "vierten"
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
-#: includes/Shortcodes/Calendar.php:459
+#: includes/Shortcodes/Calendar.php:461
 msgid "Go to next month"
 msgstr "Zum nächsten Monat wechseln"
 
-#: includes/Shortcodes/Calendar.php:456
+#: includes/Shortcodes/Calendar.php:458
 msgid "Go to previous month"
 msgstr "Zum vorherigen Monat wechseln"
 
@@ -352,7 +361,7 @@ msgstr "d.m.Y"
 msgid "Maximum +/- 1 year."
 msgstr "Maximal +/- 1 Jahr."
 
-#: includes/Shortcodes/Calendar.php:209
+#: includes/Shortcodes/Calendar.php:214
 msgid "Month"
 msgstr "Monat"
 
@@ -360,7 +369,7 @@ msgstr "Monat"
 msgid "Monthly"
 msgstr "Monatlich"
 
-#: includes/Shortcodes/Calendar.php:578
+#: includes/Shortcodes/Calendar.php:580
 msgid "More&hellip;"
 msgstr "Mehr&hellip;"
 
@@ -372,7 +381,7 @@ msgstr "Neue Veranstaltung"
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
 
-#: includes/Shortcodes/Calendar.php:459
+#: includes/Shortcodes/Calendar.php:461
 msgid "Next"
 msgstr "Weiter"
 
@@ -388,7 +397,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
-#: includes/Shortcodes/Events.php:283 includes/Shortcodes/Events.php:291
+#: includes/Shortcodes/Events.php:286 includes/Shortcodes/Events.php:318
 msgid "No events scheduled."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
@@ -404,8 +413,8 @@ msgstr "Keine Feeds gefunden."
 msgid "of month"
 msgstr "des Monats"
 
-#: includes/CPT/CalendarEvent.php:567 includes/Shortcodes/Events.php:191
-#: includes/Shortcodes/Events.php:197
+#: includes/CPT/CalendarEvent.php:567 includes/Shortcodes/Events.php:193
+#: includes/Shortcodes/Events.php:199
 msgid "Online"
 msgstr "Online"
 
@@ -447,7 +456,7 @@ msgctxt "post type singular name"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
-#: includes/Shortcodes/Calendar.php:456
+#: includes/Shortcodes/Calendar.php:458
 msgid "Previous"
 msgstr "Zurück"
 
@@ -455,7 +464,7 @@ msgstr "Zurück"
 msgid "Prices"
 msgstr "Preise"
 
-#: includes/Shortcodes/Calendar.php:605 includes/Shortcodes/Calendar.php:661
+#: includes/Shortcodes/Calendar.php:607 includes/Shortcodes/Calendar.php:664
 msgid "Read more"
 msgstr "Weiterlesen"
 
@@ -532,6 +541,10 @@ msgstr "zweiten"
 msgid "Settings"
 msgstr "Einstellungen"
 
+#: includes/Shortcodes/Events.php:34
+msgid "Show All Events"
+msgstr "Alle Veranstaltungen anzeigen"
+
 #: includes/Main.php:90
 msgid "Show past events"
 msgstr "Vergangene Termine anzeigen"
@@ -591,7 +604,7 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
 
-#: includes/Shortcodes/Calendar.php:342
+#: includes/Shortcodes/Calendar.php:353
 msgid "There are no events scheduled for this day."
 msgstr "An diesem Tag finden keine Veranstaltungen statt."
 
@@ -628,11 +641,11 @@ msgstr "Videokonferenz-URL"
 msgid "Video Conference Link"
 msgstr "Link zur Videokonferenz"
 
-#: includes/Shortcodes/Calendar.php:208
+#: includes/Shortcodes/Calendar.php:213
 msgid "View day"
 msgstr "Tag ansehen"
 
-#: includes/Shortcodes/Calendar.php:403
+#: includes/Shortcodes/Calendar.php:410
 msgid "View Details"
 msgstr "Details ansehen"
 
@@ -644,7 +657,7 @@ msgstr "Veranstaltung ansehen"
 msgid "View ICS Feed"
 msgstr "ICS-Feed ansehen"
 
-#: includes/Shortcodes/Calendar.php:209
+#: includes/Shortcodes/Calendar.php:214
 msgid "View monthly calendar"
 msgstr "Monatskalender ansehen"
 
@@ -652,7 +665,7 @@ msgstr "Monatskalender ansehen"
 msgid "View the calendar"
 msgstr "Kalender ansehen"
 
-#: includes/Shortcodes/Calendar.php:210
+#: includes/Shortcodes/Calendar.php:215
 msgid "View yearly calendar"
 msgstr "Jahreskalender ansehen"
 
@@ -668,6 +681,6 @@ msgstr "Wochentag"
 msgid "Weekly"
 msgstr "Wöchentlich"
 
-#: includes/Shortcodes/Calendar.php:210
+#: includes/Shortcodes/Calendar.php:215
 msgid "Year"
 msgstr "Jahr"

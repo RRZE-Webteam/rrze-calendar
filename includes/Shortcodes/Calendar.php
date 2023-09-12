@@ -5,6 +5,7 @@ namespace RRZE\Calendar\Shortcodes;
 defined('ABSPATH') || exit;
 
 use DateInterval;
+use RRZE\Calendar\ICS\Export;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
 
@@ -32,7 +33,8 @@ class Calendar
                 'month' => 'current',
                 'day' => '',
                 'layout' => 'full',
-                'navigation' => 'ja',
+                'navigation' => '1',
+                'abonnement_link' => '',
                 'include' => '',
                 'exclude' => '',
             ],
@@ -118,7 +120,10 @@ class Calendar
         }
 
         // Paging
-        $paging = $atts['navigation'] == 'ja' ? true : false;
+        $paging = in_array($atts['navigation'], ['1', 'ja', 'true', 'yes']) ? true : false;
+
+        // Abonnement-Link
+        $aboLink = in_array($atts['abonnement_link'], ['1', 'ja', 'true', 'yes']) ? true : false;
 
         $args = [
             'post_type' => CalendarEvent::POST_TYPE,
@@ -210,7 +215,7 @@ class Calendar
                     . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
                 . '</p>';
         }
-        $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging, $taxQuery);
+        $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging, $taxQuery, $aboLink);
         $output .= '</div>';
 
         wp_enqueue_style('rrze-calendar-sc-calendar');
@@ -236,23 +241,23 @@ class Calendar
      * @param   bool    $paging     Allow skipping to next/previous month/year
      * @return  string
      */
-    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = []): string {
+    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = [], $aboLink = false): string {
         $output = '';
         if ($day != '') {
-            $output .= '<div class="calendar-wrapper cal-day" data-period="'.$year.'-'.$month.'-'.$day.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '">';
-            $output .= self::renderDayList($year, $month, $day, $eventsArray);
+            $output .= '<div class="calendar-wrapper cal-day" data-period="'.$year.'-'.$month.'-'.$day.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
+            $output .= self::renderDayList($year, $month, $day, $eventsArray, $taxQuery, $aboLink);
             $output .= '</div>';
         } elseif ($month != '') {
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-            $output .= '<div class="calendar-wrapper cal-month" data-period="'.$year.'-'.$month.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '">';
+            $output .= '<div class="calendar-wrapper cal-month" data-period="'.$year.'-'.$month.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
             if ($layout == 'full') {
-                $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging, $taxQuery);
+                $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging, $taxQuery, $aboLink);
             } else {
                 $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, true, $taxQuery);
             }
             $output .= '</div>';
         } else {
-            $output .= '<div class="calendar-wrapper cal-year" data-period="'.$year.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '">';
+            $output .= '<div class="calendar-wrapper cal-year" data-period="'.$year.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
             $output .= '<div class="calendar-header"><h2 class="title-year">'.$year.'</h2>';
             if ($paging) {
                 $output .= '<ul class="calendar-pager">
@@ -279,7 +284,9 @@ class Calendar
      * Render list of events on one day
      * @param array $events
      */
-    private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = []) {
+    private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = [], $aboLink = false) {
+
+        $IDs = [];
         $calDay = $year.'-'.str_pad($month, 2, '0', STR_PAD_LEFT).'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
         $calDayTs = strtotime($calDay);
         $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option( 'date_format' ), $calDayTs) . '</h2>';
@@ -332,12 +339,16 @@ class Calendar
                 $list .= $timeText . '<br />' . $eventTitle . $locationText;
                 $list .= '</li>';
                 $hasEvents = true;
+                $IDs[] = $event['id'];
             }
         }
         $list .= '</ul>';
 
         if ($hasEvents) {
             $output .= $list;
+            if ($aboLink) {
+                $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+            }
         } else {
             $output .= '<p>' . __('There are no events scheduled for this day.', 'rrze-calendar') . '</p>';
         }
@@ -357,15 +368,11 @@ class Calendar
     private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = []) {
         $startOfWeek = get_option('start_of_week', 0);
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        if ($first_day_in_month == 0) $first_day_in_month = 7;
         $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
         $month_name = $month_names[(int)$month-1];
-        // in PHP, Sunday is the first day in the week with number zero (0)
-        // to make our calendar works we will change this to (7)
-        // if ($first_day_in_month == 0){
-        //     $first_day_in_month = 7;
-        // }
         if ($showYear) {
             $month_name .= ' ' . $year;
         } else {
@@ -411,8 +418,6 @@ class Calendar
             $output .= '<td class="' . $class . '">' . $linkOpen . $day . $linkClose . '</td>';
             if ($pos == 0) $output .= '</tr><tr>';
         }
-        //TODO: leere Tabellenzellen bis Monatsende
-        //TODO: Link intern zu Tagesansicht
 
         $output .= '</tr>';
         $output .= '</table>';
@@ -431,7 +436,7 @@ class Calendar
      * @return string
      */
 
-    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = []) {
+    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false) {
         $startOfWeek = get_option('start_of_week', 0);
         $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
         if ($first_day_in_month == 0) $first_day_in_month = 7;
@@ -439,12 +444,8 @@ class Calendar
         $month_days = date('t',mktime(0,0,0,$month,1,$year));
         $month_names = Utils::getMonthNames('full');
         $month_name = $month_names[(int)$month-1];
-        // in PHP, Sunday is the first day in the week with number zero (0)
-        // to make our calendar works we will change this to (7)
-        // if ($first_day_in_month == 0){
-        //     $first_day_in_month = 7;
-        // }
         $day_names = Utils::getDaysOfWeek('full');
+        $IDs = [];
 
         $taxQueryJSON = json_encode($taxQuery);
         $taxQueryBase64 = base64_encode($taxQueryJSON);
@@ -606,6 +607,7 @@ class Calendar
                                     . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
                                 . '</div>'
                             . '</div>';
+                        $IDs[] = $event['id'];
 
                     } elseif (($col == 1 || $day == 1) && $calDay > $eventStartDate && $calDay <= $eventEndDate) {
                         // Event continuing from past week (or past month)
@@ -662,6 +664,7 @@ class Calendar
                             . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
                             . '</div>'
                             . '</div>';
+                        $IDs[] = $event['id'];
                     }
                 }
             }
@@ -685,6 +688,10 @@ class Calendar
         }
         $output .= '</div>';
 
+        if ($aboLink) {
+            $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+        }
+
         $output .= '</div>';
         return $output;
     }
@@ -699,6 +706,7 @@ class Calendar
         $periodRaw = sanitize_text_field($_POST['period']);
         $period = explode('-', $periodRaw);
         $layout = sanitize_text_field($_POST['layout']);
+        $aboLink = intval($_POST['abolink']) == 1 ? true : false;
         if (count($period) == 3) {
             // day view
             $day = (int)$period[2];
@@ -786,7 +794,7 @@ class Calendar
 
         $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
 
-        $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout, true, $taxQuery);
+        $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout, true, $taxQuery, $aboLink);
         echo $output;
         wp_die();
     }
