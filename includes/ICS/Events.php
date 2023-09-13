@@ -589,6 +589,17 @@ class Events
         }
 
         foreach ($items as $event) {
+            // Only import selected events
+            $filter = (string) get_post_meta($postId, CalendarFeed::FEED_FILTER, true);
+            if ( $filter != '' && !str_contains($event['summary'], $filter)) {
+                continue;
+            }
+            // Skip excluded events
+            $exclude = (string) get_post_meta($postId, CalendarFeed::FEED_EXCLUDE, true);
+            if ( $exclude != '' && str_contains($event['summary'], $exclude)) {
+                continue;
+            }
+
             $args = [
                 'post_author' => $post->post_author,
                 'post_title' => $event['summary'],
