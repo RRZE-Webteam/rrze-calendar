@@ -604,7 +604,7 @@ class Events
                 'post_author' => $post->post_author,
                 'post_title' => $event['summary'],
                 'post_content' => '',
-                'post_excerpt' => $event['description'],
+                'post_excerpt' => $event['description'] ?? '',
                 'post_type' => CalendarEvent::POST_TYPE,
                 'post_status' => 'publish'
             ];
