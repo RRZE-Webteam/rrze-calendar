@@ -590,8 +590,8 @@ class Events
 
         foreach ($items as $event) {
             // Only import selected events
-            $filter = (string) get_post_meta($postId, CalendarFeed::FEED_FILTER, true);
-            if ( $filter != '' && !str_contains($event['summary'], $filter)) {
+            $include = (string) get_post_meta($postId, CalendarFeed::FEED_INCLUDE, true);
+            if ( $include != '' && !str_contains($event['summary'], $include)) {
                 continue;
             }
             // Skip excluded events

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-08-02T14:22:34+00:00\n"
-"PO-Revision-Date: 2023-09-12 14:02+0000\n"
+"PO-Revision-Date: 2023-09-13 10:21+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -52,11 +52,11 @@ msgstr "(optional)"
 msgid "(Time settings will be ignored.)"
 msgstr "(Zeitangaben werden ignoriert.)"
 
-#: includes/CPT/CalendarFeed.php:313
+#: includes/CPT/CalendarFeed.php:337
 msgid "Activate"
 msgstr "Aktivieren"
 
-#: includes/CPT/CalendarFeed.php:312
+#: includes/CPT/CalendarFeed.php:336
 msgid "Activate ICS Feed"
 msgstr "ICS-Feed aktivieren"
 
@@ -79,7 +79,7 @@ msgstr "Alle Veranstaltungen mit diesem Schlagwort zum Kalender hinzufügen"
 msgid "Add New Event"
 msgstr "Veranstaltung hinzufügen"
 
-#: includes/CPT/CalendarFeed.php:72
+#: includes/CPT/CalendarFeed.php:76
 msgid "Add New ICS Feed"
 msgstr "Neuen Feed erstellen"
 
@@ -88,7 +88,7 @@ msgctxt "add new on admin bar"
 msgid "Calendar Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:70
+#: includes/CPT/CalendarFeed.php:74
 msgctxt "add new on admin bar"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
@@ -112,7 +112,7 @@ msgctxt "admin menu"
 msgid "Calendar"
 msgstr "Kalender"
 
-#: includes/CPT/CalendarFeed.php:69
+#: includes/CPT/CalendarFeed.php:73
 msgctxt "admin menu"
 msgid "ICS Feeds"
 msgstr "ICS-Feeds"
@@ -147,7 +147,7 @@ msgstr "Kalender"
 msgid "Calendar Settings"
 msgstr "Einstellungen &rsaquo; Kalender"
 
-#: includes/CPT/CalendarEvent.php:785 includes/CPT/CalendarFeed.php:113
+#: includes/CPT/CalendarEvent.php:785 includes/CPT/CalendarFeed.php:117
 msgid "Categories"
 msgstr "Kategorien"
 
@@ -155,8 +155,8 @@ msgstr "Kategorien"
 msgid "Choose the recurrence to check for new events."
 msgstr "Wiederholung auswählen, um nach neuen Veranstaltungen zu suchen."
 
-#: includes/CPT/CalendarFeed.php:185 includes/CPT/CalendarFeed.php:195
-#: includes/CPT/CalendarFeed.php:218
+#: includes/CPT/CalendarFeed.php:209 includes/CPT/CalendarFeed.php:219
+#: includes/CPT/CalendarFeed.php:242
 msgid "Color"
 msgstr "Farbe"
 
@@ -174,11 +174,11 @@ msgstr "Datum"
 msgid "Day"
 msgstr "Tag"
 
-#: includes/CPT/CalendarFeed.php:329
+#: includes/CPT/CalendarFeed.php:353
 msgid "Deactivate"
 msgstr "Deaktivieren"
 
-#: includes/CPT/CalendarFeed.php:328
+#: includes/CPT/CalendarFeed.php:352
 msgid "Deactivate ICS Feed"
 msgstr "ICS-Feed deaktivieren"
 
@@ -202,13 +202,30 @@ msgstr "jedem"
 msgid "Edit Event"
 msgstr "Veranstaltung bearbeiten"
 
-#: includes/CPT/CalendarFeed.php:74
+#: includes/CPT/CalendarFeed.php:78
 msgid "Edit ICS Feed"
 msgstr "ICS-Feed bearbeiten"
 
 #: includes/CPT/CalendarEvent.php:168
 msgid "End"
 msgstr "Ende"
+
+#: includes/ICS/Metabox.php:72
+msgid ""
+"Enter a string to exclude events from importing. Events containing this "
+"string in the title will not be imported."
+msgstr ""
+"Geben Sie ein oder mehrere Wörter ein, um Veranstaltungen vom Import "
+"auszuschließen. Veranstaltungen mit diesem Text im Titel werden nicht "
+"importiert. "
+
+#: includes/ICS/Metabox.php:65
+msgid ""
+"Enter a string to filter the import. Only events containing this string in "
+"the title will be imported."
+msgstr ""
+"Geben Sie ein oder mehrere Wörter ein, um nur diese Veranstaltungen zu "
+"importieren. Nur Veranstaltungen mit diesem Text im Titel werden importiert."
 
 #: includes/CPT/CalendarEvent.php:405
 msgid ""
@@ -222,7 +239,7 @@ msgstr ""
 msgid "Enter the archive slug that will display the event list."
 msgstr "Geben Sie den Archiv-Slug ein, der die Veranstaltungsliste anzeigt."
 
-#: includes/ICS/Metabox.php:56
+#: includes/ICS/Metabox.php:58
 msgid "Enter the url of the ICS feed. This field is required."
 msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 
@@ -242,7 +259,7 @@ msgstr "Details"
 msgid "Event Items"
 msgstr "Termine"
 
-#: includes/Settings.php:25 includes/CPT/CalendarFeed.php:115
+#: includes/Settings.php:25 includes/CPT/CalendarFeed.php:119
 #: includes/ICS/Metabox.php:34 includes/ICS/EventsListTable.php:16
 #: templates/cpt/archive-event.php:30 templates/cpt/archive-event.php:32
 #: templates/cpt/themes/rrze/archive-event.php:31
@@ -263,6 +280,10 @@ msgstr "alle"
 msgid "Exceptions"
 msgstr "Ausnahmen"
 
+#: includes/CPT/CalendarFeed.php:199
+msgid "Exclude Events"
+msgstr "Veranstaltungen ausschließen"
+
 #: includes/CPT/CalendarEvent.php:258
 msgid "Featured Event"
 msgstr "Hervorgehobene Veranstaltung"
@@ -271,11 +292,11 @@ msgstr "Hervorgehobene Veranstaltung"
 msgid "Feed"
 msgstr "Feed"
 
-#: includes/ICS/Metabox.php:133
+#: includes/ICS/Metabox.php:165
 msgid "Feed URL is not valid."
 msgstr "Die Feed-URL ist ungültig."
 
-#: includes/CPT/CalendarFeed.php:175
+#: includes/CPT/CalendarFeed.php:179
 msgid "Feed URL."
 msgstr "Feed-URL."
 
@@ -323,7 +344,7 @@ msgstr "https://github.com/RRZE-Webteam/rrze-calendar"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
-#: includes/CPT/CalendarFeed.php:76 includes/CPT/CalendarFeed.php:85
+#: includes/CPT/CalendarFeed.php:80 includes/CPT/CalendarFeed.php:89
 msgid "ICS Feeds"
 msgstr "ICS-Feeds"
 
@@ -339,11 +360,15 @@ msgstr ""
 msgid "Import and output of FAU public events."
 msgstr "Import und Ausgabe öffentlicher Veranstaltungen der FAU."
 
-#: includes/CPT/CalendarFeed.php:349
+#: includes/CPT/CalendarFeed.php:189
+msgid "Include Events"
+msgstr "Veranstaltungen einschließen"
+
+#: includes/CPT/CalendarFeed.php:373
 msgid "Invalid access"
 msgstr "Unzulässiger Zugriff"
 
-#: includes/CPT/CalendarFeed.php:116
+#: includes/CPT/CalendarFeed.php:120
 msgid "Last Updated"
 msgstr "Letzte Aktualisierung"
 
@@ -377,7 +402,7 @@ msgstr "Mehr&hellip;"
 msgid "New Event"
 msgstr "Neue Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:73
+#: includes/CPT/CalendarFeed.php:77
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
 
@@ -401,11 +426,11 @@ msgstr "Keine Veranstaltungen gefunden."
 msgid "No events scheduled."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
-#: includes/CPT/CalendarFeed.php:80
+#: includes/CPT/CalendarFeed.php:84
 msgid "No ics feeds found in Trash."
 msgstr "Keine Feeds im Papierkorb gefunden."
 
-#: includes/CPT/CalendarFeed.php:79
+#: includes/CPT/CalendarFeed.php:83
 msgid "No ics feeds found."
 msgstr "Keine Feeds gefunden."
 
@@ -422,7 +447,7 @@ msgstr "Online"
 msgid "Parent Events:"
 msgstr "Übergeordnete Veranstaltungen:"
 
-#: includes/CPT/CalendarFeed.php:78
+#: includes/CPT/CalendarFeed.php:82
 msgid "Parent Feeds:"
 msgstr "Eltern-Feeds:"
 
@@ -431,7 +456,7 @@ msgstr "Eltern-Feeds:"
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/CPT/CalendarFeed.php:71
+#: includes/CPT/CalendarFeed.php:75
 msgctxt "popup"
 msgid "Add New"
 msgstr "Erstellen"
@@ -441,7 +466,7 @@ msgctxt "post type general name"
 msgid "Events"
 msgstr "Veranstaltungen"
 
-#: includes/CPT/CalendarFeed.php:67
+#: includes/CPT/CalendarFeed.php:71
 msgctxt "post type general name"
 msgid "ICS Feeds"
 msgstr "ICS-Feeds"
@@ -451,7 +476,7 @@ msgctxt "post type singular name"
 msgid "Event"
 msgstr "Veranstaltung"
 
-#: includes/CPT/CalendarFeed.php:68
+#: includes/CPT/CalendarFeed.php:72
 msgctxt "post type singular name"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
@@ -525,11 +550,11 @@ msgstr "RRZE-Webteam"
 msgid "Schedule"
 msgstr "Zeitplan"
 
-#: includes/CPT/CalendarEvent.php:64 includes/ICS/Metabox.php:143
+#: includes/CPT/CalendarEvent.php:64 includes/ICS/Metabox.php:175
 msgid "Search Events"
 msgstr "Veranstaltungen durchsuchen"
 
-#: includes/CPT/CalendarFeed.php:77
+#: includes/CPT/CalendarFeed.php:81
 msgid "Search Feeds"
 msgstr "Feed durchsuchen"
 
@@ -557,7 +582,7 @@ msgstr "Start"
 msgid "Subscribe to calendar"
 msgstr "Kalender abonnieren"
 
-#: includes/CPT/CalendarEvent.php:786 includes/CPT/CalendarFeed.php:114
+#: includes/CPT/CalendarEvent.php:786 includes/CPT/CalendarFeed.php:118
 msgid "Tags"
 msgstr "Schlagwörter"
 
@@ -625,11 +650,11 @@ msgstr "Titel"
 msgid "Twice daily"
 msgstr "Zweimal täglich"
 
-#: includes/CPT/CalendarFeed.php:320
+#: includes/CPT/CalendarFeed.php:344
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: includes/CPT/CalendarFeed.php:319
+#: includes/CPT/CalendarFeed.php:343
 msgid "Update ICS Feed"
 msgstr "ICS-Feed aktualisieren"
 
@@ -653,7 +678,7 @@ msgstr "Details ansehen"
 msgid "View Event"
 msgstr "Veranstaltung ansehen"
 
-#: includes/CPT/CalendarFeed.php:75
+#: includes/CPT/CalendarFeed.php:79
 msgid "View ICS Feed"
 msgstr "ICS-Feed ansehen"
 

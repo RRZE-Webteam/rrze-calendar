@@ -17,7 +17,7 @@ class CalendarFeed
 
     const FEED_URL = 'ics_feed_url';
 
-    const FEED_FILTER = 'ics_feed_filter';
+    const FEED_INCLUDE = 'ics_feed_include';
 
     const FEED_EXCLUDE = 'ics_feed_exclude';
 
@@ -183,10 +183,10 @@ class CalendarFeed
         );
         register_meta(
             'post',
-            self::FEED_FILTER,
+            self::FEED_INCLUDE,
             [
                 'type'          => 'string',
-                'description'   => __('Filter Import', 'rrze-calendar'),
+                'description'   => __('Include Events', 'rrze-calendar'),
                 'single'        => true,
                 'show_in_rest'  => false
             ]
