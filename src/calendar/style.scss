@@ -284,7 +284,10 @@
                     //display: block;
                     text-decoration: none;
                     @media screen and (min-width: 480px) {
-                        //float: left;
+                        display: block;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                     &:hover, &:focus, &:active {
                         text-decoration: underline;

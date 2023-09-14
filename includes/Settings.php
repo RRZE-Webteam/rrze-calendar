@@ -38,6 +38,11 @@ class Settings
                 ]
             ]
         ]);
+        $sectionEvent->addOption('checkbox', [
+            'name' => 'remove_duplicates',
+            'label' => __('Remove Duplicates', 'rrze-calendar'),
+            'description' => __('If the same event (i.e. same title, date and location) is present in multiple feeds, only show one of them.', 'rrze-calendar'),
+        ]);
 
         $sectionFeed->addOption('select', [
             'name' => 'schedule_recurrence',

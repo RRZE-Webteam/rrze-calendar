@@ -4,6 +4,7 @@ namespace RRZE\Calendar\Shortcodes;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\ICS\Export;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
 
@@ -30,10 +31,12 @@ class Events
             'number' => 0,       // Number of events to show. Default value: 0
             'anzahl' => 0,      // Number of events to show. Default value: 0
             'page_link' => '',    // ID of a target page, e.g. to display further events
-            'page_link_label' => __('All Events', 'rrze-calendar'),
+            'page_link_label' => __('Show All Events', 'rrze-calendar'),
             'abonnement_link' => '',    // Display link to ICS Feed
             'start' => '',       // Start date of appointment list. Format: "Y-m-d" or use a PHP relative date format
             'end' => '',          // End date of appointment listing. Format: "Y-m-d" or use a PHP relative date format
+            'include' => '',
+            'exclude' => '',
         ];
         $atts = shortcode_atts( $atts_default, $atts );
         $display = $atts['display'] == 'list' ? 'list' : 'teaser';
@@ -41,6 +44,7 @@ class Events
         if ($number < 1) {
             $number = 10;
         }
+        $IDs = [];
 
         $args = [
             'post_type' => CalendarEvent::POST_TYPE,
@@ -107,7 +111,20 @@ class Events
             );
         }
 
+        $include = sanitize_text_field($atts['include']);
+        $exclude = sanitize_text_field($atts['exclude']);
+        if ($exclude != '' || $include != '') {
+            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'],10,2);
+            if ($include != '') $args['title_filter'] = $include;
+            if ($exclude != '') $args['title_filter_exclude'] = $exclude;
+            $args['suppress_filters'] = false;
+        }
+
         $events = get_posts($args );
+
+        if ($exclude != '' || $include != '') {
+            remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
+        }
 
         $output = '<div class="rrze-calendar">';
 
@@ -124,14 +141,32 @@ class Events
                 $ulClass = 'events-list';
                 $iconDate = '';
                 $iconTime = '';
+                
+                // Add multiday items
+                foreach ($eventsArray as $tsStart => $events) {
+                    foreach ($events as $event) {
+                        $tsEnd = $event['end'];
+                        $startDate = date('Y-m-d', $tsStart);
+                        $endDate = date('Y-m-d', $tsEnd);
+                        $tsStartCounter = $tsStart;
+                        if ($endDate != $startDate) {
+                            while ($tsStartCounter < $tsEnd) {
+                                $tsStartCounter += (60 * 60 * 24);
+                                $eventsArray[$tsStartCounter][] = $event;
+                            }
+                        }
+                    }
+                }
+                ksort($eventsArray);
             }
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
-            foreach ($eventsArray as $tsStart => $events) {
-                if ($tsStart < time()) continue;
+            foreach ($eventsArray as $tsCount => $events) {
+                if ($tsCount < time()) continue;
 
                 foreach ($events as $event) {
                     $tsEnd = $event['end'];
+                    $tsStart = $event['start'];
                     $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
                     $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
                     $eventTitle = get_the_title($event['id']);
@@ -223,8 +258,8 @@ class Events
                         }
                         $output .= '<div class="event-date" ' . ($bgColor != '' ? ' style="background-color: ' . $bgColor . '; color: ' . $color . ';"' : '') . '>'
                             . '<div class="day-month">'
-                            . '<div class="day">' . date('d', $tsStart) . '</div>'
-                            . '<div class="month">' . date_i18n('M', $tsStart) . '</div>'
+                            . '<div class="day">' . date('d', $tsCount) . '</div>'
+                            . '<div class="month">' . date_i18n('M', $tsCount) . '</div>'
                             . '</div>'
                             //. '<div class="year">' . date('Y', $tsStart) .'</div>'
                             . '</div>'
@@ -240,6 +275,7 @@ class Events
                             . '</div>';
                     }
                     $output .= '</li>';
+                    $IDs[] = $event['id'];
                     $i++;
                     if ($i >= $number) break 2;
                 }
@@ -252,6 +288,30 @@ class Events
                 if (is_numeric($atts['page_link']) && is_string(get_post_status((int)$atts['page_link']))) {
                     $label = sanitize_text_field($atts['page_link_label']);
                     $output .= do_shortcode('[button link="' . get_permalink((int)$atts['page_link']) . '"]' . $label . '[/button]');
+                }
+                if ($atts['abonnement_link'] === '1') {
+                    $buttonLabel = __('Add to calendar', 'rrze-calendar');
+                    $catIDs = [];
+                    $tagIDs = [];
+                    if (is_archive()) {
+                        $IDs = [];
+                        if (isset($categories)) {
+                            foreach ($categories as $category) {
+                                $term = get_term_by('slug', $category, CalendarEvent::TAX_CATEGORY);
+                                $catIDs[] = $term->term_id;
+                            }
+                            $buttonLabel = __('Add all events of this category to your calendar', 'rrze-calendar');
+                        }
+                        if (isset($tags)) {
+                            foreach ($tags as $tag) {
+                                $term = get_term_by('slug', $tag, CalendarEvent::TAX_TAG);
+                                $tagIDs[] = $term->term_id;
+                            }
+                            $buttonLabel = __('Add all events of this tag to your calendar', 'rrze-calendar');
+                        }
+                    }
+
+                    $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => $IDs, 'cats' => $catIDs, 'tags' => $tagIDs]) . ']' . $buttonLabel . '[/button]' );
                 }
             }
         } else {

@@ -15,6 +15,7 @@ jQuery(document).ready(function($){
         var calendar = $('div.calendar-wrapper');
         var period = calendar.data('period');
         var layout = calendar.data('layout');
+        var abolink = calendar.data('abolink');
         var direction = $(this).data('direction');
         var taxquery = $(this).data('taxquery');
         $.post(rrze_calendar_ajax.ajax_url, {         //POST request
@@ -22,6 +23,7 @@ jQuery(document).ready(function($){
             action: "rrze-calendar-update-calendar",            //action
             period: period,                  //data
             layout: layout,
+            abolink: abolink,
             direction: direction,
             taxquery: taxquery,
         }, function(result) {

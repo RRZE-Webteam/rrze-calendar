@@ -629,6 +629,8 @@ class Utils
     {
         $eventsArray = [];
         $i = 0;
+        $identifiers = [];
+        $removeDuplicates = settings()->getOption('remove_duplicates') === '1';
         foreach ($events as $event) {
             if ($event == NULL) continue;
             $meta = get_post_meta($event->ID);
@@ -640,23 +642,47 @@ class Utils
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
                     $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
-                    $eventsArray[$startTS][$i]['id'] = $event->ID;
-                    $eventsArray[$startTS][$i]['end'] = $endTS;
-                }                
+                    $eventTitle = get_the_title($event->ID);
+                    $location = get_post_meta($event->ID, 'location', TRUE);
+                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                        continue;
+                    } else {
+                        $eventsArray[$startTS][$i]['id'] = $event->ID;
+                        $eventsArray[$startTS][$i]['start'] = $startTS;
+                        $eventsArray[$startTS][$i]['end'] = $endTS;
+                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                    }
+                }
             } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
                 foreach ($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
                     $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
-                    $eventsArray[$startTS][$i]['id'] = $event->ID;
-                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                    $eventTitle = get_the_title($event->ID);
+                    $location = get_post_meta($event->ID, 'location', TRUE);
+                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                        continue;
+                    } else {
+                        $eventsArray[$startTS][$i]['id'] = $event->ID;
+                        $eventsArray[$startTS][$i]['start'] = $startTS;
+                        $eventsArray[$startTS][$i]['end'] = $endTS;
+                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                    }
                 }
             } else {
                 $startTS = absint(Utils::getMeta($meta, 'start'));
                 $endTS = absint(Utils::getMeta($meta, 'end'));
-                $eventsArray[$startTS][$i]['id'] = $event->ID;
-                $eventsArray[$startTS][$i]['end'] = $endTS;
+                $eventTitle = get_the_title($event->ID);
+                $location = get_post_meta($event->ID, 'location', TRUE);
+                if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                    continue;
+                } else {
+                    $eventsArray[$startTS][$i]['id'] = $event->ID;
+                    $eventsArray[$startTS][$i]['start'] = $startTS;
+                    $eventsArray[$startTS][$i]['end'] = $endTS;
+                    $identifiers[] = $startTS . $endTS . $eventTitle . $location;
+                }
             }
             $i++;
         }
@@ -831,5 +857,21 @@ class Utils
             $abs_mins  = abs($minutes * 60);
             return sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
         }
+    }
+
+    public static function titleFilter($where, $wp_query){
+        global $wpdb;
+        $title_filter_relation = (strtoupper($wp_query->get( 'title_filter_relation'))=='OR' ? 'OR' : 'AND');
+        if ($search_term = $wp_query->get( 'title_filter' )){
+            $search_term = $wpdb->esc_like($search_term);
+            $search_term = ' \'%' . $search_term . '%\'';
+            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title LIKE '.$search_term;
+        }
+        if ($search_term_exclude = $wp_query->get( 'title_filter_exclude' )){
+            $search_term_exclude = $wpdb->esc_like($search_term_exclude);
+            $search_term_exclude = ' \'%' . $search_term_exclude . '%\'';
+            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title NOT LIKE '.$search_term_exclude;
+        }
+        return $where;
     }
 }

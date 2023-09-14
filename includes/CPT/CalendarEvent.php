@@ -8,7 +8,7 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\{Templates, Utils};
+use RRZE\Calendar\{ICS\Export, Templates, Utils};
 use RRule\RRule;
 
 use function RRZE\Calendar\settings;
@@ -683,8 +683,12 @@ class CalendarEvent
 
         // Description
         echo '<div class="rrze-event-description" itemprop="description">';
-        echo wpautop(do_shortcode($data['description']));
+        echo wpautop(do_shortcode(make_clickable($data['description'])));
         echo '</div>';
+
+        // Download ICS
+        echo do_shortcode('[button link=' . Export::makeIcsLink(['ids' => [get_the_ID()]]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]' );
+
     }
 
     public static function displayEventDetails($data)

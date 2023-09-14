@@ -43,6 +43,8 @@ class Metabox
     {
         // Get the CF Feed Url value.
         $value = (string) get_post_meta($post->ID, CalendarFeed::FEED_URL, true);
+        $valueInclude = (string) get_post_meta($post->ID, CalendarFeed::FEED_INCLUDE, true);
+        $valueExclude = (string) get_post_meta($post->ID, CalendarFeed::FEED_EXCLUDE, true);
 
         // Add nonce for security and authentication.
         wp_nonce_field('rrze_calendar_metabox_action', 'rrze_calendar_metabox');
@@ -54,6 +56,20 @@ class Metabox
         echo '<td>';
         echo '<input name="' . CalendarFeed::FEED_URL . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('ICS Feed Url', 'rrze_calendar'), '" class="large-text" value="', $value, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter the url of the ICS feed. This field is required.', 'rrze-calendar'), '</p>';
+        echo '</td></tr>';
+
+        echo '<tr>',
+            '<th><label for="' . CalendarFeed::FEED_INCLUDE . '">', __('Include Events', 'rrze_calendar'), '</label></th>';
+        echo '<td>';
+        echo '<input name="' . CalendarFeed::FEED_INCLUDE . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('Include Events', 'rrze_calendar'), '" class="large-text" value="', $valueInclude, '" autocomplete="off" />';
+        echo '<p class="description">', _e('Enter a string to filter the import. Only events containing this string in the title will be imported.', 'rrze-calendar'), '</p>';
+        echo '</td></tr>';
+
+        echo '<tr>',
+            '<th><label for="' . CalendarFeed::FEED_EXCLUDE . '">', __('Exclude Events', 'rrze_calendar'), '</label></th>';
+        echo '<td>';
+        echo '<input name="' . CalendarFeed::FEED_EXCLUDE . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('Exclude Events', 'rrze_calendar'), '" class="large-text" value="', $valueExclude, '" autocomplete="off" />';
+        echo '<p class="description">', _e('Enter a string to exclude events from importing. Events containing this string in the title will not be imported.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
         echo '</table>';
     }
@@ -100,6 +116,22 @@ class Metabox
             );
         } else {
             add_filter('redirect_post_location', [__CLASS__, 'addNotice']);
+        }
+
+        if (array_key_exists(CalendarFeed::FEED_INCLUDE, $_POST)) {
+            update_post_meta(
+                $postId,
+                CalendarFeed::FEED_INCLUDE,
+                sanitize_text_field($_POST[CalendarFeed::FEED_INCLUDE])
+            );
+        }
+
+        if (array_key_exists(CalendarFeed::FEED_EXCLUDE, $_POST)) {
+            update_post_meta(
+                $postId,
+                CalendarFeed::FEED_EXCLUDE,
+                sanitize_text_field($_POST[CalendarFeed::FEED_EXCLUDE])
+            );
         }
     }
 
