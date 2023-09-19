@@ -52,23 +52,23 @@ class Metabox
         // Render the form field.
         echo '<table class="form-table">';
         echo '<tr>',
-        '<th><label for="' . CalendarFeed::FEED_URL . '">', __('ICS Feed URL', 'rrze_calendar'), '</label></th>';
+        '<th><label for="' . CalendarFeed::FEED_URL . '">', __('ICS Feed URL', 'rrze-calendar'), '</label></th>';
         echo '<td>';
-        echo '<input name="' . CalendarFeed::FEED_URL . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('ICS Feed Url', 'rrze_calendar'), '" class="large-text" value="', $value, '" autocomplete="off" />';
+        echo '<input name="' . CalendarFeed::FEED_URL . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('ICS Feed Url', 'rrze-calendar'), '" class="large-text" value="', $value, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter the url of the ICS feed. This field is required.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
 
         echo '<tr>',
-            '<th><label for="' . CalendarFeed::FEED_INCLUDE . '">', __('Include Events', 'rrze_calendar'), '</label></th>';
+            '<th><label for="' . CalendarFeed::FEED_INCLUDE . '">', __('Include Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
-        echo '<input name="' . CalendarFeed::FEED_INCLUDE . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('Include Events', 'rrze_calendar'), '" class="large-text" value="', $valueInclude, '" autocomplete="off" />';
+        echo '<input name="' . CalendarFeed::FEED_INCLUDE . '" type="text" id="rrze-calendar-feed-include" aria-describedby="', _e('Include Events', 'rrze-calendar'), '" class="large-text" value="', $valueInclude, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter a string to filter the import. Only events containing this string in the title will be imported.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
 
         echo '<tr>',
-            '<th><label for="' . CalendarFeed::FEED_EXCLUDE . '">', __('Exclude Events', 'rrze_calendar'), '</label></th>';
+            '<th><label for="' . CalendarFeed::FEED_EXCLUDE . '">', __('Exclude Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
-        echo '<input name="' . CalendarFeed::FEED_EXCLUDE . '" type="text" id="rrze-calendar-feed-url" aria-describedby="', _e('Exclude Events', 'rrze_calendar'), '" class="large-text" value="', $valueExclude, '" autocomplete="off" />';
+        echo '<input name="' . CalendarFeed::FEED_EXCLUDE . '" type="text" id="rrze-calendar-feed-exclude" aria-describedby="', _e('Exclude Events', 'rrze-calendar'), '" class="large-text" value="', $valueExclude, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter a string to exclude events from importing. Events containing this string in the title will not be imported.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
         echo '</table>';
