@@ -21,6 +21,8 @@ class CalendarFeed
 
     const FEED_EXCLUDE = 'ics_feed_exclude';
 
+    const FEED_PAST_DAYS = 'ics_feed_past_days';
+
     const FEED_DATETIME = 'ics_feed_datetime';
 
     const FEED_ERROR = 'ics_feed_error';
@@ -475,8 +477,13 @@ class CalendarFeed
         if (wp_is_post_revision($postId)) {
             return;
         }
-
-        Events::updateItems($postId, false);
+        $valuePastDays = get_post_meta($postId, CalendarFeed::FEED_PAST_DAYS, true);
+        if ($valuePastDays == '') {
+            $valuePastDays = 365;
+        } else {
+            $valuePastDays = intval($valuePastDays);
+        }
+        Events::updateItems($postId, false, $valuePastDays);
         Events::insertData($postId);
     }
 }

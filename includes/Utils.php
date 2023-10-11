@@ -810,9 +810,9 @@ class Utils
 
     public static function getMeta($meta, $key)
     {
-        if (!isset($meta[$key]))
+        if (!isset($meta[$key][0]))
             return '';
-        if (strpos($meta[$key][0], 'a:', 0) === 0) {
+        if (str_starts_with($meta[$key][0], 'a:')) {
             return unserialize($meta[$key][0]);
         } else {
             return $meta[$key][0];

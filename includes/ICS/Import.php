@@ -4,6 +4,7 @@ namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\CPT\CalendarFeed;
 use RRZE\Calendar\Utils;
 use ICal\ICal;
 use DateTime;
@@ -20,7 +21,7 @@ class Import
      * @param integer $limitDays
      * @return mixed
      */
-    public static function getEvents(string $url, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
+    public static function getEvents(string $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
         $pastDays = abs($pastDays);
         $limitDays = abs($limitDays);
@@ -44,6 +45,7 @@ class Import
         $filterDaysBefore = $nowDtm->diff(new DateTime($rangeStart))->format('%a');
 
         // Fix URL protocol
+        $url = get_post_meta($feedID, CalendarFeed::FEED_URL, true);
         if (strpos($url, 'webcal://') === 0) {
             $url = str_replace('webcal://', 'https://', $url);
         }
@@ -82,6 +84,25 @@ class Import
                 && $ICal->hasEvents()
                 && $events = $ICal->eventsFromRange($rangeStart, $rangeEnd)
             ) {
+                // Only import selected events
+                $include = (string) get_post_meta($feedID, CalendarFeed::FEED_INCLUDE, true);
+                if ($include != '') {
+                    foreach ($events as $i => $event) {
+                        if (!str_contains($event->summary, $include)) {
+                            unset($events[$i]);
+                        }
+                    }
+                }
+                // Skip excluded events
+                $exclude = (string) get_post_meta($feedID, CalendarFeed::FEED_EXCLUDE, true);
+                if ($exclude != '') {
+                    foreach ($events as $i => $event) {
+                        if (str_contains($event->summary, $exclude)) {
+                            unset($events[$i]);
+                        }
+                    }
+                }
+
                 return [
                     'events' => $events,
                     'meta' => [

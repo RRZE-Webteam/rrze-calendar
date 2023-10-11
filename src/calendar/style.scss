@@ -258,6 +258,9 @@
                         font-weight: bold;
                         font-size: 1.2em;
                         margin-bottom: 5px;
+                        a {
+                            white-space: normal;
+                        }
                     }
                     .event-date-time {
                         margin-bottom: 5px;
