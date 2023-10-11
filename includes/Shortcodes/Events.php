@@ -148,11 +148,11 @@ class Events
                         $tsEnd = $event['end'];
                         $startDate = date('Y-m-d', $tsStart);
                         $endDate = date('Y-m-d', $tsEnd);
-                        $tsStartCounter = $tsStart;
+                        $tsStartCounter = $tsStart + (60 * 60 * 24);
                         if ($endDate != $startDate) {
                             while ($tsStartCounter < $tsEnd) {
-                                $tsStartCounter += (60 * 60 * 24);
                                 $eventsArray[$tsStartCounter][] = $event;
+                                $tsStartCounter += (60 * 60 * 24);
                             }
                         }
                     }
@@ -162,7 +162,7 @@ class Events
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
             foreach ($eventsArray as $tsCount => $events) {
-                if ($tsCount < time()) continue;
+                if (date('Ymd',$tsCount) < date('Ymd', time())) continue;
 
                 foreach ($events as $event) {
                     $tsEnd = $event['end'];
