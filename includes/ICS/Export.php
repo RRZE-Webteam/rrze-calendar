@@ -57,19 +57,19 @@ class Export
             $taxQuery = [
                 [
                     'taxonomy' => CalendarEvent::TAX_CATEGORY,
-                    'field'    => 'slug',
+                    'field'    => 'id',
                     'terms'    => $categories
                 ]
             ];
         }
 
-        if (is_array($categories) && !empty($tags)) {
+        if (is_array($tags) && !empty($tags)) {
             $taxQuery = array_merge(
                 $taxQuery,
                 [
                     [
                         'taxonomy' => CalendarEvent::TAX_TAG,
-                        'field'    => 'slug',
+                        'field'    => 'id',
                         'terms'    => $tags
                     ]
                 ]
