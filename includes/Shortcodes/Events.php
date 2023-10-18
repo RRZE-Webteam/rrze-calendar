@@ -310,7 +310,7 @@ class Events
                             $buttonLabel = __('Add all events of this tag to your calendar', 'rrze-calendar');
                         }
                     }
-
+                    $IDs = array_unique($IDs);
                     $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => $IDs, 'cats' => $catIDs, 'tags' => $tagIDs]) . ']' . $buttonLabel . '[/button]' );
                 }
             }
