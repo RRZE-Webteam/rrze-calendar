@@ -210,9 +210,9 @@ class Calendar
         $output = '<div class="rrze-calendar">';
         if ($layout == 'full' || $layout == 'mini' && $month == '') {
             $output .= '<p class="cal-type-select">'
-                . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . ']' . __('Day', 'rrze-calendar') . '[/button]'
-                    . '[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . ']' . __('Month', 'rrze-calendar') . '[/button]'
-                    . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . ']' . __('Year', 'rrze-calendar') . '[/button]')
+                . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . '"]' . __('Day', 'rrze-calendar') . '[/button]'
+                    . '[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . '"]' . __('Month', 'rrze-calendar') . '[/button]'
+                    . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . '"]' . __('Year', 'rrze-calendar') . '[/button]')
                 . '</p>';
         }
         $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging, $taxQuery, $aboLink);
@@ -262,10 +262,10 @@ class Calendar
             if ($paging) {
                 $output .= '<ul class="calendar-pager">
                     <li class="date-prev">
-                        <a href="#" title="Zum vorangegangenen Jahr wechseln" rel="nofollow" data-direction="prev">« Zurück</a>
+                        <a href="#" title="' . __('Go to previous year', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
                     </li>
                     <li class="date-next">
-                        <a href="#" title="Zum nächsten Jahr" rel="nofollow" data-direction="next">Weiter »</a>
+                        <a href="#" title="' . __('Go to next year', 'rrze-calendar') . '" rel="nofollow" data-direction="next">' . __('Next', 'rrze-calendar') . ' »</a>
                     </li>
                 </ul>';
             }
@@ -292,10 +292,10 @@ class Calendar
         $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option( 'date_format' ), $calDayTs) . '</h2>';
         $output .= '<ul class="calendar-pager">
             <li class="date-prev">
-                <a href="#" title="Zum vorangegangenen day wechseln" rel="nofollow" data-direction="prev">« Zurück</a>
+                <a href="#" title="' . __('Go to previous day', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
             </li>
             <li class="date-next">
-                <a href="#" title="Zum nächsten day wechseln" rel="nofollow" data-direction="next">Weiter »</a>
+                <a href="#" title="' . __('Go to next day', 'rrze-calendar') . '" rel="nofollow" data-direction="next">' . __('Next', 'rrze-calendar') . ' »</a>
             </li>
         </ul>';
         $output .= '</div>';
@@ -347,7 +347,7 @@ class Calendar
         if ($hasEvents) {
             $output .= $list;
             if ($aboLink) {
-                $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+                $output .= do_shortcode('[button link="' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . '"]' . __('Add to calendar', 'rrze-calendar') . '[/button]');
             }
         } else {
             $output .= '<p>' . __('There are no events scheduled for this day.', 'rrze-calendar') . '</p>';
@@ -689,7 +689,7 @@ class Calendar
         $output .= '</div>';
 
         if ($aboLink) {
-            $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+            $output .= do_shortcode('[button link="' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . '"]' . __('Add to calendar', 'rrze-calendar') . '[/button]');
         }
 
         $output .= '</div>';
