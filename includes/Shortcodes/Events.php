@@ -310,8 +310,14 @@ class Events
                             $buttonLabel = __('Add all events of this tag to your calendar', 'rrze-calendar');
                         }
                     }
-                    $IDs = array_unique($IDs);
-                    $output .= do_shortcode('[button link=' . Export::makeIcsLink(['ids' => $IDs, 'cats' => $catIDs, 'tags' => $tagIDs]) . ']' . $buttonLabel . '[/button]' );
+                    $icsArgs = [];
+                    if (!empty($IDs)) {
+                        $IDs = array_unique($IDs);
+                        $icsArgs['ids'] = $IDs;
+                    }
+                    if (!empty($catIDs)) $icsArgs['cats'] = $catIDs;
+                    if (!empty($tagIDs)) $icsArgs['tags'] = $tagIDs;
+                    $output .= do_shortcode('[button link=' . Export::makeIcsLink($icsArgs) . ']' . $buttonLabel . '[/button]' );
                 }
             }
         } else {

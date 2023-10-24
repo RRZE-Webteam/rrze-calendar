@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Calendar\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2023-08-02T14:22:34+00:00\n"
-"PO-Revision-Date: 2023-09-19 13:09+0000\n"
+"PO-Revision-Date: 2023-10-24 10:08+0000\n"
 "Last-Translator: Barbara Bothe\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -214,7 +214,7 @@ msgstr "ICS-Feed bearbeiten"
 msgid "End"
 msgstr "Ende"
 
-#: includes/ICS/Metabox.php:84
+#: includes/ICS/Metabox.php:86
 msgid ""
 "Enter a string to exclude events from importing. Events containing this "
 "string in the title will not be imported."
@@ -223,7 +223,7 @@ msgstr ""
 "auszuschließen. Veranstaltungen mit diesem Text im Titel werden nicht "
 "importiert. "
 
-#: includes/ICS/Metabox.php:77
+#: includes/ICS/Metabox.php:79
 msgid ""
 "Enter a string to filter the import. Only events containing this string in "
 "the title will be imported."
@@ -243,7 +243,7 @@ msgstr ""
 msgid "Enter the archive slug that will display the event list."
 msgstr "Geben Sie den Archiv-Slug ein, der die Veranstaltungsliste anzeigt."
 
-#: includes/ICS/Metabox.php:63
+#: includes/ICS/Metabox.php:65
 msgid "Enter the url of the ICS feed. This field is required."
 msgstr "Die URL des ICS-Feeds eingeben. Dieses Feld ist erforderlich."
 
@@ -284,8 +284,8 @@ msgstr "alle"
 msgid "Exceptions"
 msgstr "Ausnahmen"
 
-#: includes/CPT/CalendarFeed.php:201 includes/ICS/Metabox.php:81
-#: includes/ICS/Metabox.php:83
+#: includes/CPT/CalendarFeed.php:201 includes/ICS/Metabox.php:83
+#: includes/ICS/Metabox.php:85
 msgid "Exclude Events"
 msgstr "Veranstaltungen ausschließen"
 
@@ -297,7 +297,7 @@ msgstr "Hervorgehobene Veranstaltung"
 msgid "Feed"
 msgstr "Feed"
 
-#: includes/ICS/Metabox.php:178
+#: includes/ICS/Metabox.php:194
 msgid "Feed URL is not valid."
 msgstr "Die Feed-URL ist ungültig."
 
@@ -313,7 +313,7 @@ msgstr "fünften"
 msgid "first"
 msgstr "ersten"
 
-#: includes/ICS/Metabox.php:70
+#: includes/ICS/Metabox.php:72
 #| msgid ""
 #| "For how many days in the past events are imported? Older events are "
 #| "deleted from the website."
@@ -332,13 +332,29 @@ msgstr "vierten"
 msgid "General Information"
 msgstr "Allgemeine Informationen"
 
+#: includes/Shortcodes/Calendar.php:298
+msgid "Go to next day"
+msgstr "Zum nächsten Tag wechseln"
+
 #: includes/Shortcodes/Calendar.php:461
 msgid "Go to next month"
 msgstr "Zum nächsten Monat wechseln"
 
+#: includes/Shortcodes/Calendar.php:268
+msgid "Go to next year"
+msgstr "Zum nächsten Jahr wechseln"
+
+#: includes/Shortcodes/Calendar.php:295
+msgid "Go to previous day"
+msgstr "Zum vorherigen Tag wechseln"
+
 #: includes/Shortcodes/Calendar.php:458
 msgid "Go to previous month"
 msgstr "Zum vorherigen Monat wechseln"
+
+#: includes/Shortcodes/Calendar.php:265
+msgid "Go to previous year"
+msgstr "Zum vorherigen Jahr wechseln"
 
 #: includes/Main.php:89
 msgid "Hide past events"
@@ -360,11 +376,11 @@ msgstr "https://github.com/RRZE-Webteam/rrze-calendar"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
-#: includes/ICS/Metabox.php:60
+#: includes/ICS/Metabox.php:62
 msgid "ICS Feed URL"
 msgstr "ICS-Feed-URL"
 
-#: includes/ICS/Metabox.php:62
+#: includes/ICS/Metabox.php:64
 msgid "ICS Feed Url"
 msgstr "ICS-Feed-URL"
 
@@ -384,8 +400,8 @@ msgstr ""
 msgid "Import and output of FAU public events."
 msgstr "Import und Ausgabe öffentlicher Veranstaltungen der FAU."
 
-#: includes/CPT/CalendarFeed.php:191 includes/ICS/Metabox.php:74
-#: includes/ICS/Metabox.php:76
+#: includes/CPT/CalendarFeed.php:191 includes/ICS/Metabox.php:76
+#: includes/ICS/Metabox.php:78
 msgid "Include Events"
 msgstr "Veranstaltungen einschließen"
 
@@ -431,6 +447,7 @@ msgstr "Neue Veranstaltung"
 msgid "New ICS Feed"
 msgstr "Neuer ICS-Feed"
 
+#: includes/Shortcodes/Calendar.php:268 includes/Shortcodes/Calendar.php:298
 #: includes/Shortcodes/Calendar.php:461
 msgid "Next"
 msgstr "Weiter"
@@ -447,7 +464,7 @@ msgstr "Keine Veranstaltungen im Papierkorb gefunden."
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
-#: includes/Shortcodes/Events.php:286 includes/Shortcodes/Events.php:318
+#: includes/Shortcodes/Events.php:286 includes/Shortcodes/Events.php:324
 msgid "No events scheduled."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
@@ -476,7 +493,7 @@ msgstr "Übergeordnete Veranstaltungen:"
 msgid "Parent Feeds:"
 msgstr "Eltern-Feeds:"
 
-#: includes/ICS/Metabox.php:67 includes/ICS/Metabox.php:69
+#: includes/ICS/Metabox.php:69 includes/ICS/Metabox.php:71
 msgid "Past Events"
 msgstr "Vergangene Veranstaltungen"
 
@@ -511,6 +528,7 @@ msgctxt "post type singular name"
 msgid "ICS Feed"
 msgstr "ICS-Feed"
 
+#: includes/Shortcodes/Calendar.php:265 includes/Shortcodes/Calendar.php:295
 #: includes/Shortcodes/Calendar.php:458
 msgid "Previous"
 msgstr "Zurück"
@@ -580,7 +598,7 @@ msgstr "RRZE-Webteam"
 msgid "Schedule"
 msgstr "Zeitplan"
 
-#: includes/CPT/CalendarEvent.php:64 includes/ICS/Metabox.php:188
+#: includes/CPT/CalendarEvent.php:64 includes/ICS/Metabox.php:204
 msgid "Search Events"
 msgstr "Veranstaltungen durchsuchen"
 
