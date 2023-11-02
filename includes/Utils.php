@@ -200,7 +200,7 @@ class Utils
      * @param mixed $format
      * @return string
      */
-    public static function timeFormat($timeString, $format = null)
+    public static function timeFormat($timeString, $format = 'H:i:s')
     {
         $output = null;
         if (empty($format)) {
