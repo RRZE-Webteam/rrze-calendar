@@ -1,6 +1,6 @@
 {
     "name": "rrze-calendar",
-    "version": "2.0.8",
+    "version": "2.0.10",
     "main": "rrze-calendar.php",
     "scripts": {
         "start": "webpack --mode=development --watch",

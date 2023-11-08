@@ -44,6 +44,10 @@ class Events
         if ($number < 1) {
             $number = 10;
         }
+        if (is_archive()) {
+            $number = 100;
+        }
+
         $IDs = [];
 
         $args = [
