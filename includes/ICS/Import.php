@@ -16,12 +16,13 @@ class Import
     /**
      * getEvents
      *
-     * @param string $url
+     * @param integer $feedID
      * @param boolean $cache
+     * @param integer $pastDays
      * @param integer $limitDays
      * @return mixed
      */
-    public static function getEvents(string $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
+    public static function getEvents(int $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
         $pastDays = abs($pastDays);
         $limitDays = abs($limitDays);
@@ -46,6 +47,7 @@ class Import
 
         // Fix URL protocol
         $url = get_post_meta($feedID, CalendarFeed::FEED_URL, true);
+        $url = $url ?: '';
         if (strpos($url, 'webcal://') === 0) {
             $url = str_replace('webcal://', 'https://', $url);
         }
