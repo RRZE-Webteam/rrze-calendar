@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-class CodeEditor extends OptionAbstract
+class CodeEditor extends Field
 {
     public $template = 'code-editor';
 

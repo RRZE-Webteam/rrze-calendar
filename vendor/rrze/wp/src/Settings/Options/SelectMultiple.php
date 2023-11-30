@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-class SelectMultiple extends OptionAbstract
+class SelectMultiple extends Field
 {
     public $template = 'select-multiple';
 

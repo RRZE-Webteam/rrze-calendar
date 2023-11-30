@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'rrze/rrze-calendar',
-        'pretty_version' => '2.0.4',
-        'version' => '2.0.4.0',
+        'pretty_version' => '2.0.10',
+        'version' => '2.0.10.0',
         'reference' => NULL,
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'johngrogg/ics-parser' => array(
-            'pretty_version' => 'v3.2.1',
-            'version' => '3.2.1.0',
-            'reference' => 'a3a291c51c378cc4a7f3aec6cd2478bdbd110575',
+            'pretty_version' => 'v3.3.1',
+            'version' => '3.3.1.0',
+            'reference' => 'eeb51c4c0c06e6df3266f85ea774ca314536aba4',
             'type' => 'library',
             'install_path' => __DIR__ . '/../johngrogg/ics-parser',
             'aliases' => array(),
@@ -38,8 +38,8 @@
             'dev_requirement' => false,
         ),
         'rrze/rrze-calendar' => array(
-            'pretty_version' => '2.0.4',
-            'version' => '2.0.4.0',
+            'pretty_version' => '2.0.10',
+            'version' => '2.0.10.0',
             'reference' => NULL,
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
@@ -47,9 +47,9 @@
             'dev_requirement' => false,
         ),
         'rrze/wp' => array(
-            'pretty_version' => '1.2.1',
-            'version' => '1.2.1.0',
-            'reference' => '404f0ed48d6ead0482d720123df7eb78b00e8aa4',
+            'pretty_version' => '1.2.2',
+            'version' => '1.2.2.0',
+            'reference' => 'b0c51e6a07011ec1d3ebf8a71fae5a93c05a6014',
             'type' => 'library',
             'install_path' => __DIR__ . '/../rrze/wp',
             'aliases' => array(),

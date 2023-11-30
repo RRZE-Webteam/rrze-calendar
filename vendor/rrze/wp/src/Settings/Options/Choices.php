@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-class Choices extends OptionAbstract
+class Choices extends Field
 {
     public $template = 'choices';
 }
