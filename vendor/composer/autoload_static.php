@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd9af71ad6204b40402673742c70fad18
+class ComposerStaticInit066c4ad60e2a566f23e65e5f53006199
 {
     public static $files = array (
         'e4e11a001002b1c747a45db4ce1ccc3a' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
@@ -53,10 +53,10 @@ class ComposerStaticInitd9af71ad6204b40402673742c70fad18
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitd9af71ad6204b40402673742c70fad18::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$classMap;
 
         }, null, ClassLoader::class);
     }

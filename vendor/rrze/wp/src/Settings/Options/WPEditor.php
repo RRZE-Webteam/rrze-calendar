@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-class WPEditor extends OptionAbstract
+class WPEditor extends Field
 {
     public $template = 'wp-editor';
 

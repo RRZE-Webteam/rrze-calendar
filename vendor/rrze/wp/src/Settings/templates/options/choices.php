@@ -5,11 +5,10 @@ namespace RRZE\WP\Settings;
 defined('ABSPATH') || exit;
 ?>
 <tr valign="top">
-    <th scope="row" class="titledesc">
+    <th scope="row" class="rrze-wp-form-label">
         <label for="<?php echo $option->getIdAttribute(); ?>" class="<?php echo $option->getLabelClassAttribute(); ?>"><?php echo $option->getLabel(); ?></label>
     </th>
-    <td class="forminp forminp-text">
-
+    <td class="rrze-wp-form rrze-wp-form-input">
         <?php foreach ($option->getArg('options', []) as $key => $label) { ?>
             <div>
                 <label>
@@ -18,11 +17,9 @@ defined('ABSPATH') || exit;
                 </label>
             </div>
         <?php } ?>
-
         <?php if ($description = $option->getArg('description')) { ?>
             <p class="description"><?php echo $description; ?></p>
         <?php } ?>
-
         <?php if ($error = $option->hasError()) { ?>
             <div class="rrze-wp-settings-error"><?php echo $error; ?></div>
         <?php } ?>

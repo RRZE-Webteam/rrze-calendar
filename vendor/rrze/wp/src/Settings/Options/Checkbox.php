@@ -2,7 +2,7 @@
 
 namespace RRZE\WP\Settings\Options;
 
-class Checkbox extends OptionAbstract
+class Checkbox extends Field
 {
     public $template = 'checkbox';
 

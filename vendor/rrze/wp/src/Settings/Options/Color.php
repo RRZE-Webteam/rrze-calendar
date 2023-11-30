@@ -4,7 +4,7 @@ namespace RRZE\WP\Settings\Options;
 
 use RRZE\WP\Settings\Worker;
 
-class Color extends OptionAbstract
+class Color extends Field
 {
     public $template = 'color';
 

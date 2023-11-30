@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\WP\Settings\Template;
 
-abstract class OptionAbstract
+abstract class Field
 {
     public $section;
 
@@ -22,7 +22,7 @@ abstract class OptionAbstract
 
     public function render()
     {
-        return Template::include('options/'.$this->template, ['option' => $this]);
+        return Template::include('options/' . $this->template, ['option' => $this]);
     }
 
     public function hasError()
@@ -78,19 +78,19 @@ abstract class OptionAbstract
     {
         $class = $this->getCss()['input_class'] ?? null;
 
-        return ! empty($class) ? esc_attr($class) : null;
+        return !empty($class) ? esc_attr($class) : null;
     }
 
     public function getLabelClassAttribute()
     {
         $class = $this->getCss()['label_class'] ?? null;
 
-        return ! empty($class) ? esc_attr($class) : null;
+        return !empty($class) ? esc_attr($class) : null;
     }
 
     public function getNameAttribute()
     {
-        return $this->section->tab->settings->optionName.'['.$this->getArg('name').']';
+        return $this->section->tab->settings->optionName . '[' . $this->getArg('name') . ']';
     }
 
     public function getValueAttribute()

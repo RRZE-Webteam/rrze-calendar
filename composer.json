@@ -1,13 +1,13 @@
 {
     "name": "rrze/rrze-calendar",
     "description": "RRZE WordPress Plugin",
-    "version": "2.0.10",
+    "version": "2.0.12",
     "type": "wordpress-plugin",
     "license": "GPL",
     "require": {
         "php": "^8.0.0",
-        "rrze/wp": "^1.2.1",
-        "johngrogg/ics-parser": "^3.2.1",
+        "rrze/wp": "^1.2.2",
+        "johngrogg/ics-parser": "^3.3.1",
         "rlanvin/php-rrule": "^2.4.1",
         "cmb2/cmb2": "^2.10.1"
     },
