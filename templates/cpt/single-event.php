@@ -25,10 +25,10 @@ while (have_posts()) : the_post(); ?>
         <div class="content-container">
             <div class="content-row">
                 <main>
-                    <article  class="rrze-event" itemscope itemtype="https://schema.org/Event">
+                    <article class="rrze-event" itemscope itemtype="https://schema.org/Event">
 
                         <header class="entry-header">
-                            <?php the_title('<h1 class="entry-title itemprop="name">', '</h1>'); ?>
+                            <?php the_title('<h1 class="entry-title" itemprop="name">', '</h1>'); ?>
                         </header><!-- .entry-header -->
 
                         <div class="rrze-event-main">
