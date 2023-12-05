@@ -21,7 +21,8 @@ class Templates
             'FAU-Natfak'
         ],
         'fau-events' => [
-            'FAU-Events'
+            'FAU-Events',
+            'FAU-Events-UTN',
         ],
         'rrze' => [
             'rrze-2019'
