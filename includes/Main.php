@@ -55,17 +55,21 @@ class Main
         if (is_null($screen)) {
             return;
         }
+
         if (in_array($screen->post_type, [CalendarEvent::POST_TYPE, CalendarFeed::POST_TYPE])) {
             wp_enqueue_style(
                 'rrze-calendar-admin',
-                plugins_url('build/admin.css', plugin()->getBasename()),
+                plugins_url('build/admin.style.css', plugin()->getBasename()),
                 [],
                 plugin()->getVersion(true)
             );
+
+            $assetFile = include(plugin()->getPath('build') . 'admin.asset.php');
+            $assetFile['dependencies'] = array_merge($assetFile['dependencies'], ['wp-color-picker']);
             wp_enqueue_script(
                 'rrze-calendar-admin',
                 plugins_url('build/admin.js', plugin()->getBasename()),
-                ['jquery', 'wp-color-picker'],
+                $assetFile['dependencies'],
                 plugin()->getVersion(true)
             );
         }
@@ -75,14 +79,16 @@ class Main
     {
         wp_register_style(
             'rrze-calendar-sc-calendar',
-            plugins_url('build/calendar.css', plugin()->getBasename()),
+            plugins_url('build/calendar.style.css', plugin()->getBasename()),
             [],
             plugin()->getVersion(true)
         );
+
+        $assetFile = include(plugin()->getPath('build') . 'calendar.asset.php');
         wp_register_script(
             'rrze-calendar-sc-calendar',
             plugins_url('build/calendar.js', plugin()->getBasename()),
-            ['jquery'],
+            $assetFile['dependencies'],
             plugin()->getVersion(true)
         );
         wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_i18n', array(
@@ -91,11 +97,12 @@ class Main
         ));
         wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce( 'rrze-calendar-ajax-nonce' ),
+            'nonce' => wp_create_nonce('rrze-calendar-ajax-nonce'),
         ]);
+
         wp_register_style(
             'rrze-calendar-sc-events',
-            plugins_url('build/events.css', plugin()->getBasename()),
+            plugins_url('build/events.style.css', plugin()->getBasename()),
             [],
             plugin()->getVersion(true)
         );
