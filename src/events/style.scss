@@ -1,5 +1,5 @@
 .rrze-calendar {
-    ul.events-list  {
+    ul.events-list {
         margin: 0;
         padding: 0;
         background: none;
@@ -40,7 +40,6 @@
             }
         }
         .event-info {
-
         }
         .event-title {
             margin-top: 0;
@@ -52,7 +51,9 @@
                 color: var(--color-Text, #222);
                 box-shadow: none;
                 text-decoration: none;
-                &:hover, &:focus, &:active {
+                &:hover,
+                &:focus,
+                &:active {
                     text-decoration: underline;
                 }
             }
@@ -65,7 +66,7 @@
         margin-left: 0;
         li {
             list-style: none;
-            margin-bottom: .5em;
+            margin-bottom: 0.5em;
         }
         .event-date {
             float: none;
@@ -82,7 +83,7 @@
             position: relative;
             top: 2px;
             &.dashicons-clock {
-                margin-left: .5em;
+                margin-left: 0.5em;
             }
         }
     }
@@ -108,7 +109,6 @@
             padding-left: 0;
             padding-right: 0;
         }
-
     }
     .rrze-event {
         margin-top: 20px;
@@ -125,16 +125,19 @@
     }
     .rrze-event-details {
         @media (min-width: 1024px) {
-            border-left: 2px solid var(--color-primary-ci-hell2,#ced9e7);
+            border-left: 2px solid var(--color-primary-ci-hell2, #ced9e7);
             padding-left: 15px;
         }
         h2 {
             margin-top: 0;
         }
         p {
-            margin-bottom: .5em;
+            margin-bottom: 0.5em;
         }
-        dt, dd, dt *, dd * {
+        dt,
+        dd,
+        dt *,
+        dd * {
             font-size: 0.875rem;
             line-height: 1.313rem;
         }
@@ -196,7 +199,7 @@
             }
         }
         .rrze-event-location {
-            margin-top: .5em;
+            margin-top: 0.5em;
         }
         ul {
             margin-bottom: 0;
