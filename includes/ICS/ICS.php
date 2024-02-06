@@ -26,7 +26,8 @@ class ICS
         'dtend',
         'dtstart',
         'location',
-        'summary'
+        'summary',
+        'rrule'
     ];
 
     /**
@@ -63,6 +64,9 @@ class ICS
         $properties = [];
         foreach ($props as $key => $value) {
             if (in_array($key, $this->availableProperties)) {
+                if (empty($value)) {
+                    continue;
+                }
                 $properties[$key] = $this->sanitizeValue($value, $key);
             }
         }
