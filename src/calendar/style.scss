@@ -4,14 +4,17 @@
         padding: 0;
         a {
             display: inline-block;
-            margin-right: .5em;
-            padding: .25em 1em;
+            margin-right: 0.5em;
+            padding: 0.25em 1em;
             border: 2px solid #666;
             border-radius: var(--border-radius-buttons, 4px);
             text-decoration: none;
             box-shadow: none;
             //color: #333;
-            &:hover, &:focus, &:active, &.active {
+            &:hover,
+            &:focus,
+            &:active,
+            &.active {
                 background: #666;
                 color: #fff;
             }
@@ -19,7 +22,7 @@
     }
     .cal-day {
         .calendar-header h2.title-year {
-            padding-bottom: .5em;
+            padding-bottom: 0.5em;
             margin-bottom: 1em;
             border-bottom: 1px solid #ccc;
         }
@@ -57,7 +60,9 @@
             text-align: center;
             a {
                 text-decoration: none;
-                &:hover, &:focus, &:active {
+                &:hover,
+                &:focus,
+                &:active {
                     text-decoration: underline;
                 }
             }
@@ -71,13 +76,17 @@
                     display: block;
                     padding: 5px;
                     box-shadow: none;
-                    &:hover, &:focus, &:active {
+                    &:hover,
+                    &:focus,
+                    &:active {
                         color: unset;
                         background: lighten(#fdfad3, 5%);
                         font-weight: bold;
                     }
                 }
-                &:hover, &:focus, &:active {
+                &:hover,
+                &:focus,
+                &:active {
                     background: lighten(#fdfad3, 5%);
                 }
             }
@@ -94,11 +103,11 @@
         position: relative;
         h2.title-year {
             text-align: center;
-            margin-bottom: .25em;
+            margin-bottom: 0.25em;
         }
         ul.calendar-pager {
             margin: 0;
-            padding : 0;
+            padding: 0;
             li {
                 list-style-type: none;
                 @media screen and (min-width: 480px) {
@@ -143,19 +152,19 @@
         }
         &.full {
             width: 100%;
-            .days, .week {
+            .days,
+            .week {
                 @media screen and (min-width: 480px) {
                     display: grid;
                     grid-template-columns:
-                    [day-1] 1fr
-                    [day-2] 1fr
-                    [day-3] 1fr
-                    [day-4] 1fr
-                    [day-5] 1fr
-                    [day-6] 1fr
-                    [day-7] 1fr;
-                    grid-template-rows:
-                    repeat(auto-fit, 1fr);
+                        [day-1] 1fr
+                        [day-2] 1fr
+                        [day-3] 1fr
+                        [day-4] 1fr
+                        [day-5] 1fr
+                        [day-6] 1fr
+                        [day-7] 1fr;
+                    grid-template-rows: repeat(auto-fit, 1fr);
                 }
             }
             .day-names {
@@ -219,9 +228,10 @@
                     //border-radius: 0;
                     margin-bottom: 3px;
                     min-height: 25px;
-                    position: relative
+                    position: relative;
                 }
-                &:before, &:after {
+                &:before,
+                &:after {
                     display: inline-block;
                     width: 16px;
                     color: #666;
@@ -235,7 +245,7 @@
                 }
                 &:after {
                     @media screen and (min-width: 480px) {
-                        content: '\00bb';
+                        content: "\00bb";
                         text-align: right;
                         position: absolute;
                         bottom: 0;
@@ -248,7 +258,7 @@
                     font-size: 0.875rem;
                     line-height: 1.5;
                 }
-                div[role=tooltip] {
+                div[role="tooltip"] {
                     display: none;
                     .wp-post-image {
                         margin-bottom: 5px;
@@ -266,14 +276,13 @@
                         margin-bottom: 5px;
                     }
                     .event-description {
-
                     }
                 }
-                &:hover div[role=tooltip] {
+                &:hover div[role="tooltip"] {
                     display: block;
                     position: absolute;
                     bottom: 1em;
-                    left: .5em;
+                    left: 0.5em;
                     width: 15em;
                     padding: 0.5em;
                     z-index: 100;
@@ -292,7 +301,9 @@
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
-                    &:hover, &:focus, &:active {
+                    &:hover,
+                    &:focus,
+                    &:active {
                         text-decoration: underline;
                     }
                 }
@@ -360,7 +371,7 @@
                 //border-left-width: 2px;
                 &:before {
                     display: none;
-                    content: '';
+                    content: "";
                 }
             }
             .event-end {
@@ -370,7 +381,7 @@
                 float: none;
                 &:after {
                     display: none;
-                    content: '';
+                    content: "";
                 }
             }
             .more-events {
@@ -381,7 +392,7 @@
     }
     ul.day-list {
         li {
-            margin-bottom: .5em;
+            margin-bottom: 0.5em;
         }
     }
     .hide-desktop {
