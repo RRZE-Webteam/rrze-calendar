@@ -60,8 +60,9 @@ class CalendarFeed
 
         // Transition Feed Status.
         add_action('transition_post_status', [__CLASS__, 'maybeDelete'], 10, 3);
-        // Update Feed Items.
-        add_action('save_post', [__CLASS__, 'save'], 10, 2);
+
+        // Save Feed Items.
+        add_action('save_post', [__CLASS__, 'savePost'], 10, 2);
 
         // Add Metabox.
         Metabox::init();
@@ -443,15 +444,16 @@ class CalendarFeed
 
     public static function maybeDelete($newStatus, $oldStatus, $post)
     {
+        $postId = $post->ID;
         if (
             $newStatus != 'publish' && $oldStatus == 'publish'
-            && self::POST_TYPE == get_post_type($post->ID)
+            && self::POST_TYPE == get_post_type($postId)
         ) {
-            Events::deleteData($post->ID);
+            self::deleteData($postId);
         }
     }
 
-    public static function save($postId, $post)
+    public static function savePost($postId, $post)
     {
         // Check the post type.
         if ($post->post_type != self::POST_TYPE) {
@@ -477,6 +479,12 @@ class CalendarFeed
         if (wp_is_post_revision($postId)) {
             return;
         }
+
+        self::saveData($postId);
+    }
+
+    private static function saveData($postId)
+    {
         $valuePastDays = get_post_meta($postId, CalendarFeed::FEED_PAST_DAYS, true);
         if ($valuePastDays == '') {
             $valuePastDays = 365;
@@ -485,5 +493,10 @@ class CalendarFeed
         }
         Events::updateItems($postId, false, $valuePastDays);
         Events::insertData($postId);
+    }
+
+    private static function deleteData($postId)
+    {
+        Events::deleteData($postId);
     }
 }
