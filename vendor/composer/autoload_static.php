@@ -4,17 +4,16 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit066c4ad60e2a566f23e65e5f53006199
+class ComposerStaticInit2c498cedc94f6f3eba7205ee47469408
 {
     public static $files = array (
-        'e4e11a001002b1c747a45db4ce1ccc3a' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
+        'ad901de1e5d16b81f427bfe3dc3de508' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'R' => 
         array (
             'RRule\\' => 6,
-            'RRZE\\WP\\' => 8,
             'RRZE\\Calendar\\' => 14,
         ),
     );
@@ -24,10 +23,6 @@ class ComposerStaticInit066c4ad60e2a566f23e65e5f53006199
         array (
             0 => __DIR__ . '/../..' . '/src',
             1 => __DIR__ . '/..' . '/rlanvin/php-rrule/src',
-        ),
-        'RRZE\\WP\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/rrze/wp/src',
         ),
         'RRZE\\Calendar\\' => 
         array (
@@ -53,10 +48,10 @@ class ComposerStaticInit066c4ad60e2a566f23e65e5f53006199
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit066c4ad60e2a566f23e65e5f53006199::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit2c498cedc94f6f3eba7205ee47469408::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit2c498cedc94f6f3eba7205ee47469408::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit2c498cedc94f6f3eba7205ee47469408::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit2c498cedc94f6f3eba7205ee47469408::$classMap;
 
         }, null, ClassLoader::class);
     }

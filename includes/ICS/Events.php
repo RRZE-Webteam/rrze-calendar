@@ -20,6 +20,8 @@ class Events
             if ($post->post_status == 'publish') {
                 self::updateItems($post->ID);
                 self::insertData($post->ID);
+            } else {
+                self::deleteStaleData($post->ID);
             }
         }
     }
@@ -29,7 +31,7 @@ class Events
         $args = [
             'numberposts' => -1,
             'post_type'   => CalendarFeed::POST_TYPE,
-            'post_status' => 'publish'
+            'post_status' => ['publish', 'future', 'draft', 'pending', 'private', 'trash']
         ];
         if (!empty($postIn)) {
             $args = array_merge($args, ['post__in' => $postIn]);
@@ -635,6 +637,11 @@ class Events
                 add_post_meta($eventId, 'ics_event_ocurrences', $ocurrences, true);
             }
         }
+    }
+
+    private static function deleteStaleData(int $feedId)
+    {
+        self::deleteData($feedId);
     }
 
     public static function deleteData(int $feedId)

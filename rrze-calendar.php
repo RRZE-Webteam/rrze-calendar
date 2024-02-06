@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import and output of FAU public events.
-Version:         2.0.13
+Version:         2.1.0
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v3.0
@@ -19,7 +19,6 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarEvent;
 use RRZE\Calendar\CPT\CalendarFeed;
-use RRZE\WP\Plugin;
 
 const RRZE_PHP_VERSION = '8.1';
 const RRZE_WP_VERSION = '6.4';

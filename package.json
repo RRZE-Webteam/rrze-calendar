@@ -1,44 +1,28 @@
 {
-    "name": "rrze-calendar",
-    "version": "2.0.13",
-    "main": "rrze-calendar.php",
-    "scripts": {
-        "start": "webpack --mode=development --watch",
-        "build": "webpack --mode=production",
-        "clean": "rm -rf build/",
-        "major": "gulp major",
-        "minor": "gulp minor",
-        "patch": "gulp patch",
-        "prerelease": "gulp prerelease"
+    "engines": {
+        "node": ">=21.5.0",
+        "npm": ">=10.2.4"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/RRZE-Webteam/rrze-calendar.git"
-    },
-    "license": "GPL-3.0-or-later",
-    "bugs": {
-        "url": "https://github.com/RRZE-Webteam/rrze-calendar/issues"
-    },
-    "homepage": "https://github.com/RRZE-Webteam/rrze-calendar#readme",
     "devDependencies": {
-        "@babel/core": "^7.22.9",
-        "@babel/preset-env": "^7.22.9",
-        "autoprefixer": "^10.4.14",
-        "babel-loader": "^9.1.3",
-        "clean-webpack-plugin": "^4.0.0",
-        "css-loader": "^6.8.1",
-        "css-minimizer-webpack-plugin": "^5.0.1",
-        "gulp": "^4.0.2",
-        "gulp-bump": "^3.2.0",
-        "gulp-touch-cmd": "^0.0.1",
-        "mini-css-extract-plugin": "^2.7.6",
-        "postcss-loader": "^7.3.3",
-        "sass": "^1.63.6",
-        "sass-loader": "^13.3.2",
-        "semver": "^7.5.4",
-        "style-loader": "^3.3.3",
-        "terser-webpack-plugin": "^5.3.9",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4"
+        "@wordpress/components": "latest",
+        "@wordpress/plugins": "latest",
+        "@wordpress/data": "latest",
+        "@wordpress/env": "latest",
+        "@wordpress/icons": "latest",
+        "@wordpress/scripts": "latest",
+        "ts-loader": "latest",
+        "typescript": "latest"
+    },
+    "browserslist": [
+        "extends @wordpress/browserslist-config"
+    ],
+    "scripts": {
+        "start": "wp-scripts start",
+        "build": "wp-scripts build",
+        "format": "wp-scripts format src",
+        "lint:js": "wp-scripts lint-js src",
+        "check-engines": "wp-scripts check-engines",
+        "check-licenses": "wp-scripts check-licenses --prod --gpl3",
+        "packages-update": "wp-scripts packages-update"
     }
 }

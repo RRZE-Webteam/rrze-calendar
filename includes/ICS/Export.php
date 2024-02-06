@@ -5,6 +5,7 @@ namespace RRZE\Calendar\ICS;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarEvent;
+use RRule\RRule;
 use function RRZE\Calendar\plugin;
 
 
@@ -102,14 +103,29 @@ class Export
         $data = [];
         foreach ($posts as $post) {
             $meta = get_post_meta($post->ID, '', true);
-            $data[$post->ID] = [
+            $args = [
                 'summary' => $post->post_title,
                 'uid' => $meta['event-uid'][0] ?? '',
                 'description' => $meta['description'][0] ?? '',
                 'dtstart' => get_gmt_from_date(date('Y-m-d H:i', $meta['start'][0]), 'Y-m-d H:i:s'),
-                'dtend' => get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s'),
+                'dtend' => !empty($meta['end'][0]) ? get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s') : '',
                 'location' => $meta['location'][0] ?? '',
             ];
+            $icsMeta = !empty($meta['ics_event_meta'][0]) ? maybe_unserialize($meta['ics_event_meta'][0]) : null;
+            $rrule = !empty($icsMeta['rrule']) ? maybe_unserialize($icsMeta['rrule']) : null;
+            if (empty($rrule)) {
+                $rrule = !empty($meta['event-rrule-args'][0]) ? json_decode($meta['event-rrule-args'][0], true) : null;
+                if (!empty($rrule) && is_array($rrule)) {
+                    $rruleObj = new RRule($rrule);
+                    $rrule = $rruleObj->rfcString();
+                    $rruleStartPos = strpos($rrule, 'RRULE:');
+                    if ($rruleStartPos !== false) {
+                        $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
+                    }
+                }
+            }
+            $args['rrule'] = !empty($rrule) ? $rrule : '';
+            $data[$post->ID] = $args;
         }
         return $data;
     }

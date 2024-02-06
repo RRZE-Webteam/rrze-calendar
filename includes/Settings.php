@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\WP\Settings\Settings as RRZEWPSettings;
+use RRZE\Calendar\Options\Settings as OptionsSettings;
 
 class Settings
 {
@@ -14,7 +14,7 @@ class Settings
 
     public function __construct()
     {
-        $this->settings = new RRZEWPSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
+        $this->settings = new OptionsSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
 
         $this->settings->setCapability('manage_options')
             ->setOptionName(self::OPTION_NAME)
