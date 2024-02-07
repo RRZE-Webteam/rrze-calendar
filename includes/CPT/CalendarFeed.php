@@ -449,7 +449,7 @@ class CalendarFeed
             $newStatus != 'publish' && $oldStatus == 'publish'
             && self::POST_TYPE == get_post_type($postId)
         ) {
-            self::deleteData($postId);
+            self::deleteEvent($postId);
         }
     }
 
@@ -495,8 +495,8 @@ class CalendarFeed
         Events::insertData($postId);
     }
 
-    private static function deleteData($postId)
+    private static function deleteEvent($postId)
     {
-        Events::deleteData($postId);
+        Events::deleteEvent($postId);
     }
 }
