@@ -15,13 +15,15 @@ class Events
 
     public static function updateFeedsItems()
     {
+        self::deleteUnlinkedEvents();
+
         $feeds = self::getFeeds();
         foreach ($feeds as $post) {
             if ($post->post_status == 'publish') {
                 self::updateItems($post->ID);
                 self::insertData($post->ID);
             } else {
-                self::deleteStaleData($post->ID);
+                self::deleteEvent($post->ID);
             }
         }
     }
@@ -583,7 +585,7 @@ class Events
         $items = count($items) ? self::getListData($postId, $items) : $items;
 
         if (count($items)) {
-            self::deleteData($postId);
+            self::deleteEvent($postId);
         } else {
             return;
         }
@@ -639,12 +641,7 @@ class Events
         }
     }
 
-    private static function deleteStaleData(int $feedId)
-    {
-        self::deleteData($feedId);
-    }
-
-    public static function deleteData(int $feedId)
+    public static function deleteEvent(int $feedId)
     {
         $metaKey = 'ics_feed_id';
         $metaValue = $feedId;
@@ -662,6 +659,29 @@ class Events
             while ($query->have_posts()) {
                 $query->the_post();
                 wp_delete_post(get_the_ID(), true);
+            }
+            wp_reset_postdata();
+        }
+    }
+
+    public static function deleteUnlinkedEvents()
+    {
+        $metaKey = 'ics_feed_id';
+        $query = new \WP_Query([
+            'meta_key' => $metaKey,
+            'post_type' => CalendarEvent::POST_TYPE,
+            'posts_per_page' => 100
+        ]);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $postId = get_the_ID();
+
+                $feedId = get_post_meta($postId, $metaKey, true);
+                if (!get_post($feedId)) {
+                    wp_delete_post($postId, true);
+                }
             }
             wp_reset_postdata();
         }
