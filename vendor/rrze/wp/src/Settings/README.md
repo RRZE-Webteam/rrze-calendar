@@ -239,23 +239,23 @@ $section->addOption('text', [
 ### Hooks
 
 ```php
-add_filter('rrze_wp_settings_new_options', array $newOptions, array $currentOptions)
+apply_filters('rrze_wp_settings_new_options', array $newOptions, array $currentOptions)
 ```
 
 ```php
-add_filter('rrze_wp_settings_new_option_{$optionName}', mixed $value, object \RRZE\WP\Settings\Options\Type)
+apply_filters('rrze_wp_settings_new_option_{$optionName}', mixed $value, object \RRZE\WP\Settings\Options\Type)
 ```
 
 ```php
-add_filter('rrze_wp_settings_option_type_map', array $optionTypeMap)
+apply_filters('rrze_wp_settings_option_type_map', array $optionTypeMap)
 ```
 
 ```php
-add_filter('rrze_wp_settings_template_include', string $fileName, array $vars)
+apply_filters('rrze_wp_settings_template_include', string $fileName, array $vars)
 ```
 
 ```php
-add_action('rrze_wp_settings_after_update_option', string $optionName, array $options)
+do_action('rrze_wp_settings_after_update_option', string $optionName, array $options)
 ```
 
 ### Adding a custom option type
