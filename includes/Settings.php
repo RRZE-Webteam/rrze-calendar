@@ -4,7 +4,7 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Calendar\Options\Settings as OptionsSettings;
+use RRZE\WP\Settings\Settings as OptionsSettings;
 
 class Settings
 {
