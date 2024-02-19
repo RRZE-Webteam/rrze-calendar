@@ -14,6 +14,7 @@ class ComposerStaticInit2c498cedc94f6f3eba7205ee47469408
         'R' => 
         array (
             'RRule\\' => 6,
+            'RRZE\\WP\\' => 8,
             'RRZE\\Calendar\\' => 14,
         ),
     );
@@ -23,6 +24,10 @@ class ComposerStaticInit2c498cedc94f6f3eba7205ee47469408
         array (
             0 => __DIR__ . '/../..' . '/src',
             1 => __DIR__ . '/..' . '/rlanvin/php-rrule/src',
+        ),
+        'RRZE\\WP\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rrze/wp/src',
         ),
         'RRZE\\Calendar\\' => 
         array (

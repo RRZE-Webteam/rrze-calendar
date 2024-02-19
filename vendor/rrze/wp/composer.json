@@ -1,0 +1,27 @@
+{
+    "name": "rrze/wp",
+    "description": "A general purpose library for WordPress.",
+    "version": "2.0.0",
+    "type": "library",
+    "keywords": [
+        "wordpress"
+    ],
+    "homepage": "https://github.com/RRZE-Webteam/rrze-wp",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "RRZE-Webteam",
+            "email": "webmaster@fau.de",
+            "homepage": "https://www.rrze.fau.de"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "RRZE\\WP\\": "src"
+        }
+    },
+    "lock": false
+}
