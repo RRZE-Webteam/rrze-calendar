@@ -14,6 +14,11 @@ class Settings
 
     public function __construct()
     {
+        add_action('rrze_wp_settings_after_update_option', [$this, 'flushRewriteRules']);
+    }
+
+    public function loaded()
+    {
         $this->settings = new OptionsSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
 
         $this->settings->setCapability('manage_options')
@@ -59,12 +64,19 @@ class Settings
         $this->settings->build();
     }
 
+    public function flushRewriteRules($optionName)
+    {
+        if ($optionName === self::OPTION_NAME) {
+            flush_rewrite_rules(false);
+        }
+    }
+
     public function validateEndpointSlug($value)
     {
-        if ($validation = strlen(sanitize_title($value)) > 4) {
-            flush_rewrite_rules();
+        if (mb_strlen(sanitize_title($value)) < 4) {
+            return false;
         }
-        return $validation;
+        return true;
     }
 
     public function getOption($option)
