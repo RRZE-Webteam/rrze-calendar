@@ -2,14 +2,14 @@
 # This file is distributed under the GNU General Public License v3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: RRZE Calendar 2.0.13\n"
+"Project-Id-Version: RRZE Calendar 2.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-02-06T09:38:16+00:00\n"
+"POT-Creation-Date: 2024-02-19T11:20:32+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: rrze-calendar\n"
@@ -89,7 +89,7 @@ msgid "Parent Events:"
 msgstr ""
 
 #: includes/CPT/CalendarEvent.php:66
-#: includes/ICS/Events.php:46
+#: includes/ICS/Events.php:48
 msgid "No events found."
 msgstr ""
 
@@ -495,7 +495,7 @@ msgstr ""
 msgid "Invalid access"
 msgstr ""
 
-#: includes/ICS/Events.php:325
+#: includes/ICS/Events.php:327
 #: includes/Utils.php:828
 msgid "m-d-Y"
 msgstr ""
@@ -545,24 +545,12 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/Main.php:89
+#: includes/Main.php:95
 msgid "Hide past events"
 msgstr ""
 
-#: includes/Main.php:90
+#: includes/Main.php:96
 msgid "Show past events"
-msgstr ""
-
-#: includes/Options/Settings.php:267
-msgid "You do not have enough permissions to do that."
-msgstr ""
-
-#: includes/Options/Settings.php:292
-msgid "Settings saved."
-msgstr ""
-
-#: includes/Options/templates/settings-page.php:18
-msgid "Settings issues detected."
 msgstr ""
 
 #: includes/Settings.php:17

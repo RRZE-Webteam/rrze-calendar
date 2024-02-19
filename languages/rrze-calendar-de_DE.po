@@ -3,8 +3,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Autoshare\n"
-"POT-Creation-Date: 2024-01-30T17:02:49+00:00\n"
-"PO-Revision-Date: 2024-02-06 10:47+0100\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
+"POT-Creation-Date: 2024-02-19T11:20:32+00:00\n"
+"PO-Revision-Date: 2024-02-19 12:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: RRZE Webteam\n"
 "Language: de\n"
@@ -87,7 +88,7 @@ msgstr "Veranstaltungen durchsuchen"
 msgid "Parent Events:"
 msgstr "Übergeordnete Veranstaltungen:"
 
-#: includes/CPT/CalendarEvent.php:66 includes/ICS/Events.php:46
+#: includes/CPT/CalendarEvent.php:66 includes/ICS/Events.php:48
 msgid "No events found."
 msgstr "Keine Veranstaltungen gefunden."
 
@@ -475,7 +476,7 @@ msgstr "Deaktivieren"
 msgid "Invalid access"
 msgstr "Unzulässiger Zugriff"
 
-#: includes/ICS/Events.php:325 includes/Utils.php:828
+#: includes/ICS/Events.php:327 includes/Utils.php:828
 msgid "m-d-Y"
 msgstr "d.m.Y"
 
@@ -536,25 +537,13 @@ msgstr "Die Feed-URL ist ungültig."
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: includes/Main.php:89
+#: includes/Main.php:95
 msgid "Hide past events"
 msgstr "Vergangene Termine ausblenden"
 
-#: includes/Main.php:90
+#: includes/Main.php:96
 msgid "Show past events"
 msgstr "Vergangene Termine anzeigen"
-
-#: includes/Options/Settings.php:267
-msgid "You do not have enough permissions to do that."
-msgstr "Dazu haben Sie nicht genügend Berechtigungen."
-
-#: includes/Options/Settings.php:292
-msgid "Settings saved."
-msgstr "Die Einstellungen wurden gespeichert."
-
-#: includes/Options/templates/settings-page.php:18
-msgid "Settings issues detected."
-msgstr "Einstellungsprobleme erkannt."
 
 #: includes/Settings.php:17
 msgid "Calendar Settings"
@@ -756,3 +745,12 @@ msgstr ""
 #: rrze-calendar.php:86 rrze-calendar.php:157
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
+
+#~ msgid "You do not have enough permissions to do that."
+#~ msgstr "Dazu haben Sie nicht genügend Berechtigungen."
+
+#~ msgid "Settings saved."
+#~ msgstr "Die Einstellungen wurden gespeichert."
+
+#~ msgid "Settings issues detected."
+#~ msgstr "Einstellungsprobleme erkannt."
