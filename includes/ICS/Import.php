@@ -22,7 +22,7 @@ class Import
      * @param integer $limitDays
      * @return mixed
      */
-    public static function getEvents(int $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
+    public static function getEvents(int $feedID, bool $cache = true, int $pastDays = 36500, int $limitDays = 36500)
     {
         $pastDays = abs($pastDays);
         $limitDays = abs($limitDays);

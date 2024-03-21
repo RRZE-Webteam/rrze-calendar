@@ -45,7 +45,7 @@ class Metabox
         $value = (string) get_post_meta($post->ID, CalendarFeed::FEED_URL, true);
         $valuePastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true);
         if ($valuePastDays == '') {
-            $valuePastDays = 365;
+            $valuePastDays = 36500;
         } else {
             $valuePastDays = intval($valuePastDays);
         }
@@ -68,8 +68,8 @@ class Metabox
         echo '<tr>',
             '<th><label for="' . CalendarFeed::FEED_PAST_DAYS . '">', __('Past Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
-        echo '<input name="' . CalendarFeed::FEED_PAST_DAYS . '" type="number" id="rrze-calendar-feed-past-days" aria-describedby="', _e('Past Events', 'rrze-calendar'), '" class="" value="', $valuePastDays, '" autocomplete="off" min="30" max="365"/>';
-        echo '<p class="description">', _e('For how many days in the past events are imported (max: 365, min:30)? Older events are deleted from the website.', 'rrze-calendar'), '</p>';
+        echo '<input name="' . CalendarFeed::FEED_PAST_DAYS . '" type="number" id="rrze-calendar-feed-past-days" aria-describedby="', _e('Past Events', 'rrze-calendar'), '" class="" value="', $valuePastDays, '" autocomplete="off" min="30" max="36500"/>';
+        echo '<p class="description">', _e('For how many days in the past events are imported (max: 36500, min:30)? Older events are deleted from the website.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
 
         echo '<tr>',
@@ -135,8 +135,8 @@ class Metabox
 
         if (array_key_exists(CalendarFeed::FEED_PAST_DAYS, $_POST)) {
             $feed_past_days = intval($_POST[CalendarFeed::FEED_PAST_DAYS]);
-            if ($feed_past_days > 365) {
-               $feed_past_days = 365;
+            if ($feed_past_days > 36500) {
+               $feed_past_days = 36500;
             } elseif ($feed_past_days < 30) {
                $feed_past_days = 30;
             }
