@@ -33,8 +33,8 @@ class Events
             'page_link' => '',    // ID of a target page, e.g. to display further events
             'page_link_label' => __('Show All Events', 'rrze-calendar'),
             'abonnement_link' => '',    // Display link to ICS Feed
-            'start' => '',       // Start date of appointment list. Format: "Y-m-d" or use a PHP relative date format
-            'end' => '',          // End date of appointment listing. Format: "Y-m-d" or use a PHP relative date format
+	    'start' => 'now' ,       // Start date of appointment list. Format: "Y-m-d" or use a PHP relative date format
+            'end' => '+10 years',          // End date of appointment listing. Format: "Y-m-d" or use a PHP relative date format
             'include' => '',
             'exclude' => '',
         ];
@@ -133,7 +133,9 @@ class Events
         $output = '<div class="rrze-calendar">';
 
         if (!empty($events)) {
-            $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', time()), date('Y-m-d', strtotime('+1 year')));
+		$eventsArray = 
+			Utils::buildEventsArray($events, date('Y-m-d', strtotime($atts['start'])), 
+		   	                                 date('Y-m-d', strtotime($atts['end'])));
             if ($eventsArray) {
                 ksort($eventsArray);
             }
@@ -166,7 +168,9 @@ class Events
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
             foreach ($eventsArray as $tsCount => $events) {
-                if (date('Ymd',$tsCount) < date('Ymd', time())) continue;
+              // if (date('Ymd',$tsCount) < date('Ymd', time())) continue;
+              if (date('Ymd',$tsCount) < date('Ymd', strtotime($atts['start']))) continue;
+              if (date('Ymd',$tsCount) > date('Ymd', strtotime($atts['end']))) continue;
 
                 foreach ($events as $event) {
                     $tsEnd = $event['end'];
@@ -265,7 +269,7 @@ class Events
                             . '<div class="day">' . date('d', $tsCount) . '</div>'
                             . '<div class="month">' . date_i18n('M', $tsCount) . '</div>'
                             . '</div>'
-                            //. '<div class="year">' . date('Y', $tsStart) .'</div>'
+                            . '<div class="year">' . date('Y', $tsStart) .'</div>'
                             . '</div>'
                             . '<div class="event-info">'
                             . ($dateOut != '' ? '<div class="event-time">' . $dateOut . '</div>' : '')

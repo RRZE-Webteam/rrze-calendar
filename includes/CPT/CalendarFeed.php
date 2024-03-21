@@ -487,7 +487,7 @@ class CalendarFeed
     {
         $valuePastDays = get_post_meta($postId, CalendarFeed::FEED_PAST_DAYS, true);
         if ($valuePastDays == '') {
-            $valuePastDays = 365;
+            $valuePastDays = 36500;
         } else {
             $valuePastDays = intval($valuePastDays);
         }

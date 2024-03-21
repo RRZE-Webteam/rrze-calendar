@@ -9,13 +9,13 @@ use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 
 class Events
 {
-    private static $pastDays = 365;
+    private static $pastDays = 36500;
 
-    private static $limitDays = 365;
+    private static $limitDays = 36500;
 
     public static function updateFeedsItems()
     {
-        self::deleteUnlinkedEvents();
+        // self::deleteUnlinkedEvents();
 
         $feeds = self::getFeeds();
         foreach ($feeds as $post) {
@@ -41,7 +41,7 @@ class Events
         return get_posts($args);
     }
 
-    public static function updateItems(int $postId, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
+    public static function updateItems(int $postId, bool $cache = true, int $pastDays = 36500, int $limitDays = 36500)
     {
         $events = Import::getEvents($postId, $cache, $pastDays, $limitDays);
 
