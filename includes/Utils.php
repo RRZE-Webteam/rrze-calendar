@@ -787,7 +787,10 @@ class Utils
             if (!empty($exceptionsRaw)) {
                 $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
                 foreach ($exceptions as $exception) {
-                    $rset->addExDate($exception . ' ' . $startTime);
+                    $date = $exception . ' ' . $startTime;
+                    if (self::validateDate($date)) {
+                        $rset->addExDate($date);
+                    }
                 }
             }
             // Additions
@@ -795,10 +798,15 @@ class Utils
             if (!empty($additionsRaw)) {
                 $additions = explode("\n", str_replace("\r", '', $additionsRaw));
                 foreach ($additions as $addition) {
-                    $rset->addDate($addition . ' ' . $startTime);
+                    $date = $addition . ' ' . $startTime;
+                    if (self::validateDate($date)) {
+                        $rset->addDate($date);
+                    }
                 }
             }
 
+            $start = self::validateDate($start) ? $start : NULL;
+            $end = self::validateDate($end) ? $end : NULL;
             if ($start != NULL || $end != NULL) {
                 return $rset->getOccurrencesBetween($start, $end);
             } else {
@@ -859,19 +867,50 @@ class Utils
         }
     }
 
-    public static function titleFilter($where, $wp_query){
+    public static function titleFilter($where, $wp_query)
+    {
         global $wpdb;
-        $title_filter_relation = (strtoupper($wp_query->get( 'title_filter_relation'))=='OR' ? 'OR' : 'AND');
-        if ($search_term = $wp_query->get( 'title_filter' )){
+        $title_filter_relation = (strtoupper($wp_query->get('title_filter_relation')) == 'OR' ? 'OR' : 'AND');
+        if ($search_term = $wp_query->get('title_filter')) {
             $search_term = $wpdb->esc_like($search_term);
             $search_term = ' \'%' . $search_term . '%\'';
-            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title LIKE '.$search_term;
+            $where .= ' ' . $title_filter_relation . ' ' . $wpdb->posts . '.post_title LIKE ' . $search_term;
         }
-        if ($search_term_exclude = $wp_query->get( 'title_filter_exclude' )){
+        if ($search_term_exclude = $wp_query->get('title_filter_exclude')) {
             $search_term_exclude = $wpdb->esc_like($search_term_exclude);
             $search_term_exclude = ' \'%' . $search_term_exclude . '%\'';
-            $where .= ' '.$title_filter_relation.' ' . $wpdb->posts . '.post_title NOT LIKE '.$search_term_exclude;
+            $where .= ' ' . $title_filter_relation . ' ' . $wpdb->posts . '.post_title NOT LIKE ' . $search_term_exclude;
         }
         return $where;
+    }
+
+    /**
+     * This function will now return true if $date is a valid date 
+     * (a \DateTime object, a string representation of a date, or a timestamp), 
+     * and false otherwise.
+     * @param mixed $date (\DateTime|string|int)
+     * @return boolean
+     */
+    public static function validateDate($date)
+    {
+        if ($date instanceof \DateTime) {
+            return true;
+        }
+
+        if (is_numeric($date)) {
+            try {
+                new \DateTime('@' . $date);
+                return true;
+            } catch (\Exception $e) {
+                // continue to the next check
+            }
+        }
+
+        try {
+            new \DateTime($date);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
