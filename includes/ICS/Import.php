@@ -13,6 +13,8 @@ class Import
 {
     const TIMEOUT_IN_SECONDS = 15;
 
+    const DEFAULT_SPAN = 2;
+
     /**
      * getEvents
      *
@@ -24,9 +26,11 @@ class Import
      */
     public static function getEvents(int $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
+        $currentTimestamp = current_time('timestamp');
+        $currentDateTime = date('Y-m-d H:i:s', $currentTimestamp);
         $pastDays = abs($pastDays);
         $limitDays = abs($limitDays);
-        $startDate = date('Ymd', current_time('timestamp'));
+        $startDate = date('Ymd', $currentTimestamp);
 
         // Add a month to $pastDays to accommodate multi-day events that may begin out of range.
         $rangeStart = Utils::dateFormat('Y/m/d', $startDate, null, '-' . ($pastDays + 30) . 'days');
@@ -34,14 +38,14 @@ class Import
         $rangeEnd = Utils::dateFormat('Y/m/d', $startDate, null, '+' . ($limitDays + 7) . ' days');
 
         // The value in years to use for indefinite, recurring events
-        $defaultSpan = intval(ceil($pastDays + $limitDays) / 365) ?: 365;
+        $defaultSpan = intval(ceil($pastDays + $limitDays) / 365) ?: self::DEFAULT_SPAN;
 
         // WP Timezone
         $urlTz = wp_timezone();
         $defaultTimeZone = $urlTz->getName();
 
         // Get day counts for ICS Parser's range filters
-        $nowDtm = new DateTime();
+        $nowDtm = new DateTime($currentDateTime);
         $filterDaysAfter = $nowDtm->diff(new DateTime($rangeEnd))->format('%a');
         $filterDaysBefore = $nowDtm->diff(new DateTime($rangeStart))->format('%a');
 
