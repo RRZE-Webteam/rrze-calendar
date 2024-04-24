@@ -20,7 +20,9 @@ class Events
         $feeds = self::getFeeds();
         foreach ($feeds as $post) {
             if ($post->post_status == 'publish') {
-                self::updateItems($post->ID);
+                $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+                $pastDays = absint($pastDays);
+                self::updateItems($post->ID, true, $pastDays);
                 self::insertData($post->ID);
             } else {
                 self::deleteEvent($post->ID);
