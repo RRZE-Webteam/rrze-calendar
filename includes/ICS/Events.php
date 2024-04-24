@@ -305,8 +305,11 @@ class Events
             if ($screen->id == CalendarFeed::POST_TYPE) {
                 global $post;
                 if (get_post_type($post) === CalendarFeed::POST_TYPE) {
+                    $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+                    $pastDays = absint($pastDays) + 30;
+                    $limitDays = self::$limitDays + 7;
                     $postId = $post->ID;
-                    $items = self::getItems($postId, self::$pastDays, self::$limitDays);
+                    $items = self::getItems($postId, $pastDays, $limitDays);
                 }
             }
         }
@@ -579,7 +582,10 @@ class Events
         $items = [];
         $post = get_post($postId);
         if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-            $items = self::getItems($postId, self::$pastDays, self::$limitDays);
+            $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+            $pastDays = absint($pastDays) + 30;
+            $limitDays = self::$limitDays + 7;
+            $items = self::getItems($postId, $pastDays, $limitDays);
         }
 
         $items = count($items) ? self::getListData($postId, $items) : $items;
