@@ -479,19 +479,15 @@ class CalendarFeed
         if (wp_is_post_revision($postId)) {
             return;
         }
-
-        self::saveData($postId);
+        
+        $pastDays = $_POST[self::FEED_PAST_DAYS] ?? 365;
+        self::saveData($postId, $pastDays);
     }
 
-    private static function saveData($postId)
+    private static function saveData($postId, $pastDays)
     {
-        $valuePastDays = get_post_meta($postId, CalendarFeed::FEED_PAST_DAYS, true);
-        if ($valuePastDays == '') {
-            $valuePastDays = 365;
-        } else {
-            $valuePastDays = intval($valuePastDays);
-        }
-        Events::updateItems($postId, false, $valuePastDays);
+        $pastDays = absint($pastDays) ?: 365;
+        Events::updateItems($postId, false, $pastDays);
         Events::insertData($postId);
     }
 
