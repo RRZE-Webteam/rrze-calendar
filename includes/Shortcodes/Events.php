@@ -176,7 +176,8 @@ class Events
                     $eventTitle = get_the_title($event['id']);
                     $eventURL = get_the_permalink($event['id']);
                     $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
-                    $location = get_post_meta($event['id'], 'location', TRUE);
+                    $location = (string) get_post_meta($event['id'], 'location', TRUE);
+                    $location = Shortcode::filterContent($location);
                     $vc_url = get_post_meta($event['id'], 'vc-url', TRUE);
                     $allDay = get_post_meta($event['id'], 'all-day', TRUE) == 'on';
                     $startDate = date('Y-m-d', $tsStart);
