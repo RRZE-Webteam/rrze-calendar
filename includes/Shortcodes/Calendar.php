@@ -330,6 +330,7 @@ class Calendar
                 // Location
                 $location = Utils::getMeta($meta, 'location');
                 if ($location != '') {
+                    $location = Shortcode::filterContent($location);
                     $locationText = '<br />' . $location;
                 } else {
                     $locationText = '';
@@ -524,6 +525,7 @@ class Calendar
                     $locationMeta = '';
                     $location = Utils::getMeta($meta, 'location');
                     if ($location != '') {
+                        $location = Shortcode::filterContent($location);
                         $locationMeta .= '<meta itemprop="location" content="' . $location . '" />';
                     }
                     $vc_url = Utils::getMeta($meta, 'vc-url');
