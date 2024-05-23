@@ -526,7 +526,7 @@ class Calendar
                     $location = Utils::getMeta($meta, 'location');
                     if ($location != '') {
                         $location = Shortcode::filterContent($location);
-                        $locationMeta .= '<meta itemprop="location" content="' . $location . '" />';
+                        $locationMeta .= '<meta itemprop="location" content="' . trim(strip_tags($location)) . '" />';
                     }
                     $vc_url = Utils::getMeta($meta, 'vc-url');
                     if ($vc_url != '') {
