@@ -141,6 +141,7 @@ class Events
                 $ulClass = 'events-list-short';
                 $iconDate = '<span class="dashicons dashicons-calendar"></span>';
                 $iconTime = '<span class="dashicons dashicons-clock"></span>';
+                wp_enqueue_style( 'dashicons' );
             } else {
                 $ulClass = 'events-list';
                 $iconDate = '';
@@ -166,9 +167,11 @@ class Events
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
             foreach ($eventsArray as $tsCount => $events) {
-                if (date('Ymd',$tsCount) < date('Ymd', time())) continue;
+                if ($display == 'teaser' && date('Ymd',$tsCount) < date('Ymd', time())) continue;
 
                 foreach ($events as $event) {
+                    if ($display == 'list' && (date('Ymd', $event['end']) < date('Ymd', time()))) continue;
+
                     $tsEnd = $event['end'];
                     $tsStart = $event['start'];
                     $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
@@ -189,7 +192,7 @@ class Events
                     if ($location != '' && $vc_url == '') {
                         // Offline Event
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
-                        $metaLocation = '<meta itemprop="location" content="' . $location . '>';
+                        $metaLocation = '<meta itemprop="location" content="' . strip_tags($location) . '">';
                         $locationOut = $location;
                     } elseif ($location == '' && $vc_url != '') {
                         // Online Event
@@ -199,7 +202,7 @@ class Events
                     } elseif ($location != '' && $vc_url != '') {
                         // Hybrid Event
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
-                        $metaLocation = '<meta itemprop="location" content="' . $location . '">'
+                        $metaLocation = '<meta itemprop="location" content="' . strip_tags($location) . '">'
                             . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
                         $locationOut = $location . ' / ' . __('Online', 'rrze-calendar');
                     } else {
@@ -235,7 +238,6 @@ class Events
                             . $metaEnd
                             . $metaLocation
                             . $metaAttendance;
-                        wp_enqueue_style( 'dashicons' );
                     } else {
                         if ($startDate == $endDate) {
                             // single day
