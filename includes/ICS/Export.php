@@ -11,17 +11,31 @@ use function RRZE\Calendar\plugin;
 
 class Export
 {
+    /**
+     * @var string
+     */
     private $vcalendar = '';
 
+    /**
+     * Export constructor.
+     */
     public function __construct()
     {
         add_action('init', [$this, 'request']);
     }
 
+    /**
+     * Request
+     */
     public function request()
     {
         $plugin = $_GET['ical-plugin'] ?? false;
         $action = $_GET['action'] ?? false;
+        $filename = $_GET['filename'] ?? '';
+        $urlHost = sanitize_title(parse_url(site_url(), PHP_URL_HOST));
+        if (strpos($filename, $urlHost) === false) {
+            $filename = $urlHost . '.ics';
+        }
 
         if (
             $plugin === sanitize_title(plugin()->getSlug())
@@ -37,10 +51,14 @@ class Export
             ];
 
             $this->set($args);
-            $this->stream();
+            $this->stream($filename);
         }
     }
 
+    /**
+     * Set
+     * @param array $args
+     */
     private function set(array $args)
     {
         $postIds = $args['postIds'] ?? null;
@@ -98,6 +116,11 @@ class Export
         }
     }
 
+    /**
+     * Get Events
+     * @param array $posts
+     * @return array
+     */
     private function getEvents(array $posts)
     {
         $data = [];
@@ -130,6 +153,10 @@ class Export
         return $data;
     }
 
+    /**
+     * Build
+     * @param array $data
+     */
     private function build(array $data)
     {
         // Setup calendar
@@ -139,15 +166,13 @@ class Export
         $this->vcalendar = $ics->build();
     }
 
-    private function stream()
+    /**
+     * Stream
+     * @param string $filename
+     */
+    private function stream(string $filename)
     {
-        $urlHost = parse_url(site_url(), PHP_URL_HOST);
-        $urlPath = parse_url(site_url(), PHP_URL_PATH);
-        $filename = sprintf(
-            '%1$s%2$s.ics',
-            sanitize_title($urlHost),
-            $urlPath ? '-' . sanitize_title($urlPath) : ''
-        );
+        $filename = $filename . '.ics';
 
         header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
         header('Content-Disposition: attachment; filename=' . $filename);
@@ -155,16 +180,31 @@ class Export
         exit;
     }
 
+    /**
+     * Make ICS Link
+     * @param array $args
+     * @return string
+     */
     public static function makeIcsLink(array $args)
     {
-        $args['ids'] = $args['ids'] ?? false;   // array of post id(s)
-        $args['cats'] = $args['cats'] ?? false; // array of term id(s)
-        $args['tags'] = $args['tags'] ?? false; // array of term id(s)
+        $url = home_url($_SERVER['REQUEST_URI']);
+        $urlHost = parse_url($url, PHP_URL_HOST);
+        $urlPath = parse_url($url, PHP_URL_PATH);
+        $filename = sprintf(
+            '%1$s%2$s',
+            sanitize_title($urlHost),
+            $urlPath ? '-' . sanitize_title($urlPath) : ''
+        );
+
         $qArgs = [
             'ical-plugin' => plugin()->getSlug(),
-            'action' => 'export'
+            'action' => 'export',
+            'filename' => $filename
         ];
 
+        $args['ids'] = $args['ids'] ?? false;   // array of post id(s)
+        $args['cats'] = $args['cats'] ?? false; // array of term id(s)
+        $args['tags'] = $args['tags'] ?? false; // array of term id(s)        
         foreach ($args as $k => $v) {
             if ($v && is_array($v)) {
                 $qArgs = array_merge($qArgs, [$k => implode(',', $v)]);
