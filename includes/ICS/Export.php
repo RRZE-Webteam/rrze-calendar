@@ -34,7 +34,7 @@ class Export
         $filename = $_GET['filename'] ?? '';
         $urlHost = sanitize_title(parse_url(site_url(), PHP_URL_HOST));
         if (strpos($filename, $urlHost) === false) {
-            $filename = $urlHost . '.ics';
+            $filename = $urlHost;
         }
 
         if (
@@ -172,10 +172,8 @@ class Export
      */
     private function stream(string $filename)
     {
-        $filename = $filename . '.ics';
-
         header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
-        header('Content-Disposition: attachment; filename=' . $filename);
+        header('Content-Disposition: attachment; filename=' . $filename . '.ics');
         echo $this->vcalendar;
         exit;
     }
