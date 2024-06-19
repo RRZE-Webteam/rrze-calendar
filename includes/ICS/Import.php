@@ -8,6 +8,7 @@ use RRZE\Calendar\CPT\CalendarFeed;
 use RRZE\Calendar\Utils;
 use ICal\ICal;
 use DateTime;
+use function RRZE\Calendar\plugin;
 
 class Import
 {
@@ -69,18 +70,29 @@ class Import
 
         // ICS data is not empty
         if ($icsContent) {
-            // Parse ICS contents
-            $ICal = new ICal('ICal.ics', [
-                'defaultSpan'                 => $defaultSpan,
-                'defaultTimeZone'             => $defaultTimeZone,
-                'disableCharacterReplacement' => true,
-                'filterDaysAfter'             => $filterDaysAfter,
-                'filterDaysBefore'            => $filterDaysBefore,
-                'replaceWindowsTimeZoneIds'   => true,
-                'skipRecurrence'              => false,
-            ]);
-            $ICal->initString($icsContent);
-
+            try {
+                // Parse ICS contents
+                $ICal = new ICal('ICal.ics', [
+                    'defaultSpan'                 => $defaultSpan,
+                    'defaultTimeZone'             => $defaultTimeZone,
+                    'disableCharacterReplacement' => true,
+                    'filterDaysAfter'             => $filterDaysAfter,
+                    'filterDaysBefore'            => $filterDaysBefore,
+                    'replaceWindowsTimeZoneIds'   => true,
+                    'skipRecurrence'              => false,
+                ]);
+                $ICal->initString($icsContent);
+            } catch (\Exception $e) {
+                do_action(
+                    'rrze.log.error',
+                    'Plugin: {plugin} ICal-Error: {error}',
+                    [
+                        'plugin' => plugin()->getBasename(),
+                        'error' => $e->getMessage()
+                    ]
+                );
+                return false;
+            }
             // Free up some memory
             unset($icsContent);
 

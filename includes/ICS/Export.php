@@ -4,6 +4,7 @@ namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
 use RRule\RRule;
 use function RRZE\Calendar\plugin;
@@ -134,20 +135,54 @@ class Export
                 'dtend' => !empty($meta['end'][0]) ? get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s') : '',
                 'location' => $meta['location'][0] ?? '',
             ];
-            $icsMeta = !empty($meta['ics_event_meta'][0]) ? maybe_unserialize($meta['ics_event_meta'][0]) : null;
-            $rrule = !empty($icsMeta['rrule']) ? maybe_unserialize($icsMeta['rrule']) : null;
+            $icsMeta = Utils::getMeta($meta, 'ics_event_meta');
+            $rrule = !empty($icsMeta['rrule']) ? maybe_unserialize($icsMeta['rrule']) : '';
             if (empty($rrule)) {
-                $rrule = !empty($meta['event-rrule-args'][0]) ? json_decode($meta['event-rrule-args'][0], true) : null;
-                if (!empty($rrule) && is_array($rrule)) {
-                    $rruleObj = new RRule($rrule);
+                // RRULE
+                $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+                if ($decodedRruleArgs = json_decode($rruleArgs, true)) {
+                    $rruleObj = new RRule($decodedRruleArgs);
                     $rrule = $rruleObj->rfcString();
                     $rruleStartPos = strpos($rrule, 'RRULE:');
                     if ($rruleStartPos !== false) {
                         $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
                     }
                 }
+                if ($rrule) {
+                    // EXDATE (dates exceptions)
+                    $exDate = [];
+                    $exceptions = Utils::getMeta($meta, 'exceptions');
+                    if (!empty($exceptions)) {
+                        $exceptions = explode(',', $exceptions);
+                        foreach ($exceptions as $datetimeStr) {
+                            if (Utils::validateDate($datetimeStr)) {
+                                $datetime = new \DateTime($datetimeStr);
+                                $exDate[] = $datetime->format('Ymd');
+                            }
+                        }
+                    }
+                    // RDATE (dates additions)
+                    $rDate = [];
+                    $additions = Utils::getMeta($meta, 'additions');
+                    if (!empty($additions)) {
+                        $additions = explode(',', $additions);
+                        foreach ($additions as $datetimeStr) {
+                            if (Utils::validateDate($datetimeStr)) {
+                                $datetime = new \DateTime($datetimeStr);
+                                $rDate[] = $datetime->format('Ymd');
+                            }
+                        }
+                    }
+                    if (!empty($exDate)) {
+                        $args['exdate;value=date'] = implode(',', $exDate);
+                    }
+                    if (!empty($rDate)) {
+                        $args['rdate;value=date'] = implode(',', $rDate);
+                    }
+                }
             }
             $args['rrule'] = !empty($rrule) ? $rrule : '';
+
             $data[$post->ID] = $args;
         }
         return $data;
