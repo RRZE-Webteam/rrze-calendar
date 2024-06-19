@@ -145,10 +145,10 @@ class CalendarFeed
                 }
                 break;
             case 'updated':
-                $lastUpdate = get_post_meta($postId, self::FEED_DATETIME, true);
+                $feedDateTime = get_post_meta($postId, self::FEED_DATETIME, true);
                 $error = get_post_meta($postId, self::FEED_ERROR, true);
-                if ($published && $lastUpdate) {
-                    $lastUpdate = strtotime($lastUpdate);
+                if ($published && $feedDateTime) {
+                    $lastUpdate = strtotime($feedDateTime);
                     $timeDiff = time() - $lastUpdate;
                     if ($lastUpdate && $timeDiff > 0 && $timeDiff < DAY_IN_SECONDS) {
                         /* translators: %s: Human-readable time difference. */
@@ -158,9 +158,9 @@ class CalendarFeed
                             /* translators: 1: Post date, 2: Post time. */
                             '<abbr title="%1$s %2$s">%1$s</abbr>',
                             /* translators: Date format. See https://www.php.net/manual/datetime.format.php */
-                            get_date_from_gmt($lastUpdate, __('Y/m/d')),
+                            get_date_from_gmt($feedDateTime, __('Y/m/d')),
                             /* translators: Time format. See https://www.php.net/manual/datetime.format.php */
-                            get_date_from_gmt($lastUpdate, __('g:i a'))
+                            get_date_from_gmt($feedDateTime, __('g:i a'))
                         );
                     }
                 } elseif ($published && $error) {
