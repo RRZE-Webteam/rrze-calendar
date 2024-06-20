@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 class ICS
 {
-    const DT_FORMAT = 'Ymd\THis\Z';
+    public const DT_FORMAT = 'Ymd\THis\Z';
 
     /**
      * iCalendar data array.
@@ -29,7 +29,7 @@ class ICS
         'summary',
         'rrule',
         'exdate;value=date', // For excluding dates
-        'rdate;value=date'   // For including dates        
+        'rdate;value=date'   // For including dates
     ];
 
     /**
@@ -142,7 +142,7 @@ class ICS
             case 'summary':
             case 'description':
             case 'location':
-                $value = preg_replace('/([\,;])/', '\\\$1', $value);
+                $value = $this->escStr($value, true);
                 break;
             default:
                 $value = $this->escStr($value);
@@ -164,13 +164,17 @@ class ICS
     }
 
     /**
-     * Escape content string.
+     * Escape special characters.
      *
      * @param string $input
+     * @param boolean $specialChars
      * @return string
      */
-    private function escStr(string $input): string
+    private function escStr(string $input, $specialChars = false): string
     {
+        if ($specialChars) {
+            $input = preg_replace('/([\,;])/', '\\\$1', $input);
+        }
         $input = str_replace("\n", "\\n", $input);
         $input = str_replace("\r", "\\r", $input);
         return $input;
@@ -205,7 +209,7 @@ class ICS
                 $output .= mb_substr($line, 0, $lineLimit);
                 $line = mb_substr($line, $lineLimit);
 
-                // Subsequent line break limit is $lineLimit - 1 due to leading whitespace :)
+                // Subsequent line break limit is $lineLimit - 1 due to leading whitespace
                 $output .= "\n " . mb_substr($line, 0, $lineLimit - 1);
 
                 while (mb_strlen($line) > $lineLimit - 1) {
