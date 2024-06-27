@@ -893,6 +893,10 @@ class Utils
      */
     public static function validateDate($date)
     {
+        if (empty($date)) {
+            return false;
+        }
+
         if ($date instanceof \DateTime) {
             return true;
         }
