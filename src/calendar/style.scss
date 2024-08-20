@@ -1,4 +1,6 @@
 .rrze-calendar {
+   
+    
     margin: 1em 0;
     .cal-type-select {
         padding: 0;
@@ -341,12 +343,7 @@
                 line-height: 1.5;
                 text-align: left;
             }
-            .event-title {
-                //font-weight: bold;
-                a {
-                    //color: #333;
-                }
-            }
+            
             .event-title {
                 display: block;
                 word-break: break-word;
@@ -362,22 +359,19 @@
                 font-style: italic;
                 color: #666;
             }
-            .mec-event-date {
-                //font-weight: bold;
-            }
+            @media screen and (max-width: 479px) {
+		.event-time:before {
+			   content: ", ";
+		}
+
+	    }
             .event-start {
-                //border-top-left-radius: 6px;
-                //border-bottom-left-radius: 6px;
-                //border-left-width: 2px;
                 &:before {
                     display: none;
                     content: "";
                 }
             }
             .event-end {
-                //border-top-right-radius: 6px;
-                //border-bottom-right-radius: 6px;
-                //border-right-width: 2px;
                 float: none;
                 &:after {
                     display: none;
