@@ -480,7 +480,7 @@ class Calendar
             $output .= '<div class="empty-day" style="grid-column: day-'.$gridIndex.' / day-'.$gridIndex.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
         }
         $weekNum = 1;
-        $eventsPerDay = [];
+        $rowsOccupied = [];
 
         for($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
@@ -490,15 +490,17 @@ class Calendar
             $output .= '<div class="day" style="grid-column: day-'.$col.' / day-'.$col.'; grid-row: 1 / 2;" aria-hidden="true">' . $day . '</div>';
             $week = '';
             $daysLeft = $month_days - $day + 1;
+            $showMore = false;
 
             // Background div for each day
             $week .= '<div class="no-event" style="grid-column-start: day-'.$col.'; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
 
             foreach ($eventsArray as $ts => $events) {
-                if (isset($eventsPerDay[$date]) && $eventsPerDay[$date] > 3) {
-                    continue;
-                }
                 foreach ($events as $event) {
+                    if (isset($rowsOccupied[$date]) && count($rowsOccupied[$date]) >= 3) {
+                        $showMore = true;
+                        //continue;
+                    }
                     $eventStart = $ts;
                     $eventEnd = $event['end'];
                     $eventStartUTC = get_gmt_from_date(date('Y-m-d H:i', $eventStart), 'U');
@@ -564,20 +566,25 @@ class Calendar
                         }
                         $eventInfos = [];
 
-                        // Set row counter
-                        for ($i = 0 ; $i < $span; $i++) {
-                            $startDay = date('d', $eventStart);
-                            $countDay = (int)$startDay + $i;
-                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
-                            if (isset($eventsPerDay[$countDate])) {
-                                $eventsPerDay[$countDate]++;
+                        // Select a free row (from 1 to 3)
+                        $startDay = date('d', $eventStart);
+                        for ($i = 1; $i <=3; $i++) {
+                            if (isset($rowsOccupied[$eventStartDate][$i])) {
+                                continue;
                             } else {
-                                $eventsPerDay[$countDate] = 1;
+                                $rowNum = $i;
+                                for ($j = 0 ; $j < $span; $j++) {
+                                    $countDay = (int)$startDay + $j;
+                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                                    $rowsOccupied[$countDate][$i] = $event['id'];
+                                }
+                                break;
                             }
                         }
-                        $rowNum = $eventsPerDay[$eventStartDate];
-                        if (isset($eventsPerDay[$countDate]) && $eventsPerDay[$countDate] > 3) {
-                            $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
+
+                        if ($showMore) {
+                            var_dump($date);
+                            $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: 5 / 6;">'
                                 . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
                                 . __('More&hellip;', 'rrze-calendar')
                                 . '</a></div>';
@@ -627,15 +634,19 @@ class Calendar
                         if ($span > $daysLeft) {
                             $span = $daysLeft - 1; // trim if event longer than month
                         }
-                        // Set row counter
-                        for ($i = 0 ; $i <= $span; $i++) {
-                            $startDay = date('d', $eventStart);
-                            $countDay = (int)$startDay + $i;
-                            $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
-                            if (isset($eventsPerDay[$countDate])) {
-                                $eventsPerDay[$countDate]++;
+                        // Select a free row (from 1 to 3)
+                        $startDay = date('d', $eventStart);
+                        for ($i = 1; $i <=3; $i++) {
+                            if (isset($rowsOccupied[$eventStartDate][$i])) {
+                                continue;
                             } else {
-                                $eventsPerDay[$countDate] = 1;
+                                $rowNum = $i;
+                                for ($j = 0 ; $j < $span; $j++) {
+                                    $countDay = (int)$startDay + $j;
+                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                                    $rowsOccupied[$countDate][$i] = $event['id'];
+                                }
+                                break;
                             }
                         }
 
@@ -652,8 +663,7 @@ class Calendar
                             $excerpt = substr($excerpt, 0, 100);
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
-                        $rowNum = $eventsPerDay[$eventStartDate];
-                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . ';">'
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
                             . '<p><span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
                             . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStartUTC) . '">'
@@ -684,7 +694,7 @@ class Calendar
             // After 7 days: Increment week counter, reset row counter, line break
             if ($pos == 0) {
                 $weekNum++;
-                $eventsPerDay = [];
+                $rowsOccupied = [];
                 $output .= '</div><div class="week">';
             }
         }

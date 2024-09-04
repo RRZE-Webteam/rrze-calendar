@@ -4,6 +4,7 @@
 **/nbproject/
 ### PhpStorm ###
 .idea/
+*.css.map
 ### macOS ###
 .DS_Store
 ### Node ###
