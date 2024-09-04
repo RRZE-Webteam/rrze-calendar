@@ -342,6 +342,8 @@
                 font-size: 0.875rem;
                 line-height: 1.5;
                 text-align: left;
+                height: auto; // fix RRZE-Theme
+                float: none; // fix RRZE-Theme
             }
             
             .event-title {
@@ -380,7 +382,7 @@
             }
             .more-events {
                 padding: 0 5px;
-                font-size: smaller;
+                font-size: small;
             }
         }
     }
