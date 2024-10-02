@@ -204,7 +204,7 @@ class Events
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
                         $metaLocation = '<meta itemprop="location" content="' . strip_tags($location) . '">'
                             . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
-                        $locationOut = $location . ' / ' . __('Online', 'rrze-calendar');
+                        $locationOut = '<p>' . strip_tags($location) . ' / ' . __('Online', 'rrze-calendar') . '</p>';
                     } else {
                         $metaLocation = '';
                         $metaAttendance = '';
