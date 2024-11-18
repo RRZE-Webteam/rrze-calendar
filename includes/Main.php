@@ -38,7 +38,7 @@ class Main
      * Add the settings link to the list of plugins.
      *
      * @param array $links
-     * @return void
+     * @return array
      */
     public function settingsLink($links)
     {
