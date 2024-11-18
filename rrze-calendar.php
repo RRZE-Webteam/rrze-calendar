@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Calendar
 Plugin URI:      https://github.com/RRZE-Webteam/rrze-calendar
 Description:     Import and output of FAU public events.
-Version:         2.2.12
+Version:         2.2.13
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v3.0
@@ -31,6 +31,7 @@ register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
 register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
 
 add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
+add_action('init', __NAMESPACE__ . '\init');
 
 /**
  * loadTextdomain
@@ -78,7 +79,6 @@ function systemRequirements(): string
  */
 function activation()
 {
-    loadTextdomain();
     if ($error = systemRequirements()) {
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
@@ -94,6 +94,7 @@ function activation()
     add_action(
         'init',
         function () {
+            loadTextdomain();
             CalendarEvent::registerPostType();
             CalendarFeed::registerPostType();
             flush_rewrite_rules(false);
@@ -101,6 +102,10 @@ function activation()
     );
 
     flush_rewrite_rules(false);
+}
+
+function init() {
+    loadTextdomain();
 }
 
 /**
@@ -143,7 +148,6 @@ function settings()
  */
 function loaded()
 {
-    loadTextdomain();
     plugin()->loaded();
     if ($error = systemRequirements()) {
         add_action('admin_init', function () use ($error) {
