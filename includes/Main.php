@@ -10,11 +10,14 @@ use RRZE\Calendar\ICS\Export;
 
 class Main
 {
-    /**
-     * __construct
-     */
-    public function __construct()
+    public function loaded()
     {
+        // Register the 'CalendarEvent' and 'CalendarFeed' custom post types.
+        add_action('init', fn() => [
+            CalendarEvent::registerPostType(),
+            CalendarFeed::registerPostType(),
+        ]);
+
         add_filter('plugin_action_links_' . plugin()->getBaseName(), [$this, 'settingsLink']);
 
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
