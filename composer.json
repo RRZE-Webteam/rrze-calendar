@@ -1,7 +1,6 @@
 {
     "require": {
         "php": "^8.2.0",
-        "rrze/wp": "^2.0",
         "johngrogg/ics-parser": "^3.4.0",
         "rlanvin/php-rrule": "^2.5.0",
         "cmb2/cmb2": "^2.11.0"

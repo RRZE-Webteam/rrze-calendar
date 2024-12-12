@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit5b6c3334e65a54beb59683486ce33765
+class ComposerStaticInit3edacbd9a8160b9e923dc58bd2192811
 {
     public static $files = array (
         'ad901de1e5d16b81f427bfe3dc3de508' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
@@ -14,7 +14,6 @@ class ComposerStaticInit5b6c3334e65a54beb59683486ce33765
         'R' => 
         array (
             'RRule\\' => 6,
-            'RRZE\\WP\\' => 8,
             'RRZE\\Calendar\\' => 14,
         ),
     );
@@ -24,10 +23,6 @@ class ComposerStaticInit5b6c3334e65a54beb59683486ce33765
         array (
             0 => __DIR__ . '/../..' . '/src',
             1 => __DIR__ . '/..' . '/rlanvin/php-rrule/src',
-        ),
-        'RRZE\\WP\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/rrze/wp/src',
         ),
         'RRZE\\Calendar\\' => 
         array (
@@ -53,10 +48,10 @@ class ComposerStaticInit5b6c3334e65a54beb59683486ce33765
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit5b6c3334e65a54beb59683486ce33765::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit5b6c3334e65a54beb59683486ce33765::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit5b6c3334e65a54beb59683486ce33765::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit5b6c3334e65a54beb59683486ce33765::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit3edacbd9a8160b9e923dc58bd2192811::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit3edacbd9a8160b9e923dc58bd2192811::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit3edacbd9a8160b9e923dc58bd2192811::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit3edacbd9a8160b9e923dc58bd2192811::$classMap;
 
         }, null, ClassLoader::class);
     }

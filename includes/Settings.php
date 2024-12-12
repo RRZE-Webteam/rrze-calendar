@@ -4,7 +4,8 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
-use RRZE\WP\Settings\Settings as OptionsSettings;
+use RRZE\Calendar\CPT\CalendarEvent;
+use RRZE\Calendar\Settings\Settings as OptionsSettings;
 
 class Settings
 {
@@ -14,7 +15,7 @@ class Settings
 
     public function __construct()
     {
-        add_action('rrze_wp_settings_after_update_option', [$this, 'flushRewriteRules']);
+        add_action('rrze_calendar_settings_after_update_option', [$this, 'flushRewriteRules']);
     }
 
     public function loaded()
@@ -67,7 +68,9 @@ class Settings
     public function flushRewriteRules($optionName)
     {
         if ($optionName === self::OPTION_NAME) {
-            flush_rewrite_rules(false);
+            // Register the 'CalendarEvent' CPT again and flush rewrite rules.
+            CalendarEvent::registerPostType();
+            flush_rewrite_rules();
         }
     }
 
@@ -87,28 +90,5 @@ class Settings
     public function getOptions()
     {
         return $this->settings->getOptions();
-    }
-
-    /**
-     * __call method
-     * Method overloading.
-     */
-    public function __call(string $name, array $arguments)
-    {
-        if (!method_exists($this, $name)) {
-            $message = sprintf('Call to undefined method %1$s::%2$s', __CLASS__, $name);
-            do_action(
-                'rrze.log.error',
-                $message,
-                [
-                    'class' => __CLASS__,
-                    'method' => $name,
-                    'arguments' => $arguments
-                ]
-            );
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                throw new \Exception($message);
-            }
-        }
     }
 }
