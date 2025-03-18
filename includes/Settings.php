@@ -7,17 +7,37 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\CPT\CalendarEvent;
 use RRZE\Calendar\Settings\Settings as OptionsSettings;
 
+/**
+ * Settings class
+ * @package RRZE\Calendar
+ */
 class Settings
 {
+    /**
+     * Option name
+     */
     const OPTION_NAME = 'rrze_calendar';
 
+    /**
+     * Settings instance
+     * @var OptionsSettings
+     */
     protected $settings;
 
+    /**
+     * Settings constructor.
+     * Register the 'rrze_calendar_settings_after_update_option' action hook.
+     * @return void
+     */
     public function __construct()
     {
         add_action('rrze_calendar_settings_after_update_option', [$this, 'flushRewriteRules']);
     }
 
+    /**
+     * Load the settings
+     * @return void
+     */
     public function loaded()
     {
         $this->settings = new OptionsSettings(__('Calendar Settings', 'rrze-calendar'), 'rrze-calendar');
@@ -65,6 +85,11 @@ class Settings
         $this->settings->build();
     }
 
+    /**
+     * Flush rewrite rules
+     * @param string $optionName
+     * @return void
+     */
     public function flushRewriteRules($optionName)
     {
         if ($optionName === self::OPTION_NAME) {
@@ -74,6 +99,11 @@ class Settings
         }
     }
 
+    /**
+     * Validate the endpoint slug
+     * @param string $value
+     * @return bool
+     */
     public function validateEndpointSlug($value)
     {
         if (mb_strlen(sanitize_title($value)) < 4) {
@@ -82,11 +112,20 @@ class Settings
         return true;
     }
 
+    /**
+     * Get an option
+     * @param string $option
+     * @return mixed
+     */
     public function getOption($option)
     {
         return $this->settings->getOption($option);
     }
 
+    /**
+     * Get all options
+     * @return array
+     */
     public function getOptions()
     {
         return $this->settings->getOptions();
