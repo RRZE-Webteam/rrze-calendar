@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarFeed;
 
-class EventsListTable extends ListTable
+class EventsListTable extends \WP_List_Table
 {
     public function __construct()
     {
