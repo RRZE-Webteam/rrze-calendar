@@ -8,8 +8,16 @@ use RRZE\Calendar\CPT\{CalendarEvent, CalendarFeed};
 use RRZE\Calendar\Shortcodes\Shortcode;
 use RRZE\Calendar\ICS\Export;
 
+/**
+ * Main class
+ * @package RRZE\Calendar
+ */
 class Main
 {
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public function loaded()
     {
         // Register the 'CalendarEvent' and 'CalendarFeed' custom post types.
@@ -39,7 +47,6 @@ class Main
 
     /**
      * Add the settings link to the list of plugins.
-     *
      * @param array $links
      * @return array
      */
@@ -54,6 +61,10 @@ class Main
         return $links;
     }
 
+    /**
+     * Enqueue scripts and styles for the admin area.
+     * @return void
+     */
     public function adminEnqueueScripts()
     {
         $screen = get_current_screen();
@@ -80,6 +91,10 @@ class Main
         }
     }
 
+    /**
+     * Enqueue scripts and styles for the frontend.
+     * @return void
+     */
     public function wpEnqueueScripts()
     {
         wp_register_style(
