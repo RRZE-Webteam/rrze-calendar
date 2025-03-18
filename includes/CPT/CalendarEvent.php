@@ -13,28 +13,52 @@ use RRule\RRule;
 
 use function RRZE\Calendar\settings;
 
+/**
+ * CalendarEvent Class
+ * @package RRZE\Calendar\CPT
+ */
 class CalendarEvent
 {
+    /**
+     * Post Type
+     * @var string
+     */
     const POST_TYPE = 'calendar_event';
 
+    /**
+     * Taxonomy 'rrze-calendar-category'
+     * @var string
+     */
     const TAX_CATEGORY = 'rrze-calendar-category'; // comes from version 1.x
 
+    /**
+     * Taxonomy 'rrze-calendar-tag'
+     * @var string
+     */
     const TAX_TAG = 'rrze-calendar-tag'; // comes from version 1.x
 
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
         // Register Post Type.
         add_action('init', [__CLASS__, 'registerPostType']);
+
         // Register Taxonomies.
         add_action('init', [__CLASS__, 'registerCategory']);
         add_action('init', [__CLASS__, 'registerTag']);
+
         // CMB2 Fields
         add_action('cmb2_admin_init', [__CLASS__, 'eventFields']);
         add_filter('cmb2_render_select_weekdayofmonth', [__CLASS__, 'renderMonthDayField'], 10, 5);
         add_filter('cmb2_render_event_items', [__CLASS__, 'renderEventItemsField'], 10, 5);
+
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
         add_action('updated_post_meta', [__CLASS__, 'updatedMeta'], 10, 4);
+
         // List Table Columns
         add_filter('manage_' . self::POST_TYPE . '_posts_columns', [__CLASS__, 'listTableHead'], 10);
         add_action('manage_' . self::POST_TYPE . '_posts_custom_column', [__CLASS__, 'listTableContent'], 10, 2);
@@ -42,12 +66,18 @@ class CalendarEvent
         // Templates
         add_filter('single_template', [__CLASS__, 'includeSingleTemplate']);
         add_filter('archive_template', [__CLASS__, 'includeArchiveTemplate']);
+
         // Category Radio List Metabox.
         CategoryMetabox::init();
+
         // Disables the ability to edit the post if it has the post meta ics_feed_id.
         add_filter('user_has_cap', [__CLASS__, 'disablePostEditing'], 10, 3);
     }
 
+    /**
+     * Register the custom post type 'calendar_event'
+     * @return void
+     */
     public static function registerPostType()
     {
         $labels = [
@@ -86,6 +116,10 @@ class CalendarEvent
         register_post_type(self::POST_TYPE, $args);
     }
 
+    /**
+     * Register the custom taxonomy 'rrze-calendar-category'
+     * @return void
+     */
     public static function registerCategory()
     {
         $labels = [
@@ -103,6 +137,10 @@ class CalendarEvent
         register_taxonomy(self::TAX_CATEGORY, [self::POST_TYPE, CalendarFeed::POST_TYPE], $args);
     }
 
+    /**
+     * Register the custom taxonomy 'rrze-calendar-tag'
+     * @return void
+     */
     public static function registerTag()
     {
         $labels = [
@@ -122,6 +160,10 @@ class CalendarEvent
         }
     }
 
+    /**
+     * Metaboxes for the custom post type 'calendar_event'
+     * @return void
+     */
     public static function eventFields()
     {
         global $wp_locale;
@@ -429,6 +471,11 @@ class CalendarEvent
         ]);
     }
 
+    /**
+     * Update/Add postmetas of the custom post type 'calendar_event'
+     * @param int $post_id
+     * @return void
+     */
     public static function save($post_id)
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE || wp_is_post_revision($post_id) || !(get_post_type($post_id) === self::POST_TYPE)) {
@@ -462,6 +509,14 @@ class CalendarEvent
          add_action( 'save_post', 'saveEvent' );*/
     }
 
+    /**
+     * Update postmeta 'event-rrule-args' of the custom post type 'calendar_event'
+     * @param int $meta_id
+     * @param int $post_id
+     * @param string $meta_key
+     * @param string $meta_value
+     * @return void
+     */
     public static function updatedMeta($meta_id, $post_id, $meta_key = '', $meta_value = '')
     {
         if (get_post_type($post_id) === self::POST_TYPE) {
@@ -470,6 +525,15 @@ class CalendarEvent
         }
     }
 
+    /**
+     * Render Weekday of Month Field
+     * @param CMB2_Field $field
+     * @param array $value
+     * @param int $object_id
+     * @param string $object_type
+     * @param CMB2_Types $field_type
+     * @return void
+     */
     public static function renderMonthDayField($field, $value, $object_id, $object_type, $field_type)
     {
         global $wp_locale;
@@ -520,6 +584,15 @@ class CalendarEvent
         <?php
     }
 
+    /**
+     * Render Event Items Field
+     * @param CMB2_Field $field
+     * @param array $value
+     * @param int $object_id
+     * @param string $object_type
+     * @param CMB2_Types $field_type
+     * @return void
+     */
     public static function renderEventItemsField($field, $value, $object_id, $object_type, $field_type)
     {
         $occurrences = Utils::makeRRuleSet($object_id);
@@ -535,12 +608,22 @@ class CalendarEvent
         }
     }
 
+    /**
+     * Show on cb callback for the metabox 'ics-warning'
+     * @param CMB2_Field $field
+     * @return bool
+     */
     public static function showOnFeedImportOnly($field)
     {
         $feedID = get_post_meta($field->object_id, 'ics_feed_id', true);
         return ($feedID != '');
     }
 
+    /**
+     * Include the single template for the custom post type 'calendar_event'
+     * @param string $singleTemplate
+     * @return string
+     */
     public static function includeSingleTemplate($singleTemplate)
     {
         global $post;
@@ -550,6 +633,11 @@ class CalendarEvent
         return Templates::getCptCalendarEventSingleTpl();
     }
 
+    /**
+     * Include the archive template for the custom post type 'calendar_event'
+     * @param string $archiveTemplate
+     * @return string
+     */
     public static function includeArchiveTemplate($archiveTemplate)
     {
         global $post;
@@ -559,6 +647,11 @@ class CalendarEvent
         return Templates::getCptCalendarEventTpl();
     }
 
+    /**
+     * Get the data for the list table columns of the custom post type 'calendar_event'
+     * @param array $columns
+     * @return array
+     */
     public static function getEventData($post_id)
     {
         $meta = get_post_meta($post_id);
@@ -651,6 +744,11 @@ class CalendarEvent
         return $data;
     }
 
+    /**
+     * Display the main content of the custom post type 'calendar_event'
+     * @param array $data
+     * @return void
+     */
     public static function displayEventMain($data)
     {
         // Schedule
@@ -695,6 +793,11 @@ class CalendarEvent
         echo do_shortcode('[button link=' . Export::makeIcsLink(['ids' => [get_the_ID()]]) . ']' . __('Add to calendar', 'rrze-calendar') . '[/button]');
     }
 
+    /**
+     * Display the details of the custom post type 'calendar_event'
+     * @param array $data
+     * @return void
+     */
     public static function displayEventDetails($data)
     {
         if (strlen($data['location'] . $data['prices'] . $data['registrationUrl']) . $data['categories'] > 0 || !empty($data['downloads'])) {
@@ -750,6 +853,13 @@ class CalendarEvent
 <?php }
     }
 
+    /**
+     * Disable the ability to edit the custom post type 'calendar_event'
+     * @param array $allCaps
+     * @param array $caps
+     * @param array $args
+     * @return array
+     */
     public static function disablePostEditing($allCaps, $caps, $args)
     {
         $postId = $args[2] ?? 0;
@@ -777,6 +887,11 @@ class CalendarEvent
         return $allCaps;
     }
 
+    /**
+     * Add custom columns to the list table of the custom post type 'calendar_event'
+     * @param array $columns
+     * @return array
+     */
     public static function listTableHead($columns)
     {
         if (isset($columns['date'])) unset($columns['date']);
@@ -792,6 +907,12 @@ class CalendarEvent
         return $columns;
     }
 
+    /**
+     * Add content to the custom columns of the list table of the custom post type 'calendar_event'
+     * @param string $column_name
+     * @param int $post_id
+     * @return void
+     */
     public static function listTableContent($column_name, $post_id)
     {
         $data = CalendarEvent::getEventData($post_id);
