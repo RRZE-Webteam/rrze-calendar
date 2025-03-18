@@ -9,6 +9,10 @@ use RRZE\Calendar\ICS\Export;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
 
+/**
+ * Calendar class
+ * @package RRZE\Calendar\Shortcodes
+ */
 class Calendar
 {
     public static function init()
@@ -17,8 +21,8 @@ class Calendar
         add_shortcode('rrze-kalender', [__CLASS__, 'shortcode']);
         add_shortcode('calendar', [__CLASS__, 'shortcode']);
         add_shortcode('kalender', [__CLASS__, 'shortcode']);
-        add_action( 'wp_ajax_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar'] );
-        add_action( 'wp_ajax_nopriv_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar'] );
+        add_action('wp_ajax_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar']);
+        add_action('wp_ajax_nopriv_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar']);
     }
 
     public static function shortcode($atts, $content = "")
@@ -109,8 +113,8 @@ class Calendar
             $endTS = $endObj->getTimestamp();
         }
         if ($day != '') {
-            $startTS = strtotime($year.'-'.$month.'-'.str_pad($day, 2, '0', STR_PAD_LEFT));
-            $endTS = $startTS + 24*60*60;
+            $startTS = strtotime($year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT));
+            $endTS = $startTS + 24 * 60 * 60;
         }
 
         // Calendar layout: full or mini
@@ -191,7 +195,7 @@ class Calendar
         $include = sanitize_text_field($atts['include']);
         $exclude = sanitize_text_field($atts['exclude']);
         if ($exclude != '' || $include != '') {
-            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'],10,2);
+            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'], 10, 2);
             if ($include != '') $args['title_filter'] = $include;
             if ($exclude != '') $args['title_filter_exclude'] = $exclude;
             $args['suppress_filters'] = false;
@@ -220,7 +224,7 @@ class Calendar
 
         wp_enqueue_style('rrze-calendar-sc-calendar');
         wp_enqueue_script('jquery');
-        wp_enqueue_script( 'rrze-calendar-sc-calendar', plugin_dir_url( __DIR__ ) . 'js/shortcode.js', array(), '1.0.0', true );
+        wp_enqueue_script('rrze-calendar-sc-calendar', plugin_dir_url(__DIR__) . 'js/shortcode.js', array(), '1.0.0', true);
         return $output;
     }
 
@@ -241,15 +245,16 @@ class Calendar
      * @param   bool    $paging     Allow skipping to next/previous month/year
      * @return  string
      */
-    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = [], $aboLink = false): string {
+    private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = [], $aboLink = false): string
+    {
         $output = '';
         if ($day != '') {
-            $output .= '<div class="calendar-wrapper cal-day" data-period="'.$year.'-'.$month.'-'.$day.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
+            $output .= '<div class="calendar-wrapper cal-day" data-period="' . $year . '-' . $month . '-' . $day . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
             $output .= self::renderDayList($year, $month, $day, $eventsArray, $taxQuery, $aboLink);
             $output .= '</div>';
         } elseif ($month != '') {
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-            $output .= '<div class="calendar-wrapper cal-month" data-period="'.$year.'-'.$month.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
+            $output .= '<div class="calendar-wrapper cal-month" data-period="' . $year . '-' . $month . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
             if ($layout == 'full') {
                 $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging, $taxQuery, $aboLink);
             } else {
@@ -257,8 +262,8 @@ class Calendar
             }
             $output .= '</div>';
         } else {
-            $output .= '<div class="calendar-wrapper cal-year" data-period="'.$year.'" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' .($aboLink ? '1' : '0') . '">';
-            $output .= '<div class="calendar-header"><h2 class="title-year">'.$year.'</h2>';
+            $output .= '<div class="calendar-wrapper cal-year" data-period="' . $year . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
+            $output .= '<div class="calendar-header"><h2 class="title-year">' . $year . '</h2>';
             if ($paging) {
                 $output .= '<ul class="calendar-pager">
                     <li class="date-prev">
@@ -270,7 +275,7 @@ class Calendar
                 </ul>';
             }
             $output .= '</div>'
-                .'<div class="calendar-year">';
+                . '<div class="calendar-year">';
             for ($i = 1; $i <= 12; $i++) {
                 $month = str_pad((string)$i, 2, '0', STR_PAD_LEFT);
                 $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, false, $taxQuery);
@@ -284,12 +289,13 @@ class Calendar
      * Render list of events on one day
      * @param array $events
      */
-    private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = [], $aboLink = false) {
+    private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = [], $aboLink = false)
+    {
 
         $IDs = [];
-        $calDay = $year.'-'.str_pad($month, 2, '0', STR_PAD_LEFT).'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
+        $calDay = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
         $calDayTs = strtotime($calDay);
-        $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option( 'date_format' ), $calDayTs) . '</h2>';
+        $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option('date_format'), $calDayTs) . '</h2>';
         $output .= '<ul class="calendar-pager">
             <li class="date-prev">
                 <a href="#" title="' . __('Go to previous day', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
@@ -325,7 +331,7 @@ class Calendar
                 } elseif ($eventStartDate == $eventEndDate && $isAllDay) {
                     $timeText = '<span class="event-date">' . __('All Day', 'rrze-calendar') . '</span>';
                 } else {
-                    $timeText = '<span class="event-date">' . date_i18n(get_option( 'date_format' ), $eventStart) . ' - ' . date_i18n(get_option( 'date_format' ), $eventEnd) . '</span>';
+                    $timeText = '<span class="event-date">' . date_i18n(get_option('date_format'), $eventStart) . ' - ' . date_i18n(get_option('date_format'), $eventEnd) . '</span>';
                 }
                 // Location
                 $location = Utils::getMeta($meta, 'location');
@@ -366,18 +372,19 @@ class Calendar
      * @return  string
      */
 
-    private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = []) {
+    private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = [])
+    {
         $startOfWeek = get_option('start_of_week', 0);
-        $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        $first_day_in_month = date('w', mktime(0, 0, 0, $month, 1, $year));
         if ($first_day_in_month == 0) $first_day_in_month = 7;
         $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
-        $month_days = date('t',mktime(0,0,0,$month,1,$year));
+        $month_days = date('t', mktime(0, 0, 0, $month, 1, $year));
         $month_names = Utils::getMonthNames('full');
-        $month_name = $month_names[(int)$month-1];
+        $month_name = $month_names[(int)$month - 1];
         if ($showYear) {
             $month_name .= ' ' . $year;
         } else {
-            $month_name = '<a href="?cal-year='.$year.'&cal-month='.$month.'"">' . $month_name . '</a>';
+            $month_name = '<a href="?cal-year=' . $year . '&cal-month=' . $month . '"">' . $month_name . '</a>';
         }
         $output = '<div class="calendar-month mini">';
         $output .= '<table>';
@@ -388,13 +395,13 @@ class Calendar
         }
         $output .= '<tr>';
 
-        for($i = 0; $i < $first_day_in_month; $i++) {
+        for ($i = 0; $i < $first_day_in_month; $i++) {
             $output .= '<td> </td>';
         }
         //var_dump($eventsArray);
-        for($day = 1; $day <= $month_days; $day++) {
+        for ($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
-            $date = $year.'-'.$month.'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
+            $date = $year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
             $calDay = strtotime($date);
             $linkOpen = '';
             $linkClose = '';
@@ -408,7 +415,7 @@ class Calendar
                     //print "<br />";
                     //if ($calDay >= $eventStart && $calDay <= $eventEnd) {
                     if ($date >= date('Y-m-d', $eventStart) && $date <= date('Y-m-d', $eventEnd)) {
-                        $linkOpen = '<a href="?cal-year='.$year.'&cal-month='.$month.'&cal-day='.str_pad($day, 2, '0', STR_PAD_LEFT).'" title="'.__('View Details', 'rrze-calendar').'">';
+                        $linkOpen = '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . str_pad($day, 2, '0', STR_PAD_LEFT) . '" title="' . __('View Details', 'rrze-calendar') . '">';
                         $linkClose = '</a>';
                         $class = 'has-events';
                         continue 2;
@@ -437,14 +444,15 @@ class Calendar
      * @return string
      */
 
-    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false) {
+    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false)
+    {
         $startOfWeek = get_option('start_of_week', 0);
-        $first_day_in_month = date('w',mktime(0,0,0,$month,1,$year));
+        $first_day_in_month = date('w', mktime(0, 0, 0, $month, 1, $year));
         if ($first_day_in_month == 0) $first_day_in_month = 7;
         $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
-        $month_days = date('t',mktime(0,0,0,$month,1,$year));
+        $month_days = date('t', mktime(0, 0, 0, $month, 1, $year));
         $month_names = Utils::getMonthNames('full');
-        $month_name = $month_names[(int)$month-1];
+        $month_name = $month_names[(int)$month - 1];
         $day_names = Utils::getDaysOfWeek('full');
         $IDs = [];
 
@@ -456,10 +464,10 @@ class Calendar
         if ($paging) {
             $output .= '<ul class="calendar-pager">
             <li class="date-prev">
-                <a href="#" title="' . __('Go to previous month', 'rrze-calendar') . '" rel="nofollow" data-direction="prev" data-taxquery="'.$taxQueryBase64.'">« ' . __('Previous', 'rrze-calendar') . '</a>
+                <a href="#" title="' . __('Go to previous month', 'rrze-calendar') . '" rel="nofollow" data-direction="prev" data-taxquery="' . $taxQueryBase64 . '">« ' . __('Previous', 'rrze-calendar') . '</a>
             </li>
             <li class="date-next">
-                <a href="#" title="' . __('Go to next month', 'rrze-calendar') . '" rel="nofollow" data-direction="next" data-taxquery="'.$taxQueryBase64.'">' . __('Next', 'rrze-calendar') . ' »</a>
+                <a href="#" title="' . __('Go to next month', 'rrze-calendar') . '" rel="nofollow" data-direction="next" data-taxquery="' . $taxQueryBase64 . '">' . __('Next', 'rrze-calendar') . ' »</a>
             </li>
         </ul>';
         }
@@ -468,32 +476,32 @@ class Calendar
         $output .= '<div class="days">';
         $gridIndex = 1;
         foreach ($day_names as $day_name) {
-            $output .= '<div style="grid-column-start: day-'.($gridIndex).'; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
+            $output .= '<div style="grid-column-start: day-' . ($gridIndex) . '; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
             $gridIndex++;
         }
-        $output .='</div>';
+        $output .= '</div>';
 
         // Weeks
         $output .= '<div class="week">';
-        for($i = 0; $i < $first_day_in_month; $i++) {
+        for ($i = 0; $i < $first_day_in_month; $i++) {
             $gridIndex = $i + 1;
-            $output .= '<div class="empty-day" style="grid-column: day-'.$gridIndex.' / day-'.$gridIndex.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
+            $output .= '<div class="empty-day" style="grid-column: day-' . $gridIndex . ' / day-' . $gridIndex . ';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
         }
         $weekNum = 1;
         $rowsOccupied = [];
 
-        for($day = 1; $day <= $month_days; $day++) {
+        for ($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
-            $date = $year.'-'.$month.'-'.str_pad($day, 2, '0', STR_PAD_LEFT);
+            $date = $year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
             $col = $pos == 0 ? 7 : $pos;
             $calDay = $date;
-            $output .= '<div class="day" style="grid-column: day-'.$col.' / day-'.$col.'; grid-row: 1 / 2;" aria-hidden="true">' . $day . '</div>';
+            $output .= '<div class="day" style="grid-column: day-' . $col . ' / day-' . $col . '; grid-row: 1 / 2;" aria-hidden="true">' . $day . '</div>';
             $week = '';
             $daysLeft = $month_days - $day + 1;
             $showMore = false;
 
             // Background div for each day
-            $week .= '<div class="no-event" style="grid-column-start: day-'.$col.'; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
+            $week .= '<div class="no-event" style="grid-column-start: day-' . $col . '; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
 
             foreach ($eventsArray as $ts => $events) {
                 foreach ($events as $event) {
@@ -532,7 +540,7 @@ class Calendar
                     }
                     $vc_url = Utils::getMeta($meta, 'vc-url');
                     if ($vc_url != '') {
-                        $locationMeta .= '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="'. $vc_url . '" /></span>';
+                        $locationMeta .= '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
                     }
 
                     $eventClasses = ['event'];
@@ -568,14 +576,14 @@ class Calendar
 
                         // Select a free row (from 1 to 3)
                         $startDay = date('d', $eventStart);
-                        for ($i = 1; $i <=3; $i++) {
+                        for ($i = 1; $i <= 3; $i++) {
                             if (isset($rowsOccupied[$eventStartDate][$i])) {
                                 continue;
                             } else {
                                 $rowNum = $i;
-                                for ($j = 0 ; $j < $span; $j++) {
+                                for ($j = 0; $j < $span; $j++) {
                                     $countDay = (int)$startDay + $j;
-                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0', STR_PAD_LEFT);
                                     $rowsOccupied[$countDate][$i] = $event['id'];
                                 }
                                 break;
@@ -603,21 +611,20 @@ class Calendar
                             $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
                         }
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
-                                . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
-                                . $timeOut
-                                . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
-                                . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStartUTC) . '">'
-                                . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEndUTC) . '">'
-                                . $locationMeta
-                                . '<div role="tooltip" aria-hidden="true">'
-                                    . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
-                                    . '<div class="event-title">' . $eventTitle . '</div>'
-                                    . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
-                                    . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
-                                . '</div>'
+                            . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
+                            . $timeOut
+                            . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
+                            . '<meta itemprop="startDate" content="' . date_i18n('c', $eventStartUTC) . '">'
+                            . '<meta itemprop="endDate" content="' . date_i18n('c', $eventEndUTC) . '">'
+                            . $locationMeta
+                            . '<div role="tooltip" aria-hidden="true">'
+                            . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
+                            . '<div class="event-title">' . $eventTitle . '</div>'
+                            . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
+                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
+                            . '</div>'
                             . '</div>';
                         $IDs[] = $event['id'];
-
                     } elseif (($col == 1 || $day == 1) && $calDay > $eventStartDate && $calDay <= $eventEndDate) {
                         // Event continuing from past week (or past month)
                         if ((($eventEnd - strtotime($calDay)) / (60 * 60 * 24)) < 0.3) {
@@ -636,14 +643,14 @@ class Calendar
                         }
                         // Select a free row (from 1 to 3)
                         $startDay = date('d', $eventStart);
-                        for ($i = 1; $i <=3; $i++) {
+                        for ($i = 1; $i <= 3; $i++) {
                             if (isset($rowsOccupied[$eventStartDate][$i])) {
                                 continue;
                             } else {
                                 $rowNum = $i;
-                                for ($j = 0 ; $j < $span; $j++) {
+                                for ($j = 0; $j < $span; $j++) {
                                     $countDay = (int)$startDay + $j;
-                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0',STR_PAD_LEFT);
+                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0', STR_PAD_LEFT);
                                     $rowsOccupied[$countDate][$i] = $event['id'];
                                 }
                                 break;
@@ -666,8 +673,8 @@ class Calendar
                         $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
                             . '<p><span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
-                            . '<meta itemprop="startDate" content="'. date_i18n('c', $eventStartUTC) . '">'
-                            . '<meta itemprop="endDate" content="'. date_i18n('c', $eventEndUTC) . '">'
+                            . '<meta itemprop="startDate" content="' . date_i18n('c', $eventStartUTC) . '">'
+                            . '<meta itemprop="endDate" content="' . date_i18n('c', $eventEndUTC) . '">'
                             . $locationMeta
                             . '<div role="tooltip" aria-hidden="true">'
                             . '<p style="margin: 0;">' . $thumbnail . '</p>'
@@ -684,7 +691,7 @@ class Calendar
             // Add empty cells if month ends before weekend
             if ($day == $month_days && $col < 7) {
                 for ($i = ($col + 1); $i <= 7; $i++) {
-                    $week .= '<div class="empty-day" style="grid-column: day-'.$i.' / day-'.$i.';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
+                    $week .= '<div class="empty-day" style="grid-column: day-' . $i . ' / day-' . $i . ';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
                 }
             }
 
@@ -708,12 +715,11 @@ class Calendar
         return $output;
     }
 
-    private static function renderSingleEvent($id) {
+    private static function renderSingleEvent($id) {}
 
-    }
-
-    public static function ajaxUpdateCalendar() {
-        check_ajax_referer( 'rrze-calendar-ajax-nonce' );
+    public static function ajaxUpdateCalendar()
+    {
+        check_ajax_referer('rrze-calendar-ajax-nonce');
         $output = '';
         $periodRaw = sanitize_text_field($_POST['period']);
         $period = explode('-', $periodRaw);
@@ -726,13 +732,13 @@ class Calendar
             $year = (int)$period[0];
             switch ($_POST['direction']) {
                 case 'prev':
-                    $date = date('Y-m-d', strtotime($periodRaw .' -1 day'));
-                    $day = date('d', strtotime($periodRaw .' -1 day'));
+                    $date = date('Y-m-d', strtotime($periodRaw . ' -1 day'));
+                    $day = date('d', strtotime($periodRaw . ' -1 day'));
                     break;
                 case 'next':
                 default:
-                    $date = date('Y-m-d', strtotime($periodRaw .' +1 day'));
-                    $day = date('d', strtotime($periodRaw .' +1 day'));
+                    $date = date('Y-m-d', strtotime($periodRaw . ' +1 day'));
+                    $day = date('d', strtotime($periodRaw . ' +1 day'));
                     break;
             }
             $startObj = date_create($date);
