@@ -56,10 +56,18 @@ class Import
         if (strpos($url, 'webcal://') === 0) {
             $url = str_replace('webcal://', 'https://', $url);
         }
+        if (empty($url)) {
+            return false;
+        }
+
+        // Clear cache if requested
+        if ($cache == false) {
+            Cache::deleteIcalCache($url);
+        }
 
         // Get ICS file contents
         $icsContent = Cache::getIcalCache($url);
-        if ($icsContent === false || $cache == false) {
+        if ($icsContent === false) {
             $icsContent = self::urlGetContent($url);
             if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
                 Cache::setIcalCache($url, $icsContent);
