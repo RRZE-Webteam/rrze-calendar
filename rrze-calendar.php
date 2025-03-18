@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE Calendar
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-calendar
-Version:            2.3.0
+Version:            2.3.1
 Description:        Administration of local events and import of public events.
 Author:             RRZE Webteam
 Author URI:         https://blogs.fau.de/webworking/
@@ -22,7 +22,7 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\CPT\CalendarEvent;
 use RRZE\Calendar\CPT\CalendarFeed;
 
-// Autoloader
+// Composer autoloader
 require_once 'vendor/autoload.php';
 
 // Load the plugin's text domain for localization.
@@ -36,7 +36,6 @@ register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
 
 /**
  * Add an action hook for the 'plugins_loaded' hook.
- *
  * This code hooks into the 'plugins_loaded' action hook to execute a callback function when
  * WordPress has fully loaded all active plugins and the theme's functions.php file.
  */
@@ -44,6 +43,7 @@ add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
 
 /**
  * Activation callback function.
+ * @return void
  */
 function activation()
 {
@@ -56,6 +56,8 @@ function activation()
 
 /**
  * Deactivation callback function.
+ * This will ensure that the rewrite rules are properly flushed when the plugin is deactivated.
+ * @return void
  */
 function deactivation()
 {
@@ -90,10 +92,8 @@ function settings()
 
 /**
  * Check system requirements for the plugin.
- *
  * This method checks if the server environment meets the minimum WordPress and PHP version requirements
  * for the plugin to function properly.
- *
  * @return string An error message string if requirements are not met, or an empty string if requirements are satisfied.
  */
 function systemRequirements(): string
@@ -131,9 +131,9 @@ function systemRequirements(): string
 
 /**
  * Handle the loading of the plugin.
- *
  * This function is responsible for initializing the plugin, loading text domains for localization,
  * checking system requirements, and displaying error notices if necessary.
+ * @return void
  */
 function loaded()
 {
