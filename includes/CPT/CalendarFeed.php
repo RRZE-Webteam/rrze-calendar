@@ -13,47 +13,97 @@ use RRZE\Calendar\ICS\{Events, Metabox};
 
 class CalendarFeed
 {
+    /**
+     * Post Type.
+     * @var string
+     */
     const POST_TYPE = 'calendar_feed';
 
+    /**
+     * Feed URL.
+     * @var string
+     */
     const FEED_URL = 'ics_feed_url';
 
+    /**
+     * Feed Include.
+     * @var string
+     */
     const FEED_INCLUDE = 'ics_feed_include';
 
+    /**
+     * Feed Exclude.
+     * @var string
+     */
     const FEED_EXCLUDE = 'ics_feed_exclude';
 
+    /**
+     * Feed Past Days.
+     * @var string
+     */
     const FEED_PAST_DAYS = 'ics_feed_past_days';
 
+    /**
+     * Feed DateTime.
+     * @var string
+     */
     const FEED_DATETIME = 'ics_feed_datetime';
 
+    /**
+     * Feed Error.
+     * @var string
+     */
     const FEED_ERROR = 'ics_feed_error';
 
+    /**
+     * Feed Events Items.
+     * @var string
+     */
     const FEED_EVENTS_ITEMS = 'ical_events_items';
 
+    /**
+     * Feed Events Meta.
+     * @var string
+     */
     const FEED_EVENTS_META = 'ical_events_meta';
 
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
         // Register Post Type.
         add_action('init', [__CLASS__, 'registerPostType']);
+
         // Post Type Columns.
         add_filter('manage_' . self::POST_TYPE . '_posts_columns', [__CLASS__, 'postsColumns']);
         add_action('manage_' . self::POST_TYPE . '_posts_custom_column', [__CLASS__, 'postsCustomColumns'], 10, 2);
         add_filter('manage_edit-' . self::POST_TYPE . '_sortable_columns', [__CLASS__, 'postSortableColumns']);
+
         // Register Metadata.
         add_action('init', [__CLASS__, 'registerMeta']);
+
         // Taxonomy Terms Fields.
         add_action(CalendarEvent::TAX_CATEGORY . '_add_form_fields', [__CLASS__, 'addFormFields']);
         add_action(CalendarEvent::TAX_CATEGORY . '_edit_form_fields', [__CLASS__, 'editFormFields'], 10, 2);
         add_action('created_' . CalendarEvent::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
         add_action('edited_' . CalendarEvent::TAX_CATEGORY, [__CLASS__, 'saveFormFields']);
+
         // Taxonomy Terms Custom Columns.
         add_filter('manage_edit-' . CalendarEvent::TAX_CATEGORY . '_columns', [__CLASS__, 'categoryColumns']);
         add_filter('manage_' . CalendarEvent::TAX_CATEGORY . '_custom_column', [__CLASS__, 'categoryCustomColumns'], 10, 3);
-        // List Table Stuff.
+
+        // Handle actions links.
         add_action('admin_init', [__CLASS__, 'handleActionLinks']);
+
+        // List Table Columns
         add_filter('post_row_actions', [__CLASS__, 'addActionLinks'], 10, 2);
         add_filter('post_row_actions', [__CLASS__, 'removeQuickEditFields'], 10, 2);
+
+        // Remove the Default Date Filter
         add_filter('months_dropdown_results', [__CLASS__, 'removeMonthsDropdown'], 10, 2);
+
         // Hide publishing actions.
         add_action('admin_head-post.php', [__CLASS__, 'hidePublishingActions']);
         add_action('admin_head-post-new.php', [__CLASS__, 'hidePublishingActions']);
@@ -68,6 +118,10 @@ class CalendarFeed
         Metabox::init();
     }
 
+    /**
+     * Register Post Type.
+     * @return void
+     */
     public static function registerPostType()
     {
         $labels = [
@@ -114,6 +168,11 @@ class CalendarFeed
         register_post_type(self::POST_TYPE, $args);
     }
 
+    /**
+     * Post Type Columns.
+     * @param array $columns
+     * @return array
+     */
     public static function postsColumns($columns)
     {
         if (isset($columns['date'])) unset($columns['date']);
@@ -124,12 +183,23 @@ class CalendarFeed
         return $columns;
     }
 
+    /**
+     * Post Type Sortable Columns.
+     * @param array $columns
+     * @return array
+     */
     public static function postSortableColumns($columns)
     {
         $columns['updated'] = 'updated';
         return $columns;
     }
 
+    /**
+     * Post Type Custom Columns.
+     * @param string $column
+     * @param int $postId
+     * @return void
+     */
     public static function postsCustomColumns($column, $postId)
     {
         $published = get_post_status($postId) === 'publish';
@@ -172,6 +242,10 @@ class CalendarFeed
         }
     }
 
+    /**
+     * Register Metadata.
+     * @return void
+     */
     public static function registerMeta()
     {
         register_meta(
@@ -206,6 +280,11 @@ class CalendarFeed
         );
     }
 
+    /**
+     * Add Form Fields.
+     * @param string $taxonomy
+     * @return void
+     */
     public static function addFormFields($taxonomy)
     {
         echo '<div class="form-field">',
@@ -214,6 +293,12 @@ class CalendarFeed
         '</div>';
     }
 
+    /**
+     * Edit Form Fields.
+     * @param object $term
+     * @param string $taxonomy
+     * @return void
+     */
     public static function editFormFields($term, $taxonomy)
     {
         $value = Utils::sanitizeHexColor(get_term_meta($term->term_id, 'color', true));
@@ -226,6 +311,11 @@ class CalendarFeed
         '</tr>';
     }
 
+    /**
+     * Save Form Fields.
+     * @param int $termId
+     * @return void
+     */
     public static function saveFormFields(int $termId)
     {
         $color = $_POST['color'] ?? '';
@@ -236,6 +326,11 @@ class CalendarFeed
         );
     }
 
+    /**
+     * Category Columns.
+     * @param array $columns
+     * @return array
+     */
     public static function categoryColumns($columns)
     {
         $newColumns = [];
@@ -250,6 +345,13 @@ class CalendarFeed
         return $newColumns;
     }
 
+    /**
+     * Category Custom Columns.
+     * @param string $content
+     * @param string $columnName
+     * @param int $termId
+     * @return string
+     */
     public static function categoryCustomColumns($content, $columnName, $termId)
     {
         $term = get_term($termId, CalendarEvent::TAX_CATEGORY);
@@ -264,6 +366,11 @@ class CalendarFeed
         return $content;
     }
 
+    /**
+     * Tag Columns.
+     * @param array $columns
+     * @return array
+     */
     public static function tagColumns($columns)
     {
         $newColumns = [];
@@ -277,7 +384,12 @@ class CalendarFeed
         return $newColumns;
     }
 
-    public static function getData(int $postId): array
+    /**
+     * Get Data.
+     * @param int $postId
+     * @return array
+     */
+    public static function getData(int $postId)
     {
         $data = [];
 
@@ -309,6 +421,12 @@ class CalendarFeed
         return $data;
     }
 
+    /**
+     * Get Terms Tag.
+     * @param int $postId
+     * @param string $taxonomy
+     * @return mixed
+     */
     protected static function getTermsTag($postId, $taxonomy)
     {
         $terms = get_the_terms($postId, $taxonomy);
@@ -318,6 +436,12 @@ class CalendarFeed
         return false;
     }
 
+    /**
+     * Add Action Links.
+     * @param array $actions
+     * @param object $post
+     * @return array
+     */
     public static function addActionLinks($actions, $post)
     {
         if (get_post_type() != self::POST_TYPE) {
@@ -363,6 +487,10 @@ class CalendarFeed
         return $actions;
     }
 
+    /**
+     * Handle Action Links.
+     * @return void
+     */
     public static function handleActionLinks()
     {
         if (
@@ -403,6 +531,11 @@ class CalendarFeed
         }
     }
 
+    /**
+     * Remove Quick Edit Fields.
+     * @param array $actions
+     * @return array
+     */
     public static function removeQuickEditFields($actions)
     {
         if (self::POST_TYPE === get_post_type()) {
@@ -419,6 +552,12 @@ class CalendarFeed
         return $actions;
     }
 
+    /**
+     * Remove Months Dropdown.
+     * @param array $months
+     * @param string $postType
+     * @return array
+     */
     public static function removeMonthsDropdown($months, $postType)
     {
         if ($postType == self::POST_TYPE) {
@@ -442,6 +581,13 @@ class CalendarFeed
         }
     }
 
+    /**
+     * Maybe Delete Event.
+     * @param string $newStatus
+     * @param string $oldStatus
+     * @param object $post
+     * @return void
+     */
     public static function maybeDelete($newStatus, $oldStatus, $post)
     {
         $postId = $post->ID;
@@ -453,6 +599,12 @@ class CalendarFeed
         }
     }
 
+    /**
+     * Save Post.
+     * @param int $postId
+     * @param object $post
+     * @return void
+     */
     public static function savePost($postId, $post)
     {
         // Check the post type.
@@ -479,11 +631,17 @@ class CalendarFeed
         if (wp_is_post_revision($postId)) {
             return;
         }
-        
+
         $pastDays = $_POST[self::FEED_PAST_DAYS] ?? 365;
         self::saveData($postId, $pastDays);
     }
 
+    /**
+     * Save Data.
+     * @param int $postId
+     * @param int $pastDays
+     * @return void
+     */
     private static function saveData($postId, $pastDays)
     {
         $pastDays = absint($pastDays) ?: 365;
@@ -491,6 +649,11 @@ class CalendarFeed
         Events::insertData($postId);
     }
 
+    /**
+     * Delete Event.
+     * @param int $postId
+     * @return void
+     */
     private static function deleteEvent($postId)
     {
         Events::deleteEvent($postId);
