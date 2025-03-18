@@ -8,16 +8,37 @@ use RRZE\Calendar\ICS\Export;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
 
+/**
+ * Events class
+ * @package RRZE\Calendar\Shortcodes
+ */
 class Events
 {
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
+        // Register `rrze-events` shortcode
         add_shortcode('rrze-events', [__CLASS__, 'shortcode']);
+
+        // Register `rrze-termine` shortcode
         add_shortcode('rrze-termine', [__CLASS__, 'shortcode']);
+
+        // Register `events` shortcode
         add_shortcode('events', [__CLASS__, 'shortcode']);
+
+        // Register `termine` shortcode
         add_shortcode('termine', [__CLASS__, 'shortcode']);
     }
 
+    /**
+     * Shortcode handler
+     * @param array $atts
+     * @param string $content
+     * @return string
+     */
     public static function shortcode($atts, $content = "")
     {
         $atts_default = [
@@ -38,7 +59,7 @@ class Events
             'include' => '',
             'exclude' => '',
         ];
-        $atts = shortcode_atts( $atts_default, $atts );
+        $atts = shortcode_atts($atts_default, $atts);
         $display = $atts['display'] == 'list' ? 'list' : 'teaser';
         $number = absint($atts['number']) + absint($atts['count'])  + absint($atts['anzahl']);
         if ($number < 1) {
@@ -118,13 +139,13 @@ class Events
         $include = sanitize_text_field($atts['include']);
         $exclude = sanitize_text_field($atts['exclude']);
         if ($exclude != '' || $include != '') {
-            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'],10,2);
+            add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'], 10, 2);
             if ($include != '') $args['title_filter'] = $include;
             if ($exclude != '') $args['title_filter_exclude'] = $exclude;
             $args['suppress_filters'] = false;
         }
 
-        $events = get_posts($args );
+        $events = get_posts($args);
 
         if ($exclude != '' || $include != '') {
             remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
@@ -141,12 +162,12 @@ class Events
                 $ulClass = 'events-list-short';
                 $iconDate = '<span class="dashicons dashicons-calendar"></span>';
                 $iconTime = '<span class="dashicons dashicons-clock"></span>';
-                wp_enqueue_style( 'dashicons' );
+                wp_enqueue_style('dashicons');
             } else {
                 $ulClass = 'events-list';
                 $iconDate = '';
                 $iconTime = '';
-                
+
                 // Add multiday items
                 foreach ($eventsArray as $tsStart => $events) {
                     foreach ($events as $event) {
@@ -167,7 +188,7 @@ class Events
             $i = 0;
             $output .= '<ul class="' . $ulClass . '">';
             foreach ($eventsArray as $tsCount => $events) {
-                if ($display == 'teaser' && date('Ymd',$tsCount) < date('Ymd', time())) continue;
+                if ($display == 'teaser' && date('Ymd', $tsCount) < date('Ymd', time())) continue;
 
                 foreach ($events as $event) {
                     if ($display == 'list' && (date('Ymd', $event['end']) < date('Ymd', time()))) continue;
@@ -186,8 +207,8 @@ class Events
                     $startDate = date('Y-m-d', $tsStart);
                     $endDate = date('Y-m-d', $tsEnd);
 
-                    $metaStart = '<meta itemprop="startDate" content="'. date('c', $tsStartUTC) . '" />';
-                    $metaEnd = '<meta itemprop="endDate" content="'. date('c', $tsEndUTC) . '" />';
+                    $metaStart = '<meta itemprop="startDate" content="' . date('c', $tsStartUTC) . '" />';
+                    $metaEnd = '<meta itemprop="endDate" content="' . date('c', $tsEndUTC) . '" />';
 
                     if ($location != '' && $vc_url == '') {
                         // Offline Event
@@ -220,15 +241,15 @@ class Events
                                 $timeOut = '';
                             } else {
                                 $dateOut = date_i18n(get_option('date_format'), $tsStart);
-                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd) . '</span>';
                             }
                         } else {
                             // multiday
                             $timeOut = '';
                             if ($allDay) {
-                                $dateOut = date_i18n(get_option('date_format'), $tsStart). ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
                             } else {
-                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd) . '</span>';
                             }
                         }
                         $output .= '<span class="dashicons dashicons-calendar"></span><span class="event-date"> ' . $dateOut
@@ -245,15 +266,15 @@ class Events
                             if ($allDay) {
                                 $timeOut = '';
                             } else {
-                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                                $timeOut = date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd) . '</span>';
                             }
                         } else {
                             // multiday
                             $timeOut = '';
                             if ($allDay) {
-                                $dateOut = date_i18n(get_option('date_format'), $tsStart). ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd);
                             } else {
-                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd). '</span>';
+                                $dateOut = date_i18n(get_option('date_format'), $tsStart) . ', ' . date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('date_format'), $tsEnd) . ', ' . date_i18n(get_option('time_format'), $tsEnd) . '</span>';
                             }
                         }
                         $bgColor = '';
@@ -324,7 +345,7 @@ class Events
                     }
                     if (!empty($catIDs)) $icsArgs['cats'] = $catIDs;
                     if (!empty($tagIDs)) $icsArgs['tags'] = $tagIDs;
-                    $output .= do_shortcode('[button link=' . Export::makeIcsLink($icsArgs) . ']' . $buttonLabel . '[/button]' );
+                    $output .= do_shortcode('[button link=' . Export::makeIcsLink($icsArgs) . ']' . $buttonLabel . '[/button]');
                 }
             }
         } else {

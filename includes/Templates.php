@@ -4,6 +4,10 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Templates class
+ * @package RRZE\Calendar
+ */
 class Templates
 {
     /**
@@ -128,7 +132,7 @@ class Templates
     }
 
     /**
-     * getEndpointPath
+     * Get endpoint templates path
      * @return string Endpoint templates path
      */
     public static function getEndpointTplPath()
@@ -137,7 +141,7 @@ class Templates
     }
 
     /**
-     * getShortcodesTplPath
+     * Get shortcodes templates path
      * @return string Shortcodes templates path
      */
     public static function getShortcodesTplPath()
@@ -146,7 +150,7 @@ class Templates
     }
 
     /**
-     * getCptTplPath
+     * Get CPT templates path
      * @return string Shortcodes templates path
      */
     public static function getCptTplPath()
@@ -155,7 +159,7 @@ class Templates
     }
 
     /**
-     * endpointEventsTemplate
+     * Get the endpoint events template name
      * @return string Endpoint events template filename
      */
     public static function endpointEventsTpl()
@@ -164,7 +168,7 @@ class Templates
     }
 
     /**
-     * endpointSingleEventTemplate
+     * Get the endpoint single event template name
      * @return string Endpoint single event template filename
      */
     public static function endpointSingleEventsTpl()
@@ -173,7 +177,7 @@ class Templates
     }
 
     /**
-     * getEndpointEventsTemplate
+     * Get the shortcode events template
      * @return string Endpoint events template
      */
     public static function getEndpointEventsTpl()
@@ -182,7 +186,7 @@ class Templates
     }
 
     /**
-     * getEndpointSingleEventsTemplate
+     * Get the endpoint single event template
      * @return string Endpoint single event template
      */
     public static function getEndpointSingleEventsTpl()
@@ -191,7 +195,7 @@ class Templates
     }
 
     /**
-     * getShortcodeEventsTemplate
+     * Get Shortcode Events Template
      * @return string Shortcode events template
      */
     public static function getShortcodeEventsTpl()
@@ -200,7 +204,7 @@ class Templates
     }
 
     /**
-     * getShortcodeCalendarTemplate
+     * Get Shortcode Calendar Template
      * @return string Shortcode calendar template
      */
     public static function getShortcodeCalendarTpl()
@@ -209,7 +213,7 @@ class Templates
     }
 
     /**
-     * getCptEventsTemplate
+     * Get CPT Events Template
      * @return string Shortcode events template
      */
     public static function getCptCalendarEventTpl()
@@ -218,7 +222,7 @@ class Templates
     }
 
     /**
-     * getCptEventsSingleTemplate
+     * Get CPT Single Event Template
      * @return string Shortcode events template
      */
     public static function getCptCalendarEventSingleTpl()
@@ -227,7 +231,7 @@ class Templates
     }
 
     /**
-     * getFauColors
+     * Get FAU Colors
      * @return array FAU Colors
      */
     public static function getFauColors()
@@ -236,7 +240,7 @@ class Templates
     }
 
     /**
-     * getThemes
+     * Get Themes
      * @return array Themes
      */
     public static function getThemes()

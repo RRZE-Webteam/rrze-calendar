@@ -7,8 +7,13 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\Shortcodes\Calendar;
 use RRZE\Calendar\Shortcodes\Events;
 
+/**
+ * Shortcode class
+ * @package RRZE\Calendar\Shortcodes
+ */
 class Shortcode
 {
+    // Allowed HTML tags
     const ALLOWED_HTML = [
         'p' => [],
         'a' => [
@@ -25,6 +30,10 @@ class Shortcode
         'blockquote' => []
     ];
 
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
         add_action('init', function () {
@@ -33,7 +42,12 @@ class Shortcode
         });
     }
 
-    public static function filterContent($content = null)
+    /**
+     * Filter content
+     * @param string $content
+     * @return string
+     */
+    public static function filterContent($content = '')
     {
         return wpautop(trim(wp_kses($content, self::ALLOWED_HTML)));
     }

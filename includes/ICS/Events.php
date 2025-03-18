@@ -299,22 +299,25 @@ class Events
         }
     }
 
-    public static function getListTableData(string $searchTerm = ''): array
+    public static function getListTableData(string $searchTerm = '')
     {
         $items = [];
         $postId = 0;
-        if ($screen = get_current_screen()) {
-            if ($screen->id == CalendarFeed::POST_TYPE) {
-                global $post;
-                if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-                    $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
-                    $pastDays = absint($pastDays) + 30;
-                    $limitDays = self::$limitDays + 7;
-                    $postId = $post->ID;
-                    $items = self::getItems($postId, $pastDays, $limitDays);
-                }
+        $screen = get_current_screen();
+        $screenId = $screen ? $screen->id : '';
+
+        if ($screenId == CalendarFeed::POST_TYPE) {
+            global $post;
+            $postType = get_post_type($post);
+            if ($postType === CalendarFeed::POST_TYPE) {
+                $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+                $pastDays = absint($pastDays) + 30;
+                $limitDays = self::$limitDays + 7;
+                $postId = $post->ID;
+                $items = self::getItems($postId, $pastDays, $limitDays);
             }
         }
+
         return count($items) ? self::getListData($postId, $items, $searchTerm) : $items;
     }
 
@@ -628,6 +631,9 @@ class Events
 
             $dtStart = strtotime($event['dt_start']);
             $dtEnd = strtotime($event['dt_end']);
+            // $post_date = date('Y-m-d H:i:s', $dtStart);
+            // $post_date_gmt = get_gmt_from_date($post_date);
+
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
 

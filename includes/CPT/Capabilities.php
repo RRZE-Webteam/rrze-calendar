@@ -4,8 +4,16 @@ namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Capabilities class
+ * @package RRZE\Calendar\CPT
+ */
 class Capabilities
 {
+    /**
+     * Get current CPT args
+     * @return array The current CPT args
+     */
     protected static function currentCptArgs()
     {
         return [
@@ -60,6 +68,10 @@ class Capabilities
         ];
     }
 
+    /**
+     * Get default CPT args
+     * @return array The default CPT args
+     */
     protected static function defaultCptArgs()
     {
         return [
@@ -69,6 +81,11 @@ class Capabilities
         ];
     }
 
+    /**
+     * Get CPT array args
+     * @param string $cpt CPT name
+     * @return array The CPT args
+     */
     protected static function cptArgs(string $cpt)
     {
         $current = self::currentCptArgs();
@@ -76,7 +93,12 @@ class Capabilities
         return isset($current[$cpt]) ? $current[$cpt] : $default;
     }
 
-    protected static function getCptArgs(string $cpt): object
+    /**
+     * Get CPT object args
+     * @param string $cpt CPT name
+     * @return object The CPT object args
+     */
+    protected static function getCptArgs(string $cpt)
     {
         $cptArgs = self::cptArgs($cpt);
         $args = [
@@ -87,29 +109,53 @@ class Capabilities
         return (object) $args;
     }
 
+    /**
+     * Get current CPT args
+     * @return array The current CPT args
+     */
     public static function getCurrentCptArgs()
     {
         return self::currentCptArgs();
     }
 
+    /**
+     * Get CPT capability type
+     * @param string $cpt CPT name
+     * @return string|array The capability type
+     */
     public static function getCptCapabilityType(string $cpt)
     {
         $cptArgs = self::cptArgs($cpt);
         return $cptArgs['capability_type'];
     }
 
-    public static function getCptCustomCaps(string $cpt): array
+    /**
+     * Get CPT capabilities
+     * @param string $cpt CPT name
+     * @return string[] Array of the capabilities
+     */
+    public static function getCptCustomCaps(string $cpt)
     {
         $cptArgs = self::cptArgs($cpt);
         return $cptArgs['capabilities'];
     }
 
-    public static function getCptMapMetaCap(string $cpt): bool
+    /**
+     * Get CPT map meta cap
+     * @param string $cpt CPT name
+     * @return bool Whether to use the internal default meta capability handling
+     */
+    public static function getCptMapMetaCap(string $cpt)
     {
         $cptArgs = self::cptArgs($cpt);
         return $cptArgs['map_meta_cap'];
     }
 
+    /**
+     * Get CPT capabilities
+     * @param string $cpt CPT name
+     * @return object Object with all the capabilities as member variables
+     */
     public static function getCptCaps(string $cpt): object
     {
         return get_post_type_capabilities(self::getCptArgs($cpt));

@@ -6,10 +6,21 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\ICS\Events;
 
+/**
+ * Cron class
+ * @package RRZE\Calendar
+ */
 class Cron
 {
+    /**
+     * The action hook name.
+     */
     const ACTION_HOOK = 'rrze_calendar_schedule_event';
 
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
         add_action(self::ACTION_HOOK, [__CLASS__, 'runEvents']);
@@ -17,8 +28,8 @@ class Cron
     }
 
     /**
-     * activateScheduledEvents
      * Activate all scheduled events.
+     * @return void
      */
     public static function activateScheduledEvents()
     {
@@ -33,8 +44,8 @@ class Cron
     }
 
     /**
-     * runEvents
      * Run the scheduled events.
+     * @return void
      */
     public static function runEvents()
     {
@@ -42,8 +53,8 @@ class Cron
     }
 
     /**
-     * clearSchedule
      * Clear all scheduled events.
+     * @return void
      */
     public static function clearSchedule()
     {

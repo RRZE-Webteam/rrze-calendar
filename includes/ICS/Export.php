@@ -9,7 +9,10 @@ use RRZE\Calendar\CPT\CalendarEvent;
 use RRule\RRule;
 use function RRZE\Calendar\plugin;
 
-
+/**
+ * Export class
+ * @package RRZE\Calendar\ICS
+ */
 class Export
 {
     /**
@@ -19,6 +22,8 @@ class Export
 
     /**
      * Export constructor.
+     * Register the 'init' action hook.
+     * @return void
      */
     public function __construct()
     {
@@ -26,7 +31,8 @@ class Export
     }
 
     /**
-     * Request
+     * Request handler
+     * @return void
      */
     public function request()
     {
@@ -57,8 +63,9 @@ class Export
     }
 
     /**
-     * Set
+     * Set events
      * @param array $args
+     * @return void
      */
     private function set(array $args)
     {
@@ -118,7 +125,7 @@ class Export
     }
 
     /**
-     * Get Events
+     * Get events
      * @param array $posts
      * @return array
      */
@@ -189,8 +196,9 @@ class Export
     }
 
     /**
-     * Build
+     * Build calendar
      * @param array $data
+     * @return void
      */
     private function build(array $data)
     {
@@ -202,8 +210,9 @@ class Export
     }
 
     /**
-     * Stream
+     * Stream calendar
      * @param string $filename
+     * @return void
      */
     private function stream(string $filename)
     {

@@ -9,8 +9,17 @@ use DateTimeZone;
 use RRule\RRule;
 use RRule\RSet;
 
+/**
+ * Utils class
+ * @package RRZE\Calendar
+ */
 class Utils
 {
+    /**
+     * Validate URL.
+     * @param string $input
+     * @return string
+     */
     public static function validateUrl(string $input): string
     {
         $url = filter_var($input, FILTER_SANITIZE_URL);
@@ -20,6 +29,11 @@ class Utils
         return '';
     }
 
+    /**
+     * Key Sort Multi.
+     * @param array $arr
+     * @return void
+     */
     public static function ksortMulti(&$arr = [])
     {
         ksort($arr);
@@ -31,6 +45,12 @@ class Utils
         }
     }
 
+    /**
+     * String List to Array.
+     * @param string $list
+     * @param string $callback
+     * @return array
+     */
     public static function strListToArray(string $list, string $callback = 'trim'): array
     {
         return array_unique(
@@ -43,6 +63,14 @@ class Utils
         );
     }
 
+    /**
+     * Set date format.
+     * @param string $format
+     * @param mixed $dtStr
+     * @param mixed $tz
+     * @param mixed $offset
+     * @return string
+     */
     public static function date($format, $dtStr = null, $tz = null, $offset = null)
     {
         global $wp_locale;
@@ -60,7 +88,7 @@ class Utils
             $tz = new DateTimeZone(get_option('timezone_string') ? get_option('timezone_string') : 'UTC');
         }
         // Fix signs in offset
-        $offset = str_replace('--', '+', str_replace('+-', '-', $offset));
+        $offset = $offset ? str_replace('--', '+', str_replace('+-', '-', $offset)) : '';
         // Create new datetime from date string
         $dt = new DateTime(trim($dtStr . ' ' . $offset), $tz);
         // Localize (code from wp_date() in a more compact format)
@@ -110,9 +138,7 @@ class Utils
     }
 
     /**
-     * dateFormat
-     * Formatted date strings.
-     *
+     * Format time string data.
      * @param string $format
      * @param mixed $dtStr
      * @param mixed $tz
@@ -193,16 +219,14 @@ class Utils
     }
 
     /**
-     * timeFormat
      * Format time string data.
-     *
      * @param string $timeString
-     * @param mixed $format
+     * @param string $format
      * @return string
      */
     public static function timeFormat($timeString, $format = 'H:i:s')
     {
-        $output = null;
+        $output = '';
         if (empty($format)) {
             $format = get_option('time_format');
         }
@@ -259,7 +283,7 @@ class Utils
 
         // Format output
         switch ($format) {
-                // 12-hour formats without seconds
+            // 12-hour formats without seconds
             case 'g:i a':
                 $output = intval($timeH12) . ':' . $timeM . '&nbsp;' . $timeAmPm;
                 break;
@@ -284,18 +308,18 @@ class Utils
             case 'h:iA':
                 $output = $timeH12 . ':' . $timeM . strtoupper($timeAmPm);
                 break;
-                // 24-hour formats without seconds
+            // 24-hour formats without seconds
             case 'G:i':
                 $output = intval($timeH) . ':' . $timeM;
                 break;
             case 'Gi':
                 $output = intval($timeH) . $timeM;
                 break;
-                // case 'H:i': is the default, below
+            // case 'H:i': is the default, below
             case 'Hi':
                 $output = $timeH . $timeM;
                 break;
-                // 24-hour formats without seconds, using h and m or min
+            // 24-hour formats without seconds, using h and m or min
             case 'G \h i \m\i\n':
                 $output = intval($timeH) . '&nbsp;h&nbsp;' . $timeM . '&nbsp;min';
                 break;
@@ -332,7 +356,7 @@ class Utils
             case 'H\hi\m':
                 $output = $timeH . 'h' . $timeM . 'm';
                 break;
-                // 12-hour formats with seconds
+            // 12-hour formats with seconds
             case 'g:i:s a':
                 $output = intval($timeH12) . ':' . $timeM . ':' . $timeS . '&nbsp;' . $timeAmPm;
                 break;
@@ -357,7 +381,7 @@ class Utils
             case 'h:i:sA':
                 $output = $timeH12 . ':' . $timeM . ':' . $timeS . strtoupper($timeAmPm);
                 break;
-                // 24-hour formats with seconds
+            // 24-hour formats with seconds
             case 'G:i:s':
                 $output = intval($timeH) . ':' . $timeM . ':' . $timeS;
                 break;
@@ -367,7 +391,7 @@ class Utils
             case 'His':
                 $output = $timeH . $timeM . $timeS;
                 break;
-                // Hour-only formats used for grid labels
+            // Hour-only formats used for grid labels
             case 'H:00':
                 $output = $timeH . ':00';
                 break;
@@ -383,7 +407,7 @@ class Utils
             case 'g A':
                 $output = intval($timeH12) . ' ' . strtoupper($timeAmPm);
                 break;
-                // Default
+            // Default
             case 'H:i':
             default:
                 $output = $timeH . ':' . $timeM;
@@ -393,7 +417,12 @@ class Utils
         return $output;
     }
 
-    public static function getDaysOfWeek($format = null)
+    /**
+     * Get the days of the week according to the start of the week setting.
+     * @param string $format
+     * @return array
+     */
+    public static function getDaysOfWeek($format = '')
     {
         $days = [];
         $daysOfWeek = self::daysOfWeek($format);
@@ -405,7 +434,12 @@ class Utils
         return $days;
     }
 
-    public static function daysOfWeek($format = null)
+    /**
+     * Get the days of the week.
+     * @param string $format
+     * @return array
+     */
+    public static function daysOfWeek($format = '')
     {
         global $wp_locale;
         $daysOfWeek = [];
@@ -459,7 +493,12 @@ class Utils
         return $daysOfWeek;
     }
 
-    public static function getMonthNames($format = null)
+    /**
+     * Get the month names.
+     * @param string $format
+     * @return array
+     */
+    public static function getMonthNames($format = '')
     {
         global $wp_locale;
         $monthNames = [];
@@ -519,11 +558,21 @@ class Utils
         return $monthNames;
     }
 
-    public static function firstDow($date = null)
+    /**
+     * Get the first day of the week.
+     * @param string $date
+     * @return string
+     */
+    public static function firstDow($date = '')
     {
         return self::date('w', self::date('Ym', $date) . '01');
     }
 
+    /**
+     * Get the css classes for the day.
+     * @param array $args
+     * @return string
+     */
     public static function dayClasses($args)
     {
         $defaults = [
@@ -556,8 +605,7 @@ class Utils
     }
 
     /**
-     * Recursives KSort.
-     *
+     * Recursives array key sort.
      * @param array $array
      * @return boolean
      */
@@ -571,7 +619,6 @@ class Utils
 
     /**
      * Generates a random id.
-     *
      * @param integer $length
      * @return string
      */
@@ -582,7 +629,6 @@ class Utils
 
     /**
      * Generates a random UUID based on the post ID and website host.
-     *
      * @param integer $postId
      * @return string
      */
@@ -595,7 +641,6 @@ class Utils
 
     /**
      * Sanitize Hexcolor.
-     *
      * @param string $hexcolor
      * @return string
      */
@@ -610,7 +655,6 @@ class Utils
 
     /**
      * Calculates color contrast using the YIQ color space.
-     *
      * @link https://24ways.org/2010/calculating-color-contrast/
      * @param string $hexacolor
      * @return string
@@ -625,14 +669,21 @@ class Utils
         return ($yiq >= 128) ? 'black' : 'white';
     }
 
-    public static function buildEventsArray($events, $start = NULL, $end = NULL): array
+    /**
+     * Build Events Array.
+     * @param array $events
+     * @param string $start
+     * @param string $end
+     * @return array
+     */
+    public static function buildEventsArray($events, $start = '', $end = '')
     {
         $eventsArray = [];
         $i = 0;
         $identifiers = [];
         $removeDuplicates = settings()->getOption('remove_duplicates') === '1';
         foreach ($events as $event) {
-            if ($event == NULL) continue;
+            if (empty($event)) continue;
             $meta = get_post_meta($event->ID);
             if (empty($meta)) continue;
             $isImport = get_post_meta($event->ID, 'ics_feed_id', true);
@@ -692,6 +743,11 @@ class Utils
         return $eventsArray;
     }
 
+    /**
+     * Make RRule arguments.
+     * @param WP_Post $event The event post object.
+     * @return array
+     */
     public static function makeRRuleArgs($event): array
     {
         $meta = get_post_meta($event->ID);
@@ -771,7 +827,14 @@ class Utils
         return $rruleArgs;
     }
 
-    public static function makeRRuleSet($event_id, $start = NULL, $end = NULL): array
+    /**
+     * Make RRuleSet.
+     * @param integer $event_id
+     * @param string $start
+     * @param string $end
+     * @return array
+     */
+    public static function makeRRuleSet($event_id, $start = '', $end = '')
     {
         $meta = get_post_meta($event_id);
         $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
@@ -805,9 +868,9 @@ class Utils
                 }
             }
 
-            $start = self::validateDate($start) ? $start : NULL;
-            $end = self::validateDate($end) ? $end : NULL;
-            if ($start != NULL || $end != NULL) {
+            $start = self::validateDate($start) ? $start : '';
+            $end = self::validateDate($end) ? $end : '';
+            if ($start != '' || $end != '') {
                 return $rset->getOccurrencesBetween($start, $end);
             } else {
                 return $rset->getOccurrences();
@@ -816,6 +879,12 @@ class Utils
         return [];
     }
 
+    /**
+     * Get the meta value.
+     * @param array $meta
+     * @param string $key
+     * @return mixed
+     */
     public static function getMeta($meta, $key)
     {
         if (!isset($meta[$key][0]))
@@ -827,7 +896,12 @@ class Utils
         }
     }
 
-    public static function humanReadableRecurrence(string $rrule)
+    /**
+     * Get the human readable recurrence.
+     * @param mixed $rrule An assoc array of parts, or a RFC string.
+     * @return object RRule
+     */
+    public static function humanReadableRecurrence($rrule)
     {
         $opt = [
             'use_intl' => true,
@@ -867,6 +941,12 @@ class Utils
         }
     }
 
+    /**
+     * Title filter
+     * @param string $where
+     * @param WP_Query $wp_query
+     * @return string
+     */
     public static function titleFilter($where, $wp_query)
     {
         global $wpdb;
@@ -891,7 +971,7 @@ class Utils
      * @param mixed $date (\DateTime|string|int)
      * @return boolean
      */
-    public static function validateDate($date)
+    public static function validateDate($date = '')
     {
         if (empty($date)) {
             return false;
