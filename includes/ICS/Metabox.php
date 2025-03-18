@@ -7,8 +7,16 @@ defined('ABSPATH') || exit;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarFeed;
 
+/**
+ * Metabox class
+ * @package RRZE\Calendar\ICS
+ */
 class Metabox
 {
+    /**
+     * Initialize the class, registering WordPress hooks
+     * @return void
+     */
     public static function init()
     {
         add_action('add_meta_boxes', [__CLASS__, 'add']);
@@ -18,6 +26,10 @@ class Metabox
         add_action('admin_notices', [__CLASS__, 'adminNotices']);
     }
 
+    /**
+     * Add metaboxes
+     * @return void
+     */
     public static function add()
     {
         add_meta_box(
@@ -39,6 +51,11 @@ class Metabox
         );
     }
 
+    /**
+     * Render the Feed metabox
+     * @param WP_Post $post
+     * @return void
+     */
     public static function feed($post)
     {
         // Get the CF values.
@@ -66,21 +83,21 @@ class Metabox
         echo '</td></tr>';
 
         echo '<tr>',
-            '<th><label for="' . CalendarFeed::FEED_PAST_DAYS . '">', __('Past Events', 'rrze-calendar'), '</label></th>';
+        '<th><label for="' . CalendarFeed::FEED_PAST_DAYS . '">', __('Past Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
         echo '<input name="' . CalendarFeed::FEED_PAST_DAYS . '" type="number" id="rrze-calendar-feed-past-days" aria-describedby="', _e('Past Events', 'rrze-calendar'), '" class="" value="', $valuePastDays, '" autocomplete="off" min="30" max="365"/>';
         echo '<p class="description">', _e('For how many days in the past events are imported (max: 365, min:30)? Older events are deleted from the website.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
 
         echo '<tr>',
-            '<th><label for="' . CalendarFeed::FEED_INCLUDE . '">', __('Include Events', 'rrze-calendar'), '</label></th>';
+        '<th><label for="' . CalendarFeed::FEED_INCLUDE . '">', __('Include Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
         echo '<input name="' . CalendarFeed::FEED_INCLUDE . '" type="text" id="rrze-calendar-feed-include" aria-describedby="', _e('Include Events', 'rrze-calendar'), '" class="large-text" value="', $valueInclude, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter a string to filter the import. Only events containing this string in the title will be imported.', 'rrze-calendar'), '</p>';
         echo '</td></tr>';
 
         echo '<tr>',
-            '<th><label for="' . CalendarFeed::FEED_EXCLUDE . '">', __('Exclude Events', 'rrze-calendar'), '</label></th>';
+        '<th><label for="' . CalendarFeed::FEED_EXCLUDE . '">', __('Exclude Events', 'rrze-calendar'), '</label></th>';
         echo '<td>';
         echo '<input name="' . CalendarFeed::FEED_EXCLUDE . '" type="text" id="rrze-calendar-feed-exclude" aria-describedby="', _e('Exclude Events', 'rrze-calendar'), '" class="large-text" value="', $valueExclude, '" autocomplete="off" />';
         echo '<p class="description">', _e('Enter a string to exclude events from importing. Events containing this string in the title will not be imported.', 'rrze-calendar'), '</p>';
@@ -89,13 +106,35 @@ class Metabox
         echo '</table>';
     }
 
+    /**
+     * Render the Events metabox
+     * @param WP_Post $post
+     * @return void
+     */
+    public static function events()
+    {
+        $events = new EventsListTable();
+        $events->prepare_items();
+
+        echo '<div class="wrap">';
+        echo $events->search_box(__('Search Events', 'rrze-calendar'), 'title');
+        echo $events->display();
+        echo '</div>';
+    }
+
+    /**
+     * Save the metabox data
+     * @param int $postId
+     * @param WP_Post $post
+     * @return void
+     */
     public static function save($postId, $post)
     {
         // Check the post type.
         if ($post->post_type != CalendarFeed::POST_TYPE) {
             return;
         }
-        
+
         // Add nonce for security and authentication.
         $nonceName = isset($_POST['rrze_calendar_metabox']) ? $_POST['rrze_calendar_metabox'] : '';
         $nonceAction = 'rrze_calendar_metabox_action';
@@ -136,9 +175,9 @@ class Metabox
         if (array_key_exists(CalendarFeed::FEED_PAST_DAYS, $_POST)) {
             $feed_past_days = intval($_POST[CalendarFeed::FEED_PAST_DAYS]);
             if ($feed_past_days > 365) {
-               $feed_past_days = 365;
+                $feed_past_days = 365;
             } elseif ($feed_past_days < 30) {
-               $feed_past_days = 30;
+                $feed_past_days = 30;
             }
             update_post_meta(
                 $postId,
@@ -164,6 +203,12 @@ class Metabox
         }
     }
 
+    /**
+     * Search for events
+     * @param int $postId
+     * @param WP_Post $post
+     * @return void
+     */
     public static function search($postId, $post)
     {
         $postType = get_post_type($post);
@@ -178,12 +223,21 @@ class Metabox
         }
     }
 
+    /**
+     * Add a notice
+     * @param string $location
+     * @return string
+     */
     public static function addNotice($location)
     {
         remove_filter('redirect_post_location', [__CLASS__, 'addNotice']);
         return add_query_arg(array('rrze_calendar_update' => 'update'), $location);
     }
 
+    /**
+     * Display admin notices
+     * @return void
+     */
     public static function adminNotices()
     {
         if (!isset($_GET['rrze_calendar_update'])) {
@@ -192,17 +246,6 @@ class Metabox
 
         echo '<div class="update notice notice-error is-dismissible">';
         echo '<p>', esc_html_e('Feed URL is not valid.', 'rrze-calendar'), '</p>';
-        echo '</div>';
-    }
-
-    public static function events()
-    {
-        $events = new EventsListTable();
-        $events->prepare_items();
-
-        echo '<div class="wrap">';
-        echo $events->search_box(__('Search Events', 'rrze-calendar'), 'title');
-        echo $events->display();
         echo '</div>';
     }
 }
