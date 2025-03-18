@@ -4,6 +4,10 @@ namespace RRZE\Calendar;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Plugin class
+ * @package RRZE\Calendar
+ */
 class Plugin
 {
     /**
