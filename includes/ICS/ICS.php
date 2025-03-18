@@ -4,28 +4,40 @@ namespace RRZE\Calendar\ICS;
 
 defined('ABSPATH') || exit;
 
+/**
+ * iCalendar data array.
+ */
 class ICS
 {
-    // Date and time format
+    /**
+     * Date and time format.
+     * RFC-5545 (3.3.5. Date-Time)
+     */
     public const DT_FORMAT = 'Ymd\THis\Z';
 
-    // Carriage return and line feed
+    /**
+     * Carriage return and line feed.
+     * RFC-5545 (3.1. Content Lines)
+     */
     const CRLF = "\r\n";
 
-    // Length of line in bytes
+    /**
+     * Line length.
+     * RFC-5545 (3.1. Content Lines)
+     */
     const LINE_LENGTH = 70;
 
     /**
      * iCalendar data array.
-     *
      * @var array
      */
     protected $data = [];
 
     /**
      * Available iCalendar properties.
-     *
+     * @see https://tools.ietf.org/html/rfc5545#section-3.8
      * @var array
+     * @return void
      */
     private $availableProperties = [
         'uid',
@@ -40,9 +52,9 @@ class ICS
     ];
 
     /**
-     * Construct method.
-     *
+     * Constructor.
      * @param array $data
+     * @return void
      */
     public function __construct(array $data)
     {
@@ -51,7 +63,6 @@ class ICS
 
     /**
      * Create an array with iCalendar data.
-     *
      * @param array $data
      * @return void
      */
@@ -64,7 +75,6 @@ class ICS
 
     /**
      * Set the iCalendar properties.
-     *
      * @param array $props
      * @return array
      */
@@ -84,13 +94,12 @@ class ICS
 
     /**
      * Build the ICS file content.
-     *
      * @return string
      */
     public function build(): string
     {
         $rows = array_map(
-            fn ($row) => $this->split($row),
+            fn($row) => $this->split($row),
             $this->render()
         );
         return implode(self::CRLF, $rows);
@@ -98,7 +107,6 @@ class ICS
 
     /**
      * Create an array with iCalendar properties.
-     *
      * @return array
      */
     private function render(): array
@@ -133,12 +141,11 @@ class ICS
 
     /**
      * Sanitize a string value.
-     *
      * @param string $value
      * @param string $key
      * @return string
      */
-    private function sanitizeValue(string $value, string $key = ''): string
+    private function sanitizeValue(string $value, string $key = '')
     {
         switch ($key) {
             case 'dtend':
@@ -159,11 +166,10 @@ class ICS
 
     /**
      * Format the date and time.
-     *
      * @param string $timestamp
      * @return string
      */
-    private function formatTimestamp(string $timestamp): string
+    private function formatTimestamp(string $timestamp)
     {
         $dt = new \DateTime($timestamp);
         return $dt->format(self::DT_FORMAT);
@@ -171,7 +177,6 @@ class ICS
 
     /**
      * Escapes , and ; characters in text type fields.
-     *
      * @param string $value The string to escape
      * @return string
      */
@@ -185,7 +190,6 @@ class ICS
     /**
      * Splits a string into new lines if necessary.
      * RFC-5545 (3.1. Content Lines)
-     *
      * @param string $value
      * @return string
      */
