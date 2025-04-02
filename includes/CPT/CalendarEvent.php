@@ -9,7 +9,6 @@ namespace RRZE\Calendar\CPT;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\{ICS\Export, Templates, Utils};
-use RRule\RRule;
 
 use function RRZE\Calendar\settings;
 
@@ -927,8 +926,7 @@ class CalendarEvent
                 if (!$feedID && $data['repeat']  == 'on') {
                     $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
                     if ($rruleArgs = json_decode($rruleArgs, true)) {
-                        $rule = new RRule($rruleArgs);
-                        $readable_rrule = Utils::humanReadableRecurrence($rule);
+                        $readable_rrule = Utils::humanReadableRecurrence($rruleArgs);
                     }
                 } elseif ($feedID && ($feedMeta = get_post_meta($post_id, 'ics_event_meta', true))) {
                     if (!empty($feedMeta['readable_rrule'])) {
