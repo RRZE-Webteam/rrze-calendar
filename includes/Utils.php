@@ -6,8 +6,8 @@ defined('ABSPATH') || exit;
 
 use DateTime;
 use DateTimeZone;
-use RRule\RRule;
-use RRule\RSet;
+use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
+use RRZE\Calendar\Vendor\Dependencies\RRule\RSet;
 
 /**
  * Utils class

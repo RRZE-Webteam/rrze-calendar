@@ -2,26 +2,44 @@
     "require": {
         "php": "^8.2.0",
         "johngrogg/ics-parser": "^3.4.0",
-        "rlanvin/php-rrule": "^2.5.0",
+        "rlanvin/php-rrule": "^2.5.2",
         "cmb2/cmb2": "^2.11.0"
     },
     "autoload": {
-        "psr-0": {
-            "ICal": "src/"
-        },
         "psr-4": {
-            "RRZE\\Calendar\\": "includes/",
-            "RRule\\": "src/"
-        },
-        "files": [
-            "vendor/cmb2/cmb2/init.php"
-        ]
+            "RRZE\\Calendar\\": "includes/"
+        }
     },
     "extra": {
         "installer-paths": {
             "vendor/cmb2/cmb2": [
                 "cmb2/cmb2"
             ]
+        },        
+        "mozart": {
+            "dep_namespace": "RRZE\\Calendar\\Vendor\\Dependencies\\",
+            "dep_directory": "/includes/Vendor/Dependencies/",
+            "classmap_directory": "/includes/Vendor/classes/dependencies/",
+            "classmap_prefix": "RRZE_Calendar_Vendor_Dependencies_",
+            "packages": [
+                "rlanvin/php-rrule",
+                "johngrogg/ics-parser",
+                "cmb2/cmb2"
+            ],
+            "delete_vendor_directories": true
         }
-    }
+    },
+    "require-dev": {
+        "coenjacobs/mozart": "^0.7.1"
+    },    
+    "scripts": {
+        "post-install-cmd": [
+            "\"vendor/bin/mozart\" compose",
+            "composer dump-autoload"
+        ],
+        "post-update-cmd": [
+            "\"vendor/bin/mozart\" compose",
+            "composer dump-autoload"
+        ]
+    }    
 }

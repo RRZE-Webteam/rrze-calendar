@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
-use RRule\RRule;
+use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
 use function RRZE\Calendar\plugin;
 
 /**
