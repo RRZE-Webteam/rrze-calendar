@@ -869,6 +869,10 @@ class Utils
             }
 
             $start = self::validateDate($start) ? $start : '';
+            // if no time is set, getOccurrencesBetween() uses YYYY-MM-DD 00:00, so events starting on the end date at YYYY-MM-DD 09:00 would not be included
+            if (!str_contains($end, ':')) {
+                $end .= ' 23:59';
+            }
             $end = self::validateDate($end) ? $end : '';
             if ($start != '' || $end != '') {
                 return $rset->getOccurrencesBetween($start, $end);
