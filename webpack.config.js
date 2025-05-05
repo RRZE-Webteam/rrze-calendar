@@ -1,4 +1,5 @@
 const defaultConfig = require("@wordpress/scripts/config/webpack.config");
+const { getWebpackEntryPoints } = require( '@wordpress/scripts/utils/config' );
 const webpack = require("webpack");
 const { basename, dirname, resolve } = require("path");
 const srcDir = "src";
@@ -6,9 +7,11 @@ const admin = resolve(process.cwd(), "src", "admin");
 const calendar = resolve(process.cwd(), "src", "calendar");
 const events = resolve(process.cwd(), "src", "events");
 
+
 module.exports = {
     ...defaultConfig,
     entry: {
+        ...getWebpackEntryPoints('script')(),
         admin,
         calendar,
         events,
