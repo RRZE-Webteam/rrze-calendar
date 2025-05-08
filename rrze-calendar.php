@@ -179,12 +179,12 @@ function loaded()
 
 function createBlocks(): void {
     register_block_type( __DIR__ . '/build/blocks/calendar' );
-    $script_handle_speaker = generate_block_asset_handle( 'rrze-calendar/calendar', 'editorScript' );
-    wp_set_script_translations( $script_handle_speaker, 'rrze-calendar', plugin_dir_path( __FILE__ ) . 'languages' );
+    $script_handle_calendar = generate_block_asset_handle( 'rrze-calendar/calendar', 'editorScript' );
+    wp_set_script_translations( $script_handle_calendar, 'rrze-calendar', plugin_dir_path( __FILE__ ) . 'languages' );
 
     register_block_type( __DIR__ . '/build/blocks/events' );
-    $script_handle_talk = generate_block_asset_handle( 'rrze-calendar/events', 'editorScript' );
-    wp_set_script_translations( $script_handle_talk, 'rrze-calendar', plugin_dir_path( __FILE__ ) . 'languages' );
+    $script_handle_events = generate_block_asset_handle( 'rrze-calendar/events', 'editorScript' );
+    wp_set_script_translations( $script_handle_events, 'rrze-calendar', plugin_dir_path( __FILE__ ) . 'languages' );
 }
 
 /**

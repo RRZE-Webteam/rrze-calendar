@@ -21,5 +21,5 @@
  */
  
 /* eslint-disable no-console */
-console.log("Hello World! (from rrze-calendar-events block)");
+//console.log("Hello World! (from rrze-calendar-events block)");
 /* eslint-enable no-console */

@@ -11,9 +11,60 @@
   "supports": {
     "html": false
   },
+  "attributes": {
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "display": {
+      "type": "string",
+      "default": "teaser"
+    },
+    "selectedCategories": {
+      "type": "array",
+      "default": {}
+    },
+    "selectedTags": {
+      "type": "array",
+      "default": {}
+    },
+    "numEvents": {
+      "type": "integer",
+      "default": 0
+    },
+    "pageLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "pageLinkLabel": {
+      "type": "string",
+      "default": "Show All Events"
+    },
+    "abonnementLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "startDate": {
+      "type": "string",
+      "default": ""
+    },
+    "endDate": {
+      "type": "string",
+      "default": ""
+    },
+    "includeEvents": {
+      "type": "array",
+      "default": {}
+    },
+    "excludeEvents": {
+      "type": "array",
+      "default": {}
+    }
+  },
   "textdomain": "rrze-calendar",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
-  "viewScript": "file:./view.js"
+  "viewScript": "file:./view.js",
+  "render": "file:./render.php"
 }
