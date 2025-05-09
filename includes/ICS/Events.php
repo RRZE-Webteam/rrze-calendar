@@ -222,7 +222,8 @@ class Events
             'url' => !is_null($event->url) ? $event->url : '',
             'rrule' => !is_null($event->rrule) ? $event->rrule : '',
             'readable_rrule' => !is_null($event->rrule) ? Utils::humanReadableRecurrence($event->rrule) : '',
-            'exdate' => !is_null($event->exdate) ? $event->exdate : '',
+            'exdate_array' => !empty($event->exdate_array) ? $event->exdate_array : [],
+            'rdate_array' => !empty($event->rdate_array) ? $event->rdate_array : [],
         ];
 
         // Events with different start and end dates
@@ -408,6 +409,16 @@ class Events
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
+                                // EXDATE
+                                if (!empty($event['exdate_array'])) {
+                                    $data[$i]['exdate_array'] = $event['exdate_array'];
+                                }
+
+                                // RDATE
+                                if (!empty($event['rdate_array'])) {
+                                    $data[$i]['rdate_array'] = $event['rdate_array'];
+                                }
+
                                 // Location
                                 $data[$i]['location'] = $event['location'];
 
@@ -494,6 +505,16 @@ class Events
                                 if ($event['rrule']) {
                                     $data[$i]['rrule'] = $event['rrule'];
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
+                                }
+
+                                // EXDATE
+                                if (!empty($event['exdate_array'])) {
+                                    $data[$i]['exdate_array'] = $event['exdate_array'];
+                                }
+
+                                // RDATE
+                                if (!empty($event['rdate_array'])) {
+                                    $data[$i]['rdate_array'] = $event['rdate_array'];
                                 }
 
                                 // Location
