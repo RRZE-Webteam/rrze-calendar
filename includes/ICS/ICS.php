@@ -47,8 +47,8 @@ class ICS
         'location',
         'summary',
         'rrule',
-        'exdate;value=date', // For excluding dates
-        'rdate;value=date'   // For including dates
+        'exdate',
+        'rdate'
     ];
 
     /**
