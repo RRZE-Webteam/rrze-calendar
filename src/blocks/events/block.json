@@ -33,8 +33,8 @@
 			"default": 0
 		},
 		"pageLink": {
-			"type": "boolean",
-			"default": false
+			"type": "string",
+			"default": ""
 		},
 		"pageLinkLabel": {
 			"type": "string",
@@ -44,21 +44,13 @@
 			"type": "boolean",
 			"default": false
 		},
-		"startDate": {
-			"type": "string",
-			"default": ""
-		},
-		"endDate": {
-			"type": "string",
-			"default": ""
-		},
 		"includeEvents": {
-			"type": "array",
-			"default": {}
+			"type": "string",
+			"default": ""
 		},
 		"excludeEvents": {
-			"type": "array",
-			"default": {}
+			"type": "string",
+			"default": ""
 		}
 	},
 	"textdomain": "rrze-calendar",

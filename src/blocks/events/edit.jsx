@@ -25,7 +25,6 @@ import ServerSideRender from "@wordpress/server-side-render";
 import { PanelBody, ComboboxControl, TextControl, ToggleControl, SelectControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { sanitizeText } from '@wordpress/server-side-render';
 import { store as coreStore } from '@wordpress/core-data';
 
 
@@ -46,12 +45,13 @@ export default function Edit({ attributes, setAttributes }) {
 	const { numEvents } = attributes;
 	const [selectedCategories, setSelectedCategories] = useState(attributes.selectedCategories || []);
 	const [selectedTags, setSelectedTags] = useState(attributes.selectedTags || []);
+	const { includeEvents } = attributes;
+	const { excludeEvents } = attributes;
 
 
 	const onChangeLayout = (value) => {
 		setDisplay( value );
 		setAttributes({display: value});
-		console.log(setAttributes);
 	};
 
 	// Page Link Settings
@@ -65,10 +65,12 @@ export default function Edit({ attributes, setAttributes }) {
 			value: page.id,
 		})) : [];
 
+	const onChangePageLink = (value) => {
+		setAttributes({pageLink: value});
+	};
 
 	const onChangePageLinkLabel = (value) => {
-		const newPageLinkLabel = sanitizeText(value);
-		setAttributes({ pageLinkLabel: newPageLinkLabel });
+		setAttributes({ pageLinkLabel: value });
 	};
 
 	// Category Settings
@@ -119,6 +121,14 @@ export default function Edit({ attributes, setAttributes }) {
 		value: tag.slug
 	})) : [];
 
+	const onChangeIncludeEvents = (value) => {
+		setAttributes({ includeEvents: value });
+	};
+
+	const onChangeExcludeEvents = (value) => {
+		setAttributes({ excludeEvents: value });
+	};
+
 	// Number Settings
 	const onChangeNumber = (value) => {
 		// Sicherstellen, dass nur Zahlen gespeichert werden
@@ -146,13 +156,9 @@ export default function Edit({ attributes, setAttributes }) {
 					<ComboboxControl
 						label={__('Page Link', 'rrze-calendar')}
 						options={pageOptions}
-						onChange={() =>
-							setAttributes({
-								pageLink: !pageLink,
-							})
-						}
+						onChange={onChangePageLink}
 					/>
-					{pageLink && (
+					{pageLink !== "" && (
 						<TextControl
 							label={__('Page Link Label', 'rrze-calendar')}
 							type="text"
@@ -214,6 +220,21 @@ export default function Edit({ attributes, setAttributes }) {
 							})}
 						</ul>
 					</div>
+					<hr />
+					<TextControl
+						label={__('Include Events', 'rrze-calendar')}
+						type="text"
+						value={includeEvents}
+						onChange={onChangeIncludeEvents}
+						help={__('Only show events having these words in the title.', 'rrze-calendar')}
+					/>
+					<TextControl
+						label={__('Exclude', 'rrze-calendar')}
+						type="text"
+						value={excludeEvents}
+						onChange={onChangeExcludeEvents}
+						help={__('Hide events having these words in the title.', 'rrze-calendar')}
+					/>
 				</PanelBody>
 			</InspectorControls>
 			<ServerSideRender

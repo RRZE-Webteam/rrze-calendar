@@ -8,7 +8,7 @@
   \**************************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/events","version":"1.2.0","title":"Event List","category":"rrze","icon":"smiley","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"display":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":{}},"selectedTags":{"type":"array","default":{}},"numEvents":{"type":"integer","default":0},"pageLink":{"type":"boolean","default":false},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"startDate":{"type":"string","default":""},"endDate":{"type":"string","default":""},"includeEvents":{"type":"array","default":{}},"excludeEvents":{"type":"array","default":{}}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/events","version":"1.2.0","title":"Event List","category":"rrze","icon":"smiley","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"display":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":{}},"selectedTags":{"type":"array","default":{}},"numEvents":{"type":"integer","default":0},"pageLink":{"type":"string","default":""},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"includeEvents":{"type":"string","default":""},"excludeEvents":{"type":"string","default":""}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
 
 /***/ }),
 
@@ -67,7 +67,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * The edit function describes the structure of your block in the context of the
  * editor. This represents what the editor will render when the block is used.
@@ -94,12 +93,17 @@ function Edit({
   } = attributes;
   const [selectedCategories, setSelectedCategories] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedCategories || []);
   const [selectedTags, setSelectedTags] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedTags || []);
+  const {
+    includeEvents
+  } = attributes;
+  const {
+    excludeEvents
+  } = attributes;
   const onChangeLayout = value => {
     setDisplay(value);
     setAttributes({
       display: value
     });
-    console.log(setAttributes);
   };
 
   // Page Link Settings
@@ -112,10 +116,14 @@ function Edit({
     label: page.title.rendered || '(Ohne Titel)',
     value: page.id
   })) : [];
-  const onChangePageLinkLabel = value => {
-    const newPageLinkLabel = (0,_wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3__.sanitizeText)(value);
+  const onChangePageLink = value => {
     setAttributes({
-      pageLinkLabel: newPageLinkLabel
+      pageLink: value
+    });
+  };
+  const onChangePageLinkLabel = value => {
+    setAttributes({
+      pageLinkLabel: value
     });
   };
 
@@ -172,6 +180,16 @@ function Edit({
     label: tag.name,
     value: tag.slug
   })) : [];
+  const onChangeIncludeEvents = value => {
+    setAttributes({
+      includeEvents: value
+    });
+  };
+  const onChangeExcludeEvents = value => {
+    setAttributes({
+      excludeEvents: value
+    });
+  };
 
   // Number Settings
   const onChangeNumber = value => {
@@ -206,10 +224,8 @@ function Edit({
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.ComboboxControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Page Link', 'rrze-calendar'),
           options: pageOptions,
-          onChange: () => setAttributes({
-            pageLink: !pageLink
-          })
-        }), pageLink && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
+          onChange: onChangePageLink
+        }), pageLink !== "" && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Page Link Label', 'rrze-calendar'),
           type: "text",
           value: pageLinkLabel,
@@ -268,6 +284,18 @@ function Edit({
               }, tagSlug);
             })
           })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("hr", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Include Events', 'rrze-calendar'),
+          type: "text",
+          value: includeEvents,
+          onChange: onChangeIncludeEvents,
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Only show events having these words in the title.', 'rrze-calendar')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Exclude', 'rrze-calendar'),
+          type: "text",
+          value: excludeEvents,
+          onChange: onChangeExcludeEvents,
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Hide events having these words in the title.', 'rrze-calendar')
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)((_wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3___default()), {
@@ -495,6 +523,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _edit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./edit */ "./src/blocks/events/edit.jsx");
 /* harmony import */ var _save__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./save */ "./src/blocks/events/save.jsx");
 /* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./block.json */ "./src/blocks/events/block.json");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
 /**
  * Registers a new block provided a unique name and an object defining its behavior.
  *
@@ -518,15 +548,26 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const eventListIcon = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+  viewBox: "0 0 24 24",
+  xmlns: "http://www.w3.org/2000/svg",
+  "aria-hidden": "true",
+  focusable: "false",
+  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+    d: "M18 4H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm.5 14c0 .3-.2.5-.5.5H6c-.3 0-.5-.2-.5-.5V6c0-.3.2-.5.5-.5h12c.3 0 .5.2.5.5v12zM7 11h2V9H7v2zm0 4h2v-2H7v2zm3-4h7V9h-7v2zm0 4h7v-2h-7v2z"
+  })
+});
+
 /**
  * Every block starts by registering a new block type definition.
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 (0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)(_block_json__WEBPACK_IMPORTED_MODULE_3__.name, {
+  icon: eventListIcon,
   /**
-   * @see ./edit.js
-   */
+  * @see ./edit.js
+  */
   edit: _edit__WEBPACK_IMPORTED_MODULE_1__["default"],
   /**
    * @see ./save.js
