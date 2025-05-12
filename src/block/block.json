@@ -1,12 +1,11 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "rrze-calendar/events",
+	"name": "rrze-calendar/calendar",
 	"version": "1.2.0",
-	"title": "Event List",
+	"title": "RRZE Calendar",
 	"category": "rrze",
-	"icon": "smiley",
-	"description": "Example block scaffolded with Create Block tool.",
+	"description": "Create a calendar view or a list of events from RRZE-Calendar plugin on your website.",
 	"example": {},
 	"supports": {
 		"html": false
@@ -16,21 +15,29 @@
 			"type": "boolean",
 			"default": false
 		},
-		"display": {
+		"layout": {
 			"type": "string",
 			"default": "teaser"
 		},
 		"selectedCategories": {
 			"type": "array",
-			"default": {}
+			"default": []
 		},
 		"selectedTags": {
 			"type": "array",
-			"default": {}
+			"default": []
 		},
 		"numEvents": {
-			"type": "integer",
-			"default": 0
+			"type": "integer"
+		},
+		"year": {
+			"type": "integer"
+		},
+		"month": {
+			"type": "integer"
+		},
+		"day": {
+			"type": "integer"
 		},
 		"pageLink": {
 			"type": "string",

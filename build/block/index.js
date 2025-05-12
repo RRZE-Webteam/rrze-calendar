@@ -2,20 +2,20 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/blocks/events/block.json":
-/*!**************************************!*\
-  !*** ./src/blocks/events/block.json ***!
-  \**************************************/
+/***/ "./src/block/block.json":
+/*!******************************!*\
+  !*** ./src/block/block.json ***!
+  \******************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/events","version":"1.2.0","title":"Event List","category":"rrze","icon":"smiley","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"display":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":{}},"selectedTags":{"type":"array","default":{}},"numEvents":{"type":"integer","default":0},"pageLink":{"type":"string","default":""},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"includeEvents":{"type":"string","default":""},"excludeEvents":{"type":"string","default":""}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/calendar","version":"1.2.0","title":"RRZE Calendar","category":"rrze","description":"Create a calendar view or a list of events from RRZE-Calendar plugin on your website.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"layout":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":[]},"selectedTags":{"type":"array","default":[]},"numEvents":{"type":"integer"},"year":{"type":"integer"},"month":{"type":"integer"},"day":{"type":"integer"},"pageLink":{"type":"string","default":""},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"includeEvents":{"type":"string","default":""},"excludeEvents":{"type":"string","default":""}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
 
 /***/ }),
 
-/***/ "./src/blocks/events/edit.jsx":
-/*!************************************!*\
-  !*** ./src/blocks/events/edit.jsx ***!
-  \************************************/
+/***/ "./src/block/edit.jsx":
+/*!****************************!*\
+  !*** ./src/block/edit.jsx ***!
+  \****************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -26,7 +26,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/events/editor.scss");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editor.scss */ "./src/block/editor.scss");
 /* harmony import */ var _wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/server-side-render */ "@wordpress/server-side-render");
 /* harmony import */ var _wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
@@ -81,7 +81,7 @@ function Edit({
   setAttributes
 }) {
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)();
-  const [display, setDisplay] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.layout || 'grid');
+  const [layout, setLayout] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.layout || 'calendar-full');
   const {
     pageLink
   } = attributes;
@@ -90,6 +90,15 @@ function Edit({
   } = attributes;
   const {
     numEvents
+  } = attributes;
+  const {
+    year
+  } = attributes;
+  const {
+    month
+  } = attributes;
+  const {
+    day
   } = attributes;
   const [selectedCategories, setSelectedCategories] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedCategories || []);
   const [selectedTags, setSelectedTags] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedTags || []);
@@ -100,9 +109,9 @@ function Edit({
     excludeEvents
   } = attributes;
   const onChangeLayout = value => {
-    setDisplay(value);
+    setLayout(value);
     setAttributes({
-      display: value
+      layout: value
     });
   };
 
@@ -212,12 +221,18 @@ function Edit({
         title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Layout', 'rrze-calendar'),
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.SelectControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Layout', 'rrze-calendar'),
-          value: display,
+          value: layout,
           options: [{
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Teaser', 'rrze-calendar'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Full', 'rrze-calendar'),
+            value: 'full'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Mini', 'rrze-calendar'),
+            value: 'mini'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Event List', 'rrze-calendar'),
             value: 'teaser'
           }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('List', 'rrze-calendar'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Event List Short', 'rrze-calendar'),
             value: 'list'
           }],
           onChange: onChangeLayout
@@ -299,7 +314,7 @@ function Edit({
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)((_wordpress_server_side_render__WEBPACK_IMPORTED_MODULE_3___default()), {
-      block: "rrze-calendar/events",
+      block: "rrze-calendar/calendar",
       attributes: attributes
     })]
   });
@@ -307,10 +322,10 @@ function Edit({
 
 /***/ }),
 
-/***/ "./src/blocks/events/editor.scss":
-/*!***************************************!*\
-  !*** ./src/blocks/events/editor.scss ***!
-  \***************************************/
+/***/ "./src/block/editor.scss":
+/*!*******************************!*\
+  !*** ./src/block/editor.scss ***!
+  \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -319,10 +334,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/blocks/events/save.jsx":
-/*!************************************!*\
-  !*** ./src/blocks/events/save.jsx ***!
-  \************************************/
+/***/ "./src/block/save.jsx":
+/*!****************************!*\
+  !*** ./src/block/save.jsx ***!
+  \****************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -514,15 +529,15 @@ module.exports = window["ReactJSXRuntime"];
 var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
-/*!*************************************!*\
-  !*** ./src/blocks/events/index.jsx ***!
-  \*************************************/
+/*!*****************************!*\
+  !*** ./src/block/index.jsx ***!
+  \*****************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/blocks */ "@wordpress/blocks");
 /* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _edit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./edit */ "./src/blocks/events/edit.jsx");
-/* harmony import */ var _save__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./save */ "./src/blocks/events/save.jsx");
-/* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./block.json */ "./src/blocks/events/block.json");
+/* harmony import */ var _edit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./edit */ "./src/block/edit.jsx");
+/* harmony import */ var _save__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./save */ "./src/block/save.jsx");
+/* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./block.json */ "./src/block/block.json");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
 /**
@@ -548,13 +563,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const eventListIcon = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+const calendarIcon = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
   viewBox: "0 0 24 24",
   xmlns: "http://www.w3.org/2000/svg",
   "aria-hidden": "true",
   focusable: "false",
   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
-    d: "M18 4H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm.5 14c0 .3-.2.5-.5.5H6c-.3 0-.5-.2-.5-.5V6c0-.3.2-.5.5-.5h12c.3 0 .5.2.5.5v12zM7 11h2V9H7v2zm0 4h2v-2H7v2zm3-4h7V9h-7v2zm0 4h7v-2h-7v2z"
+    d: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
   })
 });
 
@@ -564,7 +579,7 @@ const eventListIcon = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 (0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)(_block_json__WEBPACK_IMPORTED_MODULE_3__.name, {
-  icon: eventListIcon,
+  icon: calendarIcon,
   /**
   * @see ./edit.js
   */

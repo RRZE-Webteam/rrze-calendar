@@ -20,8 +20,8 @@ import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import './editor.scss';
-import ServerSideRender from "@wordpress/server-side-render";
 
+import ServerSideRender from "@wordpress/server-side-render";
 import { PanelBody, ComboboxControl, TextControl, ToggleControl, SelectControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
@@ -39,10 +39,13 @@ import { store as coreStore } from '@wordpress/core-data';
 
 export default function Edit({ attributes, setAttributes }) {
 	const blockProps = useBlockProps();
-	const [display, setDisplay] = useState( attributes.layout || 'grid' );
+	const [layout, setLayout] = useState( attributes.layout || 'calendar-full' );
 	const { pageLink } = attributes;
 	const { pageLinkLabel } = attributes;
 	const { numEvents } = attributes;
+	const { year } = attributes;
+	const { month } = attributes;
+	const { day } = attributes;
 	const [selectedCategories, setSelectedCategories] = useState(attributes.selectedCategories || []);
 	const [selectedTags, setSelectedTags] = useState(attributes.selectedTags || []);
 	const { includeEvents } = attributes;
@@ -50,8 +53,8 @@ export default function Edit({ attributes, setAttributes }) {
 
 
 	const onChangeLayout = (value) => {
-		setDisplay( value );
-		setAttributes({display: value});
+		setLayout( value );
+		setAttributes({layout: value});
 	};
 
 	// Page Link Settings
@@ -146,10 +149,12 @@ export default function Edit({ attributes, setAttributes }) {
 				<PanelBody title={__('Layout', 'rrze-calendar')}>
 					<SelectControl
 						label={__('Layout', 'rrze-calendar')}
-							value={display}
+							value={layout}
 						options={[
-							{label: __('Teaser', 'rrze-calendar'), value: 'teaser'},
-							{label: __('List', 'rrze-calendar'), value: 'list'}
+							{label: __('Calendar Full', 'rrze-calendar'), value: 'full'},
+							{label: __('Calendar Mini', 'rrze-calendar'), value: 'mini'},
+							{label: __('Event List', 'rrze-calendar'), value: 'teaser'},
+							{label: __('Event List Short', 'rrze-calendar'), value: 'list'}
 						]}
 						onChange={onChangeLayout}
 					/>
@@ -238,7 +243,7 @@ export default function Edit({ attributes, setAttributes }) {
 				</PanelBody>
 			</InspectorControls>
 			<ServerSideRender
-				block="rrze-calendar/events"
+				block="rrze-calendar/calendar"
 				attributes={attributes}
 			/>
 		</div>

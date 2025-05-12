@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
-/*!*************************************!*\
-  !*** ./src/blocks/calendar/view.js ***!
-  \*************************************/
+/*!***************************!*\
+  !*** ./src/block/view.js ***!
+  \***************************/
 /**
  * Use this file for JavaScript code that you want to run in the front-end 
  * on posts/pages that contain this block.
@@ -25,7 +25,7 @@
  */
 
 /* eslint-disable no-console */
-console.log("Hello World! (from rrze-calendar-calendar block)");
+//console.log("Hello World! (from rrze-calendar-events block)");
 /* eslint-enable no-console */
 /******/ })()
 ;

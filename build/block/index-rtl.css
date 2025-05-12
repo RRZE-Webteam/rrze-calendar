@@ -1,3 +1,6 @@
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/block/editor.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
 @charset "UTF-8";
 /**
  * The following styles get applied inside the editor only.
@@ -62,7 +65,7 @@
   word-break: break-word;
 }
 .rrze-calendar ul.events-list-short {
-  margin-left: 0;
+  margin-right: 0;
 }
 .rrze-calendar ul.events-list-short li {
   list-style: none;
@@ -84,10 +87,10 @@
   top: 2px;
 }
 .rrze-calendar ul.events-list-short .dashicons.dashicons-clock {
-  margin-left: 0.5em;
+  margin-right: 0.5em;
 }
 .rrze-calendar a.standard-btn {
-  margin-right: 5px;
+  margin-left: 5px;
 }
 
 .event-allday {
@@ -100,13 +103,13 @@
 }
 
 .single-calendar_event main {
-  padding-left: 15px;
   padding-right: 15px;
+  padding-left: 15px;
 }
 @media (min-width: 768px) {
   .single-calendar_event main {
-    padding-left: 0;
     padding-right: 0;
+    padding-left: 0;
   }
 }
 .single-calendar_event .rrze-event {
@@ -126,8 +129,8 @@
 }
 @media (min-width: 1024px) {
   .single-calendar_event .rrze-event-details {
-    border-left: 2px solid var(--color-primary-ci-hell2, #ced9e7);
-    padding-left: 15px;
+    border-right: 2px solid var(--color-primary-ci-hell2, #ced9e7);
+    padding-right: 15px;
   }
 }
 .single-calendar_event .rrze-event-details h2 {
@@ -144,7 +147,7 @@
   line-height: 1.313rem;
 }
 .single-calendar_event .rrze-event-details dd {
-  margin-left: 0;
+  margin-right: 0;
   margin-bottom: 1em;
 }
 .single-calendar_event .rrze-event-details dd p {
@@ -152,9 +155,9 @@
   padding: 0;
 }
 .single-calendar_event .rrze-event-details ul.downloads {
-  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
-  padding-left: 20px;
+  padding-right: 20px;
 }
 .single-calendar_event .rrze-event-details div.prices {
   overflow: hidden;
@@ -176,8 +179,8 @@
 }
 @media (min-width: 480px) {
   .single-calendar_event figure.post-thumbnail {
-    float: right;
-    margin: 0 0 1em 1em;
+    float: left;
+    margin: 0 1em 1em 0;
   }
 }
 .single-calendar_event figure.post-thumbnail .wp-caption-text {
@@ -200,7 +203,7 @@
   .single-calendar_event .rrze-event-schedule .rrze-event-date,
   .single-calendar_event .rrze-event-schedule .rrze-event-time {
     display: inline-block;
-    margin-right: 2em;
+    margin-left: 2em;
   }
 }
 .single-calendar_event .rrze-event-schedule .rrze-event-location {
@@ -208,8 +211,8 @@
 }
 .single-calendar_event .rrze-event-schedule ul {
   margin-bottom: 0;
-  margin-left: 0;
-  padding-left: 0;
+  margin-right: 0;
+  padding-right: 0;
 }
 .single-calendar_event .rrze-event-schedule ul.cols-3 {
   columns: 300px 3;
@@ -228,7 +231,7 @@
   display: inline;
 }
 .single-calendar_event .rrze-event-schedule .dashicons {
-  margin-right: 5px;
+  margin-left: 5px;
   color: #333;
   position: relative;
   top: 2px;
@@ -245,7 +248,7 @@
 }
 .rrze-calendar .cal-type-select a {
   display: inline-block;
-  margin-right: 0.5em;
+  margin-left: 0.5em;
   padding: 0.25em 1em;
   border: 2px solid #666;
   border-radius: var(--border-radius-buttons, 4px);
@@ -345,23 +348,23 @@
   }
 }
 .rrze-calendar .calendar-header ul.calendar-pager li.date-prev {
-  float: left;
+  float: right;
 }
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-header ul.calendar-pager li.date-prev {
     float: none;
-    left: 0;
-    right: auto;
+    right: 0;
+    left: auto;
   }
 }
 .rrze-calendar .calendar-header ul.calendar-pager li.date-next {
-  float: right;
+  float: left;
 }
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-header ul.calendar-pager li.date-next {
     float: none;
-    right: 0;
-    left: auto;
+    left: 0;
+    right: auto;
   }
 }
 .rrze-calendar .calendar-month {
@@ -411,7 +414,7 @@
     border: 1px solid #ccc;
     border-bottom-color: transparent;
     padding: 5px 7px;
-    text-align: right;
+    text-align: left;
   }
 }
 .rrze-calendar .calendar-month.full .empty-day {
@@ -438,7 +441,7 @@
 .rrze-calendar .calendar-month.full .event {
   display: block;
   position: relative;
-  text-align: left;
+  text-align: right;
   min-width: 0;
   min-height: 0;
   padding: 10px;
@@ -469,16 +472,16 @@
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-month.full .event:before {
     content: "«";
-    float: left;
+    float: right;
   }
 }
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-month.full .event:after {
     content: "»";
-    text-align: right;
+    text-align: left;
     position: absolute;
     bottom: 0;
-    right: 5px;
+    left: 5px;
   }
 }
 .rrze-calendar .calendar-month.full .event p {
@@ -509,7 +512,7 @@
   display: block;
   position: absolute;
   bottom: 1em;
-  left: 0.5em;
+  right: 0.5em;
   width: 15em;
   padding: 0.5em;
   z-index: 100;
@@ -517,7 +520,7 @@
   background-color: #fefefe;
   border: solid 2px #ccc;
   border-radius: 0.2em;
-  box-shadow: 2px 2px 5px #ccc;
+  box-shadow: -2px 2px 5px #ccc;
 }
 .rrze-calendar .calendar-month.full .event a {
   text-decoration: none;
@@ -539,7 +542,7 @@
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-month.full .event:not(.event-start) {
     display: block;
-    padding-left: 5px;
+    padding-right: 5px;
   }
   .rrze-calendar .calendar-month.full .event:not(.event-start) a {
     width: calc(100% - 20px);
@@ -547,7 +550,7 @@
 }
 @media screen and (min-width: 480px) {
   .rrze-calendar .calendar-month.full .event:not(.event-end) {
-    padding-right: 5px;
+    padding-left: 5px;
   }
 }
 @media screen and (min-width: 480px) {
@@ -564,7 +567,7 @@
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;
-  text-align: left;
+  text-align: right;
   height: auto;
   float: none;
 }
@@ -619,5 +622,3 @@
     word-wrap: normal !important;
   }
 }
-
-/*# sourceMappingURL=editor.css.map */

@@ -4,4 +4,5 @@
  * Replace them with your own styles or remove the file completely.
  */
 
-@use '../../events/style';
+@use '../events/style' as list-style;
+@use '../calendar/style' as calendar-style;
