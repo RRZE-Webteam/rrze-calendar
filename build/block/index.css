@@ -623,4 +623,11 @@
   }
 }
 
+.wp-block-rrze-calendar-calendar .rrze-calendar a {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: inherit;
+  text-decoration: underline;
+}
+
 /*# sourceMappingURL=index.css.map*/

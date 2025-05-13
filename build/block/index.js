@@ -8,7 +8,7 @@
   \******************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/calendar","version":"1.2.0","title":"RRZE Calendar","category":"rrze","description":"Create a calendar view or a list of events from RRZE-Calendar plugin on your website.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"layout":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":[]},"selectedTags":{"type":"array","default":[]},"numEvents":{"type":"integer"},"year":{"type":"integer"},"month":{"type":"integer"},"day":{"type":"integer"},"pageLink":{"type":"string","default":""},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"includeEvents":{"type":"string","default":""},"excludeEvents":{"type":"string","default":""}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"rrze-calendar/calendar","version":"1.2.0","title":"RRZE Calendar","category":"rrze","description":"Create a calendar view or a list of events from RRZE-Calendar plugin on your website.","example":{},"supports":{"html":false},"attributes":{"featured":{"type":"boolean","default":false},"layout":{"type":"string","default":"teaser"},"selectedCategories":{"type":"array","default":[]},"selectedTags":{"type":"array","default":[]},"numEvents":{"type":"integer"},"pageLink":{"type":"string","default":""},"pageLinkLabel":{"type":"string","default":"Show All Events"},"abonnementLink":{"type":"boolean","default":false},"includeEvents":{"type":"string","default":""},"excludeEvents":{"type":"string","default":""}},"textdomain":"rrze-calendar","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","render":"file:./render.php"}');
 
 /***/ }),
 
@@ -83,6 +83,9 @@ function Edit({
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)();
   const [layout, setLayout] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.layout || 'calendar-full');
   const {
+    abonnementLink
+  } = attributes;
+  const {
     pageLink
   } = attributes;
   const {
@@ -90,15 +93,6 @@ function Edit({
   } = attributes;
   const {
     numEvents
-  } = attributes;
-  const {
-    year
-  } = attributes;
-  const {
-    month
-  } = attributes;
-  const {
-    day
   } = attributes;
   const [selectedCategories, setSelectedCategories] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedCategories || []);
   const [selectedTags, setSelectedTags] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(attributes.selectedTags || []);
@@ -122,7 +116,7 @@ function Edit({
     });
   }, []);
   const pageOptions = pages ? pages.map(page => ({
-    label: page.title.rendered || '(Ohne Titel)',
+    label: page.title.rendered || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('(No title)', 'rrze-calendar'),
     value: page.id
   })) : [];
   const onChangePageLink = value => {
@@ -223,39 +217,50 @@ function Edit({
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Layout', 'rrze-calendar'),
           value: layout,
           options: [{
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Full', 'rrze-calendar'),
-            value: 'full'
-          }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Mini', 'rrze-calendar'),
-            value: 'mini'
-          }, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Event List', 'rrze-calendar'),
             value: 'teaser'
           }, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Event List Short', 'rrze-calendar'),
             value: 'list'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Full', 'rrze-calendar'),
+            value: 'full'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Calendar Mini', 'rrze-calendar'),
+            value: 'mini'
           }],
           onChange: onChangeLayout
+        }), (layout === "teaser" || layout === "list") && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Count', 'rrze-calendar'),
+          type: "number",
+          min: 0,
+          step: 1,
+          value: numEvents,
+          onChange: onChangeNumber,
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('How many events do you want to show? Enter 0 or leave empty for all events.', 'rrze-calendar')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.ToggleControl, {
+          __nextHasNoMarginBottom: true,
+          checked: !!abonnementLink,
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('ICS Link', 'rrze-calendar'),
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Show link to ICS file', 'rrze-calendar'),
+          onChange: () => setAttributes({
+            abonnementLink: !abonnementLink
+          })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.ComboboxControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Page Link', 'rrze-calendar'),
           options: pageOptions,
-          onChange: onChangePageLink
+          onChange: onChangePageLink,
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to all events page', 'rrze-calendar')
         }), pageLink !== "" && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Page Link Label', 'rrze-calendar'),
           type: "text",
           value: pageLinkLabel,
           onChange: onChangePageLinkLabel,
-          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Page Link Label', 'rrze-calendar')
+          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link text', 'rrze-calendar')
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.PanelBody, {
         title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select Events', 'rrze-calendar'),
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Count', 'rrze-calendar'),
-          type: "number",
-          value: numEvents,
-          onChange: onChangeNumber,
-          help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('How many events do you want to show? Enter -1 for all events.', 'rrze-calendar')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("hr", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.ComboboxControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.ComboboxControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Categories', 'rrze-calendar'),
           options: categoryOptions,
           onChange: onAddCategory
@@ -306,7 +311,7 @@ function Edit({
           onChange: onChangeIncludeEvents,
           help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Only show events having these words in the title.', 'rrze-calendar')
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.TextControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Exclude', 'rrze-calendar'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Exclude Events', 'rrze-calendar'),
           type: "text",
           value: excludeEvents,
           onChange: onChangeExcludeEvents,

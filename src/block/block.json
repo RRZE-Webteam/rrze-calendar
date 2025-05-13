@@ -30,15 +30,6 @@
 		"numEvents": {
 			"type": "integer"
 		},
-		"year": {
-			"type": "integer"
-		},
-		"month": {
-			"type": "integer"
-		},
-		"day": {
-			"type": "integer"
-		},
 		"pageLink": {
 			"type": "string",
 			"default": ""

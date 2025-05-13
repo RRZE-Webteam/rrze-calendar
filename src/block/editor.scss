@@ -6,3 +6,10 @@
 
 @use '../events/style' as list-style;
 @use '../calendar/style' as calendar-style;
+
+.wp-block-rrze-calendar-calendar .rrze-calendar a {
+    cursor: not-allowed;
+    pointer-events: none;
+    color: inherit;
+    text-decoration: underline;
+}

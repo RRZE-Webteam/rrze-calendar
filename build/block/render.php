@@ -9,8 +9,7 @@ $attributes['page_link'] = $attributes['pageLink'] ?? '';
 $attributes['page_link_label'] = isset($attributes['pageLinkLabel']) ? esc_html($attributes['pageLinkLabel']) : '';
 $attributes['include'] = $attributes['includeEvents'] ?? '';
 $attributes['exclude'] = $attributes['excludeEvents'] ?? '';
-
-//var_dump($attributes);
+$attributes['abonnement_link'] = $attributes['abonnementLink'] ? '1' : '';
 
 switch ( $attributes['layout'] ) {
     case 'teaser':

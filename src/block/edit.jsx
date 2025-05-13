@@ -24,7 +24,7 @@ import './editor.scss';
 import ServerSideRender from "@wordpress/server-side-render";
 import { PanelBody, ComboboxControl, TextControl, ToggleControl, SelectControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
+import {select, useSelect} from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 
 
@@ -40,12 +40,10 @@ import { store as coreStore } from '@wordpress/core-data';
 export default function Edit({ attributes, setAttributes }) {
 	const blockProps = useBlockProps();
 	const [layout, setLayout] = useState( attributes.layout || 'calendar-full' );
+	const { abonnementLink} = attributes;
 	const { pageLink } = attributes;
 	const { pageLinkLabel } = attributes;
 	const { numEvents } = attributes;
-	const { year } = attributes;
-	const { month } = attributes;
-	const { day } = attributes;
 	const [selectedCategories, setSelectedCategories] = useState(attributes.selectedCategories || []);
 	const [selectedTags, setSelectedTags] = useState(attributes.selectedTags || []);
 	const { includeEvents } = attributes;
@@ -64,7 +62,7 @@ export default function Edit({ attributes, setAttributes }) {
 		});
 	}, []);
 	const pageOptions = pages ? pages.map((page) => ({
-			label: page.title.rendered || '(Ohne Titel)',
+			label: page.title.rendered || __('(No title)', 'rrze-calendar'),
 			value: page.id,
 		})) : [];
 
@@ -151,37 +149,52 @@ export default function Edit({ attributes, setAttributes }) {
 						label={__('Layout', 'rrze-calendar')}
 							value={layout}
 						options={[
-							{label: __('Calendar Full', 'rrze-calendar'), value: 'full'},
-							{label: __('Calendar Mini', 'rrze-calendar'), value: 'mini'},
 							{label: __('Event List', 'rrze-calendar'), value: 'teaser'},
-							{label: __('Event List Short', 'rrze-calendar'), value: 'list'}
+							{label: __('Event List Short', 'rrze-calendar'), value: 'list'},
+							{label: __('Calendar Full', 'rrze-calendar'), value: 'full'},
+							{label: __('Calendar Mini', 'rrze-calendar'), value: 'mini'}
 						]}
 						onChange={onChangeLayout}
+					/>
+					{(layout === "teaser" || layout === "list") && (
+						<TextControl
+							label={__('Count', 'rrze-calendar')}
+							type="number"
+							min={0}
+							step={1}
+							value={numEvents}
+							onChange={onChangeNumber}
+							help={__('How many events do you want to show? Enter 0 or leave empty for all events.', 'rrze-calendar')}
+						/>
+					)}
+					<ToggleControl
+						__nextHasNoMarginBottom
+						checked={!!abonnementLink}
+						label={__('ICS Link', 'rrze-calendar')}
+						help={__('Show link to ICS file', 'rrze-calendar')}
+						onChange={() =>
+							setAttributes({
+								abonnementLink: !abonnementLink,
+							})
+						}
 					/>
 					<ComboboxControl
 						label={__('Page Link', 'rrze-calendar')}
 						options={pageOptions}
 						onChange={onChangePageLink}
+						help={__('Link to all events page', 'rrze-calendar')}
 					/>
 					{pageLink !== "" && (
 						<TextControl
-							label={__('Page Link Label', 'rrze-calendar')}
-							type="text"
-							value={pageLinkLabel}
-							onChange={onChangePageLinkLabel}
-							help={__('Page Link Label', 'rrze-calendar')}
+						label={__('Page Link Label', 'rrze-calendar')}
+						type="text"
+						value={pageLinkLabel}
+						onChange={onChangePageLinkLabel}
+						help={__('Link text', 'rrze-calendar')}
 						/>
 					)}
 				</PanelBody>
 				<PanelBody title={__('Select Events', 'rrze-calendar')}>
-					<TextControl
-						label={__('Count', 'rrze-calendar')}
-						type="number"
-						value={numEvents}
-						onChange={onChangeNumber}
-						help={__('How many events do you want to show? Enter -1 for all events.', 'rrze-calendar')}
-					/>
-					<hr/>
 					<ComboboxControl
 						label={__('Categories', 'rrze-calendar')}
 						options={categoryOptions}
@@ -234,7 +247,7 @@ export default function Edit({ attributes, setAttributes }) {
 						help={__('Only show events having these words in the title.', 'rrze-calendar')}
 					/>
 					<TextControl
-						label={__('Exclude', 'rrze-calendar')}
+						label={__('Exclude Events', 'rrze-calendar')}
 						type="text"
 						value={excludeEvents}
 						onChange={onChangeExcludeEvents}
