@@ -6,6 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
+use RRZE\Calendar\Vendor\Dependencies\ICal\ICal;
 use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
 use function RRZE\Calendar\plugin;
 
@@ -132,6 +133,7 @@ class Export
     private function getEvents(array $posts)
     {
         $data = [];
+
         foreach ($posts as $post) {
             $meta = get_post_meta($post->ID, '', true);
             $args = [
@@ -142,57 +144,128 @@ class Export
                 'dtend' => !empty($meta['end'][0]) ? get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s') : '',
                 'location' => $meta['location'][0] ?? '',
             ];
-            $icsMeta = Utils::getMeta($meta, 'ics_event_meta');
-            $rrule = !empty($icsMeta['rrule']) ? maybe_unserialize($icsMeta['rrule']) : '';
-            if (empty($rrule)) {
-                // RRULE
-                $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
-                if ($decodedRruleArgs = json_decode($rruleArgs, true)) {
-                    $rruleObj = new RRule($decodedRruleArgs);
-                    $rrule = $rruleObj->rfcString();
-                    $rruleStartPos = strpos($rrule, 'RRULE:');
-                    if ($rruleStartPos !== false) {
-                        $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
-                    }
-                }
-                if ($rrule) {
-                    // EXDATE (dates exceptions)
-                    $exDate = [];
-                    $exceptions = Utils::getMeta($meta, 'exceptions');
-                    if (!empty($exceptions)) {
-                        $exceptions = explode(',', $exceptions);
-                        foreach ($exceptions as $datetimeStr) {
-                            if (Utils::validateDate($datetimeStr)) {
-                                $datetime = new \DateTime($datetimeStr);
-                                $exDate[] = $datetime->format('Ymd');
-                            }
-                        }
-                    }
-                    // RDATE (dates additions)
-                    $rDate = [];
-                    $additions = Utils::getMeta($meta, 'additions');
-                    if (!empty($additions)) {
-                        $additions = explode(',', $additions);
-                        foreach ($additions as $datetimeStr) {
-                            if (Utils::validateDate($datetimeStr)) {
-                                $datetime = new \DateTime($datetimeStr);
-                                $rDate[] = $datetime->format('Ymd');
-                            }
-                        }
-                    }
-                    if (!empty($exDate)) {
-                        $args['exdate;value=date'] = implode(',', $exDate);
-                    }
-                    if (!empty($rDate)) {
-                        $args['rdate;value=date'] = implode(',', $rDate);
-                    }
-                }
+
+            if (empty(Utils::getMeta($meta, 'ics_feed_id'))) {
+                $this->buildRrule($meta, $args);
+            } else {
+                $this->buildRruleFromIcsMeta($meta, $args);
             }
-            $args['rrule'] = !empty($rrule) ? $rrule : '';
 
             $data[$post->ID] = $args;
         }
         return $data;
+    }
+
+    private function buildRrule($meta, &$args)
+    {
+        // RRULE
+        $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+        $rrule = '';
+        if (!empty($rruleArgs) && $decodedRruleArgs = json_decode($rruleArgs, true)) {
+            $rruleObj = new RRule($decodedRruleArgs);
+            $rrule = $rruleObj->rfcString();
+            $rruleStartPos = strpos($rrule, 'RRULE:');
+            if ($rruleStartPos !== false) {
+                $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
+            }
+        }
+        if (empty($rrule)) {
+            return;
+        } else {
+            $args['rrule'] = $rrule;
+        }
+
+        // EXDATE (dates exceptions)
+        $exDate = [];
+        $exceptions = Utils::getMeta($meta, 'exceptions');
+        if (!empty($exceptions)) {
+            $exceptions = explode(',', $exceptions);
+            foreach ($exceptions as $datetimeStr) {
+                if (Utils::validateDate($datetimeStr)) {
+                    $datetime = new \DateTime($datetimeStr);
+                    $exDate[] = $datetime->format('Ymd\THis\Z');
+                }
+            }
+        }
+        if (!empty($exDate)) {
+            $args['exdate'] = implode(',', $exDate);
+        }
+
+        // RDATE (dates additions)
+        $rDate = [];
+        $additions = Utils::getMeta($meta, 'additions');
+        if (!empty($additions)) {
+            $additions = explode(',', $additions);
+            foreach ($additions as $datetimeStr) {
+                if (Utils::validateDate($datetimeStr)) {
+                    $datetime = new \DateTime($datetimeStr);
+                    $rDate[] = $datetime->format('Ymd\THis\Z');
+                }
+            }
+        }
+        if (!empty($rDate)) {
+            $args['rdate'] = implode(',', $rDate);
+        }
+    }
+
+    private function buildRruleFromIcsMeta($meta, &$args)
+    {
+        $meta = Utils::getMeta($meta, 'ics_event_meta');
+
+        // RRULE
+        $rrule = $meta['rrule'] ?? '';
+        if (!is_string($rrule)) {
+            return;
+        }
+        $args['rrule'] = $rrule;
+
+        // EXDATE (date exceptions)
+        $exdates = [];
+        $exdateArray = $meta['exdate_array'] ?? [];
+
+        if (! empty($exdateArray) && is_array($exdateArray)) {
+            $tzid = $exdateArray[0]['TZID'] ?? '';
+            $tzObj = (new ICal)->timeZoneStringToDateTimeZone($tzid);
+
+            if (! empty($exdateArray[1]) && is_array($exdateArray[1])) {
+                foreach ($exdateArray[1] as $dateStr) {
+                    $dt = \DateTime::createFromFormat('Ymd\THis', $dateStr, $tzObj);
+                    if (! $dt) {
+                        continue;
+                    }
+                    $dt->setTimezone(new \DateTimeZone('UTC'));
+                    $exdates[] = $dt->format('Ymd\THis\Z');
+                }
+            }
+
+            if (! empty($exdates)) {
+                $args['exdate'] = implode(',', $exdates);
+            }
+        }
+
+        // RDATE (dates additions)
+        $rdates = [];
+        $rdateArray = $meta['rdate_array'] ?? [];
+
+        if (! empty($rdateArray) && is_array($rdateArray)) {
+            $tzid = $rdateArray[0]['TZID'] ?? '';
+            $tzObj = (new ICal)->timeZoneStringToDateTimeZone($tzid);
+
+            if (! empty($rdateArray[1]) && is_array($rdateArray[1])) {
+                foreach ($rdateArray[1] as $dateStr) {
+                    $dt = \DateTime::createFromFormat('Ymd\THis', $dateStr, $tzObj);
+                    if (! $dt) {
+                        continue;
+                    }
+                    $dt->setTimezone(new \DateTimeZone('UTC'));
+                    $rdates[] = $dt->format('Ymd\THis\Z');
+                }
+            }
+
+            if (! empty($rdates)) {
+                $args['rdate'] = implode(',', $rdates);
+            }
+        }
     }
 
     /**

@@ -44,6 +44,7 @@ class Events
         $atts_default = [
             'featured' => 'false',
             'display' => '',
+            'layout' => '',  // Compatibility with calendar shortcode and block
             'categories' => '',  // Multiple categories (slugs) are separated by commas
             'kategorien' => '',  // Multiple categories (slugs) are separated by commas
             'tags' => '',        // Multiple keywords (slugs) are separated by commas
@@ -60,6 +61,7 @@ class Events
             'exclude' => '',
         ];
         $atts = shortcode_atts($atts_default, $atts);
+        if ($atts['layout'] != '') $atts['display'] = $atts['layout'];
         $display = $atts['display'] == 'list' ? 'list' : 'teaser';
         $number = absint($atts['number']) + absint($atts['count'])  + absint($atts['anzahl']);
         if ($number < 1) {

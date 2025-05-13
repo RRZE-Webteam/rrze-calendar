@@ -1,1 +1,327 @@
-(()=>{"use strict";var e,t={448:(e,t,n)=>{n(461)},461:(e,t,n)=>{n(428)(document).ready((function(e){let t="#041E42",n=e(".color-picker");function o(e){n.val(e)}function r(){""===n.val().replace("#","")?(n.val(t),o(t)):o(n.val())}n.wpColorPicker({change:function(){o(n.wpColorPicker("color"))},clear:function(){o("")}}),n.click(r),n.length>0&&r(),n.iris({palettes:["#041E42","#963B2F","#662938","#003E61","#14462D","#204251"]});let i=e("input#repeat"),a=e("select#repeat-interval"),l=e("input[name='repeat-monthly-type']"),d=e("body.post-new-php input#start_date"),p=e("body.post-new-php input#end_date");function v(){i.is(":checked")?(e("div.repeat").slideDown(),c()):e("div.repeat").slideUp()}function c(){var t=e("option:selected",a).val();"week"===t?(e("div.repeat-weekly").slideDown(),e("div.repeat-monthly").slideUp()):"month"===t&&(e("div.repeat-monthly").slideDown(),e("div.repeat-weekly").slideUp(),s())}function s(){var t=e("input[name='repeat-monthly-type']:checked").val();void 0===t?(e("div.repeat-monthly-date").hide(),e("div.repeat-monthly-dow").hide()):"dow"===t?(e("div.repeat-monthly-dow").slideDown(),e("div.repeat-monthly-date").slideUp()):"date"===t&&(e("div.repeat-monthly-date").slideDown(),e("div.repeat-monthly-dow").slideUp())}i.length>0&&v(),i.on("change",(function(){v()})),a.on("change",(function(){c()})),l.on("change",(function(){s()})),d.on("change",(function(){(!p.val()||p.val()<e(this).val())&&p.val(e(this).val())}))}))},428:e=>{e.exports=window.jQuery}},n={};function o(e){var r=n[e];if(void 0!==r)return r.exports;var i=n[e]={exports:{}};return t[e](i,i.exports,o),i.exports}o.m=t,e=[],o.O=(t,n,r,i)=>{if(!n){var a=1/0;for(v=0;v<e.length;v++){n=e[v][0],r=e[v][1],i=e[v][2];for(var l=!0,d=0;d<n.length;d++)(!1&i||a>=i)&&Object.keys(o.O).every((e=>o.O[e](n[d])))?n.splice(d--,1):(l=!1,i<a&&(a=i));if(l){e.splice(v--,1);var p=r();void 0!==p&&(t=p)}}return t}i=i||0;for(var v=e.length;v>0&&e[v-1][2]>i;v--)e[v]=e[v-1];e[v]=[n,r,i]},o.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return o.d(t,{a:t}),t},o.d=(e,t)=>{for(var n in t)o.o(t,n)&&!o.o(e,n)&&Object.defineProperty(e,n,{enumerable:!0,get:t[n]})},o.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),(()=>{var e={884:0,498:0};o.O.j=t=>0===e[t];var t=(t,n)=>{var r,i,a=n[0],l=n[1],d=n[2],p=0;if(a.some((t=>0!==e[t]))){for(r in l)o.o(l,r)&&(o.m[r]=l[r]);if(d)var v=d(o)}for(t&&t(n);p<a.length;p++)i=a[p],o.o(e,i)&&e[i]&&e[i][0](),e[i]=0;return o.O(v)},n=self.webpackChunk=self.webpackChunk||[];n.forEach(t.bind(null,0)),n.push=t.bind(null,n.push.bind(n))})();var r=o.O(void 0,[498],(()=>o(448)));r=o.O(r)})();
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./src/admin/index.js":
+/*!****************************!*\
+  !*** ./src/admin/index.js ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _style_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./style.scss */ "./src/admin/style.scss");
+/* harmony import */ var _script_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./script.js */ "./src/admin/script.js");
+/* harmony import */ var _script_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_script_js__WEBPACK_IMPORTED_MODULE_1__);
+/**
+ * Plugin dependencies
+ */
+
+
+
+/***/ }),
+
+/***/ "./src/admin/script.js":
+/*!*****************************!*\
+  !*** ./src/admin/script.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+/* provided dependency */ var jQuery = __webpack_require__(/*! jquery */ "jquery");
+
+
+jQuery(document).ready(function ($) {
+  /*
+   * CPT CalendarFeed Edit Screen
+   */
+
+  let defaultColor = "#041E42";
+  let linkColor = $(".color-picker");
+  function pickColor(color) {
+    linkColor.val(color);
+  }
+  function toggleText() {
+    if ("" === linkColor.val().replace("#", "")) {
+      linkColor.val(defaultColor);
+      pickColor(defaultColor);
+    } else {
+      pickColor(linkColor.val());
+    }
+  }
+  linkColor.wpColorPicker({
+    change: function () {
+      pickColor(linkColor.wpColorPicker("color"));
+    },
+    clear: function () {
+      pickColor("");
+    }
+  });
+  linkColor.click(toggleText);
+  if (linkColor.length > 0) {
+    toggleText();
+  }
+  linkColor.iris({
+    palettes: ["#041E42",
+    // FAU
+    "#963B2F",
+    // Phil
+    "#662938",
+    // RW
+    "#003E61",
+    // Med
+    "#14462D",
+    // Nat
+    "#204251" // TF
+    ]
+  });
+
+  /*
+   * CPT Event Edit Screen
+   */
+
+  let repeatCheck = $("input#repeat");
+  let repeatIntervalSelect = $("select#repeat-interval");
+  let repeatMonthlyTypeInput = $("input[name='repeat-monthly-type']");
+  let newStartDateInput = $("body.post-new-php input#start_date");
+  let newEndDateInput = $("body.post-new-php input#end_date");
+  if (repeatCheck.length > 0) {
+    triggerRepeatFields();
+  }
+  repeatCheck.on("change", function () {
+    triggerRepeatFields();
+  });
+  repeatIntervalSelect.on("change", function () {
+    triggerIntervalFields();
+  });
+  repeatMonthlyTypeInput.on("change", function () {
+    triggerMonthlyTypeFields();
+  });
+  newStartDateInput.on("change", function () {
+    if (!newEndDateInput.val() || newEndDateInput.val() < $(this).val()) {
+      newEndDateInput.val($(this).val());
+    }
+  });
+  function triggerRepeatFields() {
+    if (repeatCheck.is(":checked")) {
+      $("div.repeat").slideDown();
+      triggerIntervalFields();
+    } else {
+      $("div.repeat").slideUp();
+    }
+  }
+  function triggerIntervalFields() {
+    var repeatInterval = $("option:selected", repeatIntervalSelect).val();
+    if (repeatInterval === "week") {
+      $("div.repeat-weekly").slideDown();
+      $("div.repeat-monthly").slideUp();
+    } else if (repeatInterval === "month") {
+      $("div.repeat-monthly").slideDown();
+      $("div.repeat-weekly").slideUp();
+      triggerMonthlyTypeFields();
+    }
+  }
+  function triggerMonthlyTypeFields() {
+    var repeatMonthlyType = $("input[name='repeat-monthly-type']:checked").val();
+    if (typeof repeatMonthlyType == "undefined") {
+      $("div.repeat-monthly-date").hide();
+      $("div.repeat-monthly-dow").hide();
+    } else if (repeatMonthlyType === "dow") {
+      $("div.repeat-monthly-dow").slideDown();
+      $("div.repeat-monthly-date").slideUp();
+    } else if (repeatMonthlyType === "date") {
+      $("div.repeat-monthly-date").slideDown();
+      $("div.repeat-monthly-dow").slideUp();
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./src/admin/style.scss":
+/*!******************************!*\
+  !*** ./src/admin/style.scss ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "jquery":
+/*!*************************!*\
+  !*** external "jQuery" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = window["jQuery"];
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/chunk loaded */
+/******/ 	(() => {
+/******/ 		var deferred = [];
+/******/ 		__webpack_require__.O = (result, chunkIds, fn, priority) => {
+/******/ 			if(chunkIds) {
+/******/ 				priority = priority || 0;
+/******/ 				for(var i = deferred.length; i > 0 && deferred[i - 1][2] > priority; i--) deferred[i] = deferred[i - 1];
+/******/ 				deferred[i] = [chunkIds, fn, priority];
+/******/ 				return;
+/******/ 			}
+/******/ 			var notFulfilled = Infinity;
+/******/ 			for (var i = 0; i < deferred.length; i++) {
+/******/ 				var [chunkIds, fn, priority] = deferred[i];
+/******/ 				var fulfilled = true;
+/******/ 				for (var j = 0; j < chunkIds.length; j++) {
+/******/ 					if ((priority & 1 === 0 || notFulfilled >= priority) && Object.keys(__webpack_require__.O).every((key) => (__webpack_require__.O[key](chunkIds[j])))) {
+/******/ 						chunkIds.splice(j--, 1);
+/******/ 					} else {
+/******/ 						fulfilled = false;
+/******/ 						if(priority < notFulfilled) notFulfilled = priority;
+/******/ 					}
+/******/ 				}
+/******/ 				if(fulfilled) {
+/******/ 					deferred.splice(i--, 1)
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
+/******/ 				}
+/******/ 			}
+/******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"admin": 0,
+/******/ 			"./admin.style": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		__webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 			return __webpack_require__.O(result);
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = globalThis["webpackChunk"] = globalThis["webpackChunk"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["./admin.style"], () => (__webpack_require__("./src/admin/index.js")))
+/******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
+/******/ 	
+/******/ })()
+;
+//# sourceMappingURL=admin.js.map

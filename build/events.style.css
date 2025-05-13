@@ -1,1 +1,237 @@
-.rrze-calendar ul.events-list{background:none;margin:0;padding:0}.rrze-calendar ul.events-list li.event-item{align-items:flex-start;display:flex;flex-direction:row;gap:1em;list-style:none;margin-bottom:1em}.rrze-calendar ul.events-list .event-date{background:var(--color-primary-ci-hell,#036);color:var(--color-primary-ci-hell-kontrast,#fff);flex:0 0 60px;height:auto;line-height:1.6;margin:0;padding:.5em;text-align:center;width:auto}.rrze-2019 .rrze-calendar ul.events-list .event-date{background-color:#00458c}.rrze-calendar ul.events-list .event-date .day-month{float:none;height:auto;padding:0}.rrze-calendar ul.events-list .event-date .day-month .day{font-size:1.4rem;font-weight:700}.rrze-calendar ul.events-list .event-date .day-month .month{font-size:1rem}.rrze-calendar ul.events-list .event-title{font-size:1.1rem;line-height:1.5;margin-bottom:0;margin-top:0;padding-top:0}.rrze-calendar ul.events-list .event-title a{box-shadow:none;color:var(--color-Text,#222);text-decoration:none}.rrze-calendar ul.events-list .event-title a:active,.rrze-calendar ul.events-list .event-title a:focus,.rrze-calendar ul.events-list .event-title a:hover{text-decoration:underline}.rrze-calendar ul.events-list .event-location{word-break:break-word}.rrze-calendar ul.events-list-short{margin-left:0}.rrze-calendar ul.events-list-short li{list-style:none;margin-bottom:.5em}.rrze-calendar ul.events-list-short .event-date{background:unset;color:unset;display:inline;float:none;padding:0}.rrze-calendar ul.events-list-short .event-title{font-weight:700}.rrze-calendar ul.events-list-short .dashicons{color:#333;position:relative;top:2px}.rrze-calendar ul.events-list-short .dashicons.dashicons-clock{margin-left:.5em}.rrze-calendar a.standard-btn{margin-right:5px}.event-allday{text-transform:uppercase}.event-label{font-weight:700;margin:.5rem 0 .2rem}.single-calendar_event main{padding-left:15px;padding-right:15px}@media(min-width:768px){.single-calendar_event main{padding-left:0;padding-right:0}}.single-calendar_event .rrze-event{margin-top:20px}@media(min-width:1024px){.single-calendar_event .rrze-event{column-gap:var(--gap-width,30px);display:grid;grid-template-columns:1fr var(--min-width-aside,300px)}.single-calendar_event .rrze-event .entry-header{grid-column:1/span 2}.single-calendar_event .rrze-event-details{border-left:2px solid var(--color-primary-ci-hell2,#ced9e7);padding-left:15px}}.single-calendar_event .rrze-event-details h2{margin-top:0}.single-calendar_event .rrze-event-details p{margin-bottom:.5em}.single-calendar_event .rrze-event-details dd,.single-calendar_event .rrze-event-details dd *,.single-calendar_event .rrze-event-details dt,.single-calendar_event .rrze-event-details dt *{font-size:.875rem;line-height:1.313rem}.single-calendar_event .rrze-event-details dd{margin-bottom:1em;margin-left:0}.single-calendar_event .rrze-event-details dd p{margin:0;padding:0}.single-calendar_event .rrze-event-details ul.downloads{margin-left:0;overflow:hidden;padding-left:20px}.single-calendar_event .rrze-event-details div.prices{overflow:hidden}.single-calendar_event .rrze-event-details span.label{display:block;font-weight:700}@media(min-width:480px){.single-calendar_event .post-image{margin-top:0;max-width:50%}}@media(min-width:992px){.single-calendar_event .post-image{max-width:30%}}@media(min-width:480px){.single-calendar_event figure.post-thumbnail{float:right;margin:0 0 1em 1em}}.single-calendar_event figure.post-thumbnail .wp-caption-text{margin-bottom:0}@media(min-width:480px){.single-calendar_event figure.post-thumbnail{width:auto}}.single-calendar_event .rrze-event-schedule{margin-bottom:1em}.single-calendar_event .rrze-event-schedule .rrze-event-date,.single-calendar_event .rrze-event-schedule .rrze-event-location,.single-calendar_event .rrze-event-schedule .rrze-event-time{display:block}@media(min-width:768px){.single-calendar_event .rrze-event-schedule .rrze-event-date,.single-calendar_event .rrze-event-schedule .rrze-event-time{display:inline-block;margin-right:2em}}.single-calendar_event .rrze-event-schedule .rrze-event-location{margin-top:.5em}.single-calendar_event .rrze-event-schedule ul{margin-bottom:0;margin-left:0;padding-left:0}.single-calendar_event .rrze-event-schedule ul.cols-3{column-gap:20px;columns:300px 3;orphans:3;widows:3}.single-calendar_event .rrze-event-schedule ul li{list-style-type:none}.single-calendar_event .rrze-event-schedule ul li.past{filter:brightness(2);text-decoration:line-through}.single-calendar_event .rrze-event-schedule ul li .rrze-event-date{display:inline}.single-calendar_event .rrze-event-schedule .dashicons{color:#333;margin-right:5px;position:relative;top:2px}.single-calendar_event .rrze-event-description span.label{font-weight:700}
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/events/style.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
+.rrze-calendar ul.events-list {
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+.rrze-calendar ul.events-list li.event-item {
+  list-style: none;
+  margin-bottom: 1em;
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: flex-start;
+}
+.rrze-calendar ul.events-list .event-date {
+  flex: 0 0 60px;
+  margin: 0;
+  padding: 0.5em;
+  text-align: center;
+  width: auto;
+  height: auto;
+  background: var(--color-primary-ci-hell, #003366);
+  color: var(--color-primary-ci-hell-kontrast, #fff);
+  line-height: 1.6;
+}
+.rrze-2019 .rrze-calendar ul.events-list .event-date {
+  background-color: #00458c;
+}
+.rrze-calendar ul.events-list .event-date .day-month {
+  padding: 0;
+  float: none;
+  height: auto;
+}
+.rrze-calendar ul.events-list .event-date .day-month .day {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+.rrze-calendar ul.events-list .event-date .day-month .month {
+  font-size: 1rem;
+}
+.rrze-calendar ul.events-list .event-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+.rrze-calendar ul.events-list .event-title a {
+  color: var(--color-Text, #222);
+  box-shadow: none;
+  text-decoration: none;
+}
+.rrze-calendar ul.events-list .event-title a:hover, .rrze-calendar ul.events-list .event-title a:focus, .rrze-calendar ul.events-list .event-title a:active {
+  text-decoration: underline;
+}
+.rrze-calendar ul.events-list .event-location {
+  word-break: break-word;
+}
+.rrze-calendar ul.events-list-short {
+  margin-left: 0;
+}
+.rrze-calendar ul.events-list-short li {
+  list-style: none;
+  margin-bottom: 0.5em;
+}
+.rrze-calendar ul.events-list-short .event-date {
+  float: none;
+  display: inline;
+  background: unset;
+  color: unset;
+  padding: 0;
+}
+.rrze-calendar ul.events-list-short .event-title {
+  font-weight: bold;
+}
+.rrze-calendar ul.events-list-short .dashicons {
+  color: #333;
+  position: relative;
+  top: 2px;
+}
+.rrze-calendar ul.events-list-short .dashicons.dashicons-clock {
+  margin-left: 0.5em;
+}
+.rrze-calendar a.standard-btn {
+  margin-right: 5px;
+}
+
+.event-allday {
+  text-transform: uppercase;
+}
+
+.event-label {
+  font-weight: 700;
+  margin: 0.5rem 0 0.2rem;
+}
+
+.single-calendar_event main {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .single-calendar_event main {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+.single-calendar_event .rrze-event {
+  margin-top: 20px;
+}
+@media (min-width: 1024px) {
+  .single-calendar_event .rrze-event {
+    display: grid;
+    column-gap: var(--gap-width, 30px);
+    grid-template-columns: 1fr var(--min-width-aside, 300px);
+  }
+}
+@media (min-width: 1024px) {
+  .single-calendar_event .rrze-event .entry-header {
+    grid-column: 1/span 2;
+  }
+}
+@media (min-width: 1024px) {
+  .single-calendar_event .rrze-event-details {
+    border-left: 2px solid var(--color-primary-ci-hell2, #ced9e7);
+    padding-left: 15px;
+  }
+}
+.single-calendar_event .rrze-event-details h2 {
+  margin-top: 0;
+}
+.single-calendar_event .rrze-event-details p {
+  margin-bottom: 0.5em;
+}
+.single-calendar_event .rrze-event-details dt,
+.single-calendar_event .rrze-event-details dd,
+.single-calendar_event .rrze-event-details dt *,
+.single-calendar_event .rrze-event-details dd * {
+  font-size: 0.875rem;
+  line-height: 1.313rem;
+}
+.single-calendar_event .rrze-event-details dd {
+  margin-left: 0;
+  margin-bottom: 1em;
+}
+.single-calendar_event .rrze-event-details dd p {
+  margin: 0;
+  padding: 0;
+}
+.single-calendar_event .rrze-event-details ul.downloads {
+  margin-left: 0;
+  overflow: hidden;
+  padding-left: 20px;
+}
+.single-calendar_event .rrze-event-details div.prices {
+  overflow: hidden;
+}
+.single-calendar_event .rrze-event-details span.label {
+  display: block;
+  font-weight: bold;
+}
+@media (min-width: 480px) {
+  .single-calendar_event .post-image {
+    max-width: 50%;
+    margin-top: 0;
+  }
+}
+@media (min-width: 992px) {
+  .single-calendar_event .post-image {
+    max-width: 30%;
+  }
+}
+@media (min-width: 480px) {
+  .single-calendar_event figure.post-thumbnail {
+    float: right;
+    margin: 0 0 1em 1em;
+  }
+}
+.single-calendar_event figure.post-thumbnail .wp-caption-text {
+  margin-bottom: 0;
+}
+@media (min-width: 480px) {
+  .single-calendar_event figure.post-thumbnail {
+    width: auto;
+  }
+}
+.single-calendar_event .rrze-event-schedule {
+  margin-bottom: 1em;
+}
+.single-calendar_event .rrze-event-schedule .rrze-event-date,
+.single-calendar_event .rrze-event-schedule .rrze-event-time,
+.single-calendar_event .rrze-event-schedule .rrze-event-location {
+  display: block;
+}
+@media (min-width: 768px) {
+  .single-calendar_event .rrze-event-schedule .rrze-event-date,
+  .single-calendar_event .rrze-event-schedule .rrze-event-time {
+    display: inline-block;
+    margin-right: 2em;
+  }
+}
+.single-calendar_event .rrze-event-schedule .rrze-event-location {
+  margin-top: 0.5em;
+}
+.single-calendar_event .rrze-event-schedule ul {
+  margin-bottom: 0;
+  margin-left: 0;
+  padding-left: 0;
+}
+.single-calendar_event .rrze-event-schedule ul.cols-3 {
+  columns: 300px 3;
+  column-gap: 20px;
+  orphans: 3;
+  widows: 3;
+}
+.single-calendar_event .rrze-event-schedule ul li {
+  list-style-type: none;
+}
+.single-calendar_event .rrze-event-schedule ul li.past {
+  text-decoration: line-through;
+  filter: brightness(2);
+}
+.single-calendar_event .rrze-event-schedule ul li .rrze-event-date {
+  display: inline;
+}
+.single-calendar_event .rrze-event-schedule .dashicons {
+  margin-right: 5px;
+  color: #333;
+  position: relative;
+  top: 2px;
+}
+.single-calendar_event .rrze-event-description span.label {
+  font-weight: bold;
+}
+
+/*# sourceMappingURL=events.style.css.map*/

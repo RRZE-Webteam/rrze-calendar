@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "rrze-calendar/calendar",
+  "version": "1.2.0",
+  "title": "RRZE Calendar",
+  "category": "rrze",
+  "description": "Create a calendar view or a list of events from RRZE-Calendar plugin on your website.",
+  "example": {},
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "layout": {
+      "type": "string",
+      "default": "teaser"
+    },
+    "selectedCategories": {
+      "type": "array",
+      "default": []
+    },
+    "selectedTags": {
+      "type": "array",
+      "default": []
+    },
+    "numEvents": {
+      "type": "integer"
+    },
+    "pageLink": {
+      "type": "string",
+      "default": ""
+    },
+    "pageLinkLabel": {
+      "type": "string",
+      "default": "Show All Events"
+    },
+    "abonnementLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "includeEvents": {
+      "type": "string",
+      "default": ""
+    },
+    "excludeEvents": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "textdomain": "rrze-calendar",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScript": "file:./view.js",
+  "render": "file:./render.php"
+}

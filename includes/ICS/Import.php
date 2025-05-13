@@ -86,7 +86,6 @@ class Import
                     'disableCharacterReplacement' => true,
                     'filterDaysAfter'             => $filterDaysAfter,
                     'filterDaysBefore'            => $filterDaysBefore,
-                    'replaceWindowsTimeZoneIds'   => true,
                     'skipRecurrence'              => false,
                 ]);
                 $ICal->initString($icsContent);

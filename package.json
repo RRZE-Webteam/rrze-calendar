@@ -4,12 +4,13 @@
         "npm": ">=10.2.4"
     },
     "devDependencies": {
-        "@wordpress/components": "latest",
-        "@wordpress/plugins": "latest",
-        "@wordpress/data": "latest",
+        "@wordpress/components": "^28.9.0",
+        "@wordpress/data": "^10.9.0",
         "@wordpress/env": "latest",
-        "@wordpress/icons": "latest",
-        "@wordpress/scripts": "latest",
+        "@wordpress/icons": "^10.9.0",
+        "@wordpress/plugins": "^7.9.0",
+        "@wordpress/scripts": "^30.7.0",
+        "@wordpress/core-data": "^7.23.0",
         "ts-loader": "latest",
         "typescript": "latest"
     },
