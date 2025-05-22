@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE Calendar
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-calendar
-Version:            2.4.0
+Version:            2.4.1
 Description:        Administration of local events and import of public events.
 Author:             RRZE Webteam
 Author URI:         https://blogs.fau.de/webworking/
