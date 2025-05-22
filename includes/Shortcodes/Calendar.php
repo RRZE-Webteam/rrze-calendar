@@ -591,7 +591,6 @@ class Calendar
                         }
 
                         if ($showMore) {
-                            var_dump($date);
                             $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: 5 / 6;">'
                                 . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
                                 . __('More&hellip;', 'rrze-calendar')
