@@ -208,7 +208,7 @@ class Events
             'post_id' => $postId,
             'feed_url' => get_post_meta($postId, CalendarFeed::FEED_URL),
             'timezone' => $urlTz->getName(),
-            'summary' => $summary,
+            'summary' => Utils::translateOutlookSummaryToGerman($summary),
             'categories' => $categories,
             'tags' => $tags,
             'uid' => $event->uid,
