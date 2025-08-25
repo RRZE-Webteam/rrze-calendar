@@ -10,8 +10,7 @@ defined('ABSPATH') || exit;
  * This class provides methods to manage plugin information such as file path,
  * basename, directory, URL, and plugin data.
  * 
- * @package RRZE\Settings
- * @since 1.0.0
+ * @package RRZE\Calendar
  */
 class Plugin
 {
