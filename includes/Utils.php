@@ -999,4 +999,38 @@ class Utils
             return false;
         }
     }
+
+    /**
+     * Translate Outlook/Exchange SUMMARY to German (WordPress i18n ready).
+     *
+     * @param string $summary  The SUMMARY string (e.g., "Busy", "Out of Office").
+     * @param bool   $preferBeschaeftigt  If true, use "Beschäftigt" instead of "Gebucht" for "Busy".
+     * @return string  Localized translation.
+     */
+    public static function translateOutlookSummaryToGerman(string $summary, bool $preferBeschaeftigt = false): string
+    {
+        $norm = trim(mb_strtolower($summary));
+
+        // Normalize common aliases
+        $aliases = [
+            'out-of-office'    => 'out of office',
+            'oof'              => 'out of office',
+            'workingelsewhere' => 'working elsewhere',
+            'work elsewhere'   => 'working elsewhere',
+        ];
+        if (isset($aliases[$norm])) {
+            $norm = $aliases[$norm];
+        }
+
+        // Main mapping
+        $map = [
+            'free'              => __('Free', 'rrze-calendar'),
+            'tentative'         => __('Tentative', 'rrze-calendar'),
+            'busy'              => __('Busy', 'rrze-calendar'),
+            'out of office'     => __('Out of office', 'rrze-calendar'),
+            'working elsewhere' => __('Working elsewhere', 'rrze-calendar'),
+        ];
+
+        return $map[$norm] ?? $summary;
+    }
 }

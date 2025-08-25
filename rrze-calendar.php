@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE Calendar
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-calendar
-Version:            2.4.1
+Version:            2.4.2
 Description:        Administration of local events and import of public events.
 Author:             RRZE Webteam
 Author URI:         https://blogs.fau.de/webworking/
@@ -11,7 +11,7 @@ License:            GNU General Public License Version 3
 License URI:        https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain:        rrze-calendar
 Domain Path:        /languages
-Requires at least:  6.7
+Requires at least:  6.8
 Requires PHP:       8.2
 */
 
