@@ -1004,10 +1004,9 @@ class Utils
      * Translate Outlook/Exchange SUMMARY to German (WordPress i18n ready).
      *
      * @param string $summary  The SUMMARY string (e.g., "Busy", "Out of Office").
-     * @param bool   $preferBeschaeftigt  If true, use "Beschäftigt" instead of "Gebucht" for "Busy".
      * @return string  Localized translation.
      */
-    public static function translateOutlookSummaryToGerman(string $summary, bool $preferBeschaeftigt = false): string
+    public static function translateOutlookSummaryToGerman(string $summary): string
     {
         $norm = trim(mb_strtolower($summary));
 
