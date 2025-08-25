@@ -1024,11 +1024,11 @@ class Utils
 
         // Main mapping
         $map = [
-            'free'              => __('Frei', 'rrze-calendar'),
-            'tentative'         => __('Vorläufig', 'rrze-calendar'),
-            'busy'              => $preferBeschaeftigt ? __('Beschäftigt', 'rrze-calendar') : __('Gebucht', 'rrze-calendar'),
-            'out of office'     => __('Abwesend', 'rrze-calendar'),
-            'working elsewhere' => __('Arbeitet anderweitig', 'rrze-calendar'),
+            'free'              => __('Free', 'rrze-calendar'),
+            'tentative'         => __('Tentative', 'rrze-calendar'),
+            'busy'              => __('Busy', 'rrze-calendar'),
+            'out of office'     => __('Out of office', 'rrze-calendar'),
+            'working elsewhere' => __('Working elsewhere', 'rrze-calendar'),
         ];
 
         return $map[$norm] ?? $summary;
