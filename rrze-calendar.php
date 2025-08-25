@@ -91,19 +91,29 @@ function settings()
 }
 
 /**
+ * Callback function to load the plugin textdomain.
+ * 
+ * @return void
+ */
+function loadTextdomain()
+{
+    load_plugin_textdomain(
+        'rrze-calendar',
+        false,
+        dirname(plugin_basename(__FILE__)) . '/languages'
+    );
+}
+
+/**
  * Check system requirements for the plugin.
+ *
  * This method checks if the server environment meets the minimum WordPress and PHP version requirements
  * for the plugin to function properly.
+ *
  * @return string An error message string if requirements are not met, or an empty string if requirements are satisfied.
  */
 function systemRequirements(): string
 {
-    // Get the global WordPress version.
-    global $wp_version;
-
-    // Get the PHP version.
-    $phpVersion = phpversion();
-
     // Initialize an error message string.
     $error = '';
 
@@ -112,7 +122,7 @@ function systemRequirements(): string
         $error = sprintf(
             /* translators: 1: Server WordPress version number, 2: Required WordPress version number. */
             __('The server is running WordPress version %1$s. The plugin requires at least WordPress version %2$s.', 'rrze-calendar'),
-            $wp_version,
+            wp_get_wp_version(),
             plugin()->getRequiresWP()
         );
     } elseif (!is_php_version_compatible(plugin()->getRequiresPHP())) {
@@ -120,7 +130,7 @@ function systemRequirements(): string
         $error = sprintf(
             /* translators: 1: Server PHP version number, 2: Required PHP version number. */
             __('The server is running PHP version %1$s. The plugin requires at least PHP version %2$s.', 'rrze-calendar'),
-            $phpVersion,
+            phpversion(),
             plugin()->getRequiresPHP()
         );
     }
@@ -131,12 +141,15 @@ function systemRequirements(): string
 
 /**
  * Handle the loading of the plugin.
+ *
  * This function is responsible for initializing the plugin, loading text domains for localization,
  * checking system requirements, and displaying error notices if necessary.
- * @return void
  */
 function loaded()
 {
+    // Load the plugin text domain for translations.
+    loadTextDomain();
+
     // Trigger the 'loaded' method of the main plugin instance.
     plugin()->loaded();
 
@@ -177,20 +190,29 @@ function loaded()
     add_filter('block_categories_all', __NAMESPACE__ . '\rrze_block_category', 10, 2);
 }
 
-function createBlocks(): void {
-    register_block_type( __DIR__ . '/build/block' );
-    $script_handle_calendar = generate_block_asset_handle( 'rrze-calendar/calendar', 'editorScript' );
-    wp_set_script_translations( $script_handle_calendar, 'rrze-calendar', plugin_dir_path( __FILE__ ) . 'languages' );
+/**
+ * Register custom Gutenberg blocks.
+ *
+ * This function registers custom Gutenberg blocks for the plugin and sets up script translations.
+ *
+ * @return void
+ */
+function createBlocks(): void
+{
+    register_block_type(__DIR__ . '/build/block');
+    $script_handle_calendar = generate_block_asset_handle('rrze-calendar/calendar', 'editorScript');
+    wp_set_script_translations($script_handle_calendar, 'rrze-calendar', plugin_dir_path(__FILE__) . 'languages');
 }
 
 /**
  * Adds custom block category if not already present.
  *
  * @param array   $categories Existing block categories.
- * @param WP_Post $post       Current post object.
+ * @param \WP_Post $post       Current post object.
  * @return array Modified block categories.
  */
-function rrze_block_category($categories, $post) {
+function rrze_block_category($categories, $post)
+{
     // Check if there is already a RRZE category present
     foreach ($categories as $category) {
         if (isset($category['slug']) && $category['slug'] === 'rrze') {
