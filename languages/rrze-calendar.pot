@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-25T15:23:51+00:00\n"
+"POT-Creation-Date: 2025-08-25T17:48:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rrze-calendar\n"
@@ -727,45 +727,45 @@ msgstr ""
 msgid "Add all events of this tag to your calendar"
 msgstr ""
 
-#: includes/Utils.php:1027
+#: includes/Utils.php:1026
 msgid "Free"
 msgstr ""
 
-#: includes/Utils.php:1028
+#: includes/Utils.php:1027
 msgid "Tentative"
 msgstr ""
 
-#: includes/Utils.php:1029
+#: includes/Utils.php:1028
 msgid "Busy"
 msgstr ""
 
-#: includes/Utils.php:1030
+#: includes/Utils.php:1029
 msgid "Out of office"
 msgstr ""
 
-#: includes/Utils.php:1031
+#: includes/Utils.php:1030
 msgid "Working elsewhere"
 msgstr ""
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-calendar.php:114
+#: rrze-calendar.php:124
 #, php-format
 msgid "The server is running WordPress version %1$s. The plugin requires at least WordPress version %2$s."
 msgstr ""
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-calendar.php:122
+#: rrze-calendar.php:132
 #, php-format
 msgid "The server is running PHP version %1$s. The plugin requires at least PHP version %2$s."
 msgstr ""
 
 #. translators: 1: The plugin name, 2: The error string.
-#: rrze-calendar.php:160
+#: rrze-calendar.php:173
 #, php-format
 msgid "Plugins: %1$s: %2$s"
 msgstr ""
 
-#: rrze-calendar.php:203
+#: rrze-calendar.php:225
 msgid "RRZE"
 msgstr ""
 

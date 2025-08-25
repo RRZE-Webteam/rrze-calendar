@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Autoshare\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
-"POT-Creation-Date: 2025-08-25T15:23:51+00:00\n"
-"PO-Revision-Date: 2025-08-25 17:28+0200\n"
+"POT-Creation-Date: 2025-08-25T17:48:24+00:00\n"
+"PO-Revision-Date: 2025-08-25 19:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -721,28 +721,28 @@ msgstr "Alle Veranstaltungen dieser Kategorie zum Kalender hinzufügen"
 msgid "Add all events of this tag to your calendar"
 msgstr "Alle Veranstaltungen mit diesem Schlagwort zum Kalender hinzufügen"
 
-#: includes/Utils.php:1027
+#: includes/Utils.php:1026
 msgid "Free"
 msgstr "Frei"
 
-#: includes/Utils.php:1028
+#: includes/Utils.php:1027
 msgid "Tentative"
 msgstr "Vorläufig"
 
-#: includes/Utils.php:1029
+#: includes/Utils.php:1028
 msgid "Busy"
 msgstr "Gebucht"
 
-#: includes/Utils.php:1030
+#: includes/Utils.php:1029
 msgid "Out of office"
 msgstr "Abwesend"
 
-#: includes/Utils.php:1031
+#: includes/Utils.php:1030
 msgid "Working elsewhere"
 msgstr "Arbeitet anderweitig"
 
 #. translators: 1: Server WordPress version number, 2: Required WordPress version number.
-#: rrze-calendar.php:114
+#: rrze-calendar.php:124
 #, php-format
 msgid ""
 "The server is running WordPress version %1$s. The plugin requires at least "
@@ -752,7 +752,7 @@ msgstr ""
 "WordPress Version %2$s."
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
-#: rrze-calendar.php:122
+#: rrze-calendar.php:132
 #, php-format
 msgid ""
 "The server is running PHP version %1$s. The plugin requires at least PHP "
@@ -762,12 +762,12 @@ msgstr ""
 "Version %2$s."
 
 #. translators: 1: The plugin name, 2: The error string.
-#: rrze-calendar.php:160
+#: rrze-calendar.php:173
 #, php-format
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: rrze-calendar.php:203
+#: rrze-calendar.php:225
 msgid "RRZE"
 msgstr "RRZE"
 

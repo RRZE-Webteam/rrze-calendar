@@ -6,43 +6,54 @@ defined('ABSPATH') || exit;
 
 /**
  * Plugin class
+ * 
+ * This class provides methods to manage plugin information such as file path,
+ * basename, directory, URL, and plugin data.
+ * 
  * @package RRZE\Calendar
  */
 class Plugin
 {
     /**
-     * The full path and filename of the plugin.
+     * The full path and filename of the plugin
+     * 
      * @var string
      */
     protected $pluginFile;
 
     /**
-     * The basename of the plugin.
+     * The basename of the plugin
+     * 
      * @var string
      */
     protected $basename;
 
     /**
-     * The filesystem directory path (with trailing slash) for the plugin.
+     * The filesystem directory path (with trailing slash) for the plugin
+     * 
      * @var string
      */
     protected $directory;
 
     /**
-     * The URL directory path (with trailing slash) for the plugin.
+     * The URL directory path (with trailing slash) for the plugin
+     * 
      * @var string
      */
     protected $url;
 
     /**
-     * The data of the plugin.
+     * The data of the plugin
+     * 
      * @var array
      */
     protected $data;
 
     /**
-     * Constructor.
-     * @param string $pluginFile The full path and filename of the plugin.
+     * Constructor
+     * 
+     * @param string $pluginFile The full path and filename of the plugin
+     * @return void
      */
     public function __construct(string $pluginFile)
     {
@@ -51,7 +62,7 @@ class Plugin
     }
 
     /**
-     * loaded method
+     * Load the plugin information
      */
     public function loaded()
     {
@@ -62,8 +73,9 @@ class Plugin
     }
 
     /**
-     * Get the full path and filename of the plugin.
-     * @return string The full path and filename.
+     * Get the full path and filename of the plugin
+     * 
+     * @return string The full path and filename
      */
     public function getFile(): string
     {
@@ -71,8 +83,9 @@ class Plugin
     }
 
     /**
-     * Get the basename of the plugin.
-     * @return string The basename.
+     * Get the basename of the plugin
+     * 
+     * @return string The basename
      */
     public function getBasename(): string
     {
@@ -80,8 +93,9 @@ class Plugin
     }
 
     /**
-     * Set the basename of the plugin.
-     * @return object This Plugin object.
+     * Set the basename of the plugin
+     * 
+     * @return object This Plugin object
      */
     public function setBasename(): object
     {
@@ -90,8 +104,9 @@ class Plugin
     }
 
     /**
-     * Get the filesystem directory path (with trailing slash) for the plugin.
-     * @return string The filesystem directory path.
+     * Get the filesystem directory path (with trailing slash) for the plugin
+     * 
+     * @return string The filesystem directory path
      */
     public function getDirectory(): string
     {
@@ -99,8 +114,9 @@ class Plugin
     }
 
     /**
-     * Set the filesystem directory path (with trailing slash) for the plugin.
-     * @return object This Plugin object.
+     * Set the filesystem directory path (with trailing slash) for the plugin
+     * 
+     * @return object This Plugin object
      */
     public function setDirectory(): object
     {
@@ -109,9 +125,10 @@ class Plugin
     }
 
     /**
-     * Get the filesystem directory path (with trailing slash) for the plugin.
-     * @param string $path The path name.
-     * @return string The filesystem directory path.
+     * Get the filesystem directory path (with trailing slash) for the plugin
+     * 
+     * @param string $path The path name
+     * @return string The filesystem directory path
      */
     public function getPath(string $path = ''): string
     {
@@ -119,9 +136,10 @@ class Plugin
     }
 
     /**
-     * Get the URL directory path (with trailing slash) for the plugin.
-     * @param string $path The path name.
-     * @return string The URL directory path.
+     * Get the URL directory path (with trailing slash) for the plugin
+     * 
+     * @param string $path The path name
+     * @return string The URL directory path
      */
     public function getUrl(string $path = ''): string
     {
@@ -129,8 +147,9 @@ class Plugin
     }
 
     /**
-     * Set the URL directory path (with trailing slash) for the plugin.
-     * @return object This Plugin object.
+     * Set the URL directory path (with trailing slash) for the plugin
+     * 
+     * @return object This Plugin object
      */
     public function setUrl(): object
     {
@@ -139,8 +158,9 @@ class Plugin
     }
 
     /**
-     * Get the slug of the plugin.
-     * @return string The slug.
+     * Get the slug of the plugin
+     * 
+     * @return string The slug
      */
     public function getSlug(): string
     {
@@ -148,18 +168,20 @@ class Plugin
     }
 
     /**
-     * Set the data of the plugin.
-     * @return object This Plugin object.
+     * Set the data of the plugin
+     * 
+     * @return object This Plugin object
      */
     public function setData(): object
     {
-        $this->data = get_plugin_data($this->pluginFile, false);
+        $this->data = get_plugin_data($this->pluginFile, false, false);
         return $this;
     }
 
     /**
-     * Get the data of the plugin.
-     * @return array The data.
+     * Get the data of the plugin
+     * 
+     * @return array The data
      */
     public function getData(): array
     {
@@ -167,8 +189,9 @@ class Plugin
     }
 
     /**
-     * Get the name of the plugin.
-     * @return string The name.
+     * Get the name of the plugin
+     * 
+     * @return string The name
      */
     public function getName(): string
     {
@@ -176,8 +199,9 @@ class Plugin
     }
 
     /**
-     * Get the version of the plugin.
-     * @return string The version.
+     * Get the version of the plugin
+     * 
+     * @return string The version
      */
     public function getVersion(): string
     {
@@ -185,8 +209,9 @@ class Plugin
     }
 
     /**
-     * Get the required WordPress version of the plugin.
-     * @return string The required WordPress version.
+     * Get the required WordPress version of the plugin
+     * 
+     * @return string The required WordPress version
      */
     public function getRequiresWP(): string
     {
@@ -194,8 +219,9 @@ class Plugin
     }
 
     /**
-     * Get the required PHP version of the plugin.
-     * @return string The required PHP version.
+     * Get the required PHP version of the plugin
+     * 
+     * @return string The required PHP version
      */
     public function getRequiresPHP(): string
     {
@@ -204,7 +230,12 @@ class Plugin
 
     /**
      * __call method
+     * 
      * Method overloading.
+     * 
+     * @param  string $name      The name of the method
+     * @param  array  $arguments The arguments passed to the method
+     * @return void
      */
     public function __call(string $name, array $arguments)
     {
