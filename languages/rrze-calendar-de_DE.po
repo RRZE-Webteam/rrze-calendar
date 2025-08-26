@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Autoshare\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
-"POT-Creation-Date: 2025-08-25T17:48:24+00:00\n"
-"PO-Revision-Date: 2025-08-25 19:50+0200\n"
+"POT-Creation-Date: 2025-08-26T08:15:26+00:00\n"
+"PO-Revision-Date: 2025-08-26 10:18+0200\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -350,12 +350,12 @@ msgid "Recurrence"
 msgstr "Wiederholung"
 
 #: includes/CPT/CalendarEvent.php:903 includes/CPT/CalendarFeed.php:179
-#: src/block/edit.jsx:199
+#: build/block/index.js:1 src/block/edit.jsx:199
 msgid "Categories"
 msgstr "Kategorien"
 
 #: includes/CPT/CalendarEvent.php:904 includes/CPT/CalendarFeed.php:180
-#: src/block/edit.jsx:221
+#: build/block/index.js:1 src/block/edit.jsx:221
 msgid "Tags"
 msgstr "Schlagwörter"
 
@@ -443,12 +443,12 @@ msgid "Feed URL."
 msgstr "Feed-URL."
 
 #: includes/CPT/CalendarFeed.php:266 includes/ICS/Metabox.php:93
-#: includes/ICS/Metabox.php:95 src/block/edit.jsx:243
+#: includes/ICS/Metabox.php:95 build/block/index.js:1 src/block/edit.jsx:243
 msgid "Include Events"
 msgstr "Veranstaltungen einschließen"
 
 #: includes/CPT/CalendarFeed.php:276 includes/ICS/Metabox.php:100
-#: includes/ICS/Metabox.php:102 src/block/edit.jsx:250
+#: includes/ICS/Metabox.php:102 build/block/index.js:1 src/block/edit.jsx:250
 msgid "Exclude Events"
 msgstr "Veranstaltungen ausschließen"
 
@@ -771,95 +771,95 @@ msgstr "Plugins: %1$s: %2$s"
 msgid "RRZE"
 msgstr "RRZE"
 
-#: src/block/edit.jsx:65
+#: build/block/index.js:1 src/block/edit.jsx:65
 msgid "(No title)"
 msgstr "(Ohne Titel)"
 
-#: src/block/edit.jsx:147 src/block/edit.jsx:149
+#: build/block/index.js:1 src/block/edit.jsx:147 src/block/edit.jsx:149
 msgid "Layout"
 msgstr "Layout"
 
-#: src/block/edit.jsx:152
+#: build/block/index.js:1 src/block/edit.jsx:152
 msgid "Event List"
 msgstr "Terminliste"
 
-#: src/block/edit.jsx:153
+#: build/block/index.js:1 src/block/edit.jsx:153
 msgid "Event List Short"
 msgstr "Terminliste kurz"
 
-#: src/block/edit.jsx:154
+#: build/block/index.js:1 src/block/edit.jsx:154
 msgid "Calendar Full"
 msgstr "Kalender"
 
-#: src/block/edit.jsx:155
+#: build/block/index.js:1 src/block/edit.jsx:155
 msgid "Calendar Mini"
 msgstr "Kalender mini"
 
-#: src/block/edit.jsx:161
+#: build/block/index.js:1 src/block/edit.jsx:161
 msgid "Count"
 msgstr "Anzahl"
 
-#: src/block/edit.jsx:167
+#: build/block/index.js:1 src/block/edit.jsx:167
 msgid ""
 "How many events do you want to show? Enter 0 or leave empty for all events."
 msgstr ""
 "Wie viele Termine sollen angezeigt werden? 0 oder leer lassen für alle "
 "Termine."
 
-#: src/block/edit.jsx:173
+#: build/block/index.js:1 src/block/edit.jsx:173
 msgid "ICS Link"
 msgstr "ICS-Link"
 
-#: src/block/edit.jsx:174
+#: build/block/index.js:1 src/block/edit.jsx:174
 msgid "Show link to ICS file"
 msgstr "Link zur ICS-Datei anzeigen"
 
-#: src/block/edit.jsx:182
+#: build/block/index.js:1 src/block/edit.jsx:182
 msgid "Page Link"
 msgstr "Seitenlink"
 
-#: src/block/edit.jsx:185
+#: build/block/index.js:1 src/block/edit.jsx:185
 msgid "Link to all events page"
 msgstr "Link zur Seite mit allen Termine"
 
-#: src/block/edit.jsx:189
+#: build/block/index.js:1 src/block/edit.jsx:189
 msgid "Page Link Label"
 msgstr "Beschriftung Seitenlink"
 
-#: src/block/edit.jsx:193
+#: build/block/index.js:1 src/block/edit.jsx:193
 msgid "Link text"
 msgstr "Linktext"
 
-#: src/block/edit.jsx:197
+#: build/block/index.js:1 src/block/edit.jsx:197
 msgid "Select Events"
 msgstr "Events auswählen"
 
-#: src/block/edit.jsx:204
+#: build/block/index.js:1 src/block/edit.jsx:204
 msgid "Selected Categories"
 msgstr "Ausgewählte Kategorien"
 
-#: src/block/edit.jsx:212 src/block/edit.jsx:234
+#: build/block/index.js:1 src/block/edit.jsx:212 src/block/edit.jsx:234
 msgid "Remove"
 msgstr "Entfernen"
 
-#: src/block/edit.jsx:226
+#: build/block/index.js:1 src/block/edit.jsx:226
 msgid "Selected Tags"
 msgstr "Ausgewählte Schlagwörter"
 
-#: src/block/edit.jsx:247
+#: build/block/index.js:1 src/block/edit.jsx:247
 msgid "Only show events having these words in the title."
 msgstr "Nur Termine mit diesen Wörtern im Titel anzeigen."
 
-#: src/block/edit.jsx:254
+#: build/block/index.js:1 src/block/edit.jsx:254
 msgid "Hide events having these words in the title."
 msgstr "Termine mit diesen Wörtern im Titel nicht anzeigen."
 
-#: src/block/block.json
+#: build/block/block.json src/block/block.json
 msgctxt "block title"
 msgid "RRZE Calendar"
 msgstr "RRZE-Calendar"
 
-#: src/block/block.json
+#: build/block/block.json src/block/block.json
 msgctxt "block description"
 msgid ""
 "Create a calendar view or a list of events from RRZE-Calendar plugin on your "
