@@ -9,12 +9,12 @@
 .DS_Store
 ### Node ###
 node_modules/
-package-lock.json
+/package-lock.json
 ### Composer ###
-composer.lock
+/composer.lock
 ### WordPress ###
-*.pot
-*.po~
-*.pot~
+/languages/*.pot
+/languages/*.l10n.php
+/languages/*.l10n.php.*
 ### Tmp ###
-_tmp/
+/_tmp/
