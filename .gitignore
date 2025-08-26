@@ -14,7 +14,8 @@ package-lock.json
 composer.lock
 ### WordPress ###
 *.pot
-*.po~
-*.pot~
+### Loco Translate ###
+languages/*.l10n.php
+languages/*.l10n.php.*
 ### Tmp ###
 _tmp/
