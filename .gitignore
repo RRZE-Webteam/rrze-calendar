@@ -9,9 +9,6 @@
 .DS_Store
 ### Node ###
 node_modules/
-/package-lock.json
-### Composer ###
-/composer.lock
 ### WordPress ###
 /languages/*.pot
 /languages/*.mo
