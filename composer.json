@@ -36,16 +36,16 @@
         "coenjacobs/mozart": "^0.7.1"
     },
     "scripts": {
-        "i18n:make-pot": "wp i18n make-pot ./ languages/rrze-calendar.pot --domain=rrze-calendar --exclude=node_modules,vendor,_tmp",
-        "i18n:make-php": "wp i18n make-php languages",
-        "i18n:make-json": [
+        "wp:make-pot": "wp i18n make-pot ./ languages/rrze-calendar.pot --domain=rrze-calendar --exclude=node_modules,vendor,_tmp",
+        "wp:make-php": "wp i18n make-php languages",
+        "wp:make-json": [
             "wp i18n make-json languages/rrze-calendar-de_DE.po --no-purge",
             "wp i18n make-json languages/rrze-calendar-de_DE_formal.po --no-purge"
         ],
-        "i18n:all": [
-            "@i18n:make-pot",
-            "@i18n:make-php",
-            "@i18n:make-json"
+        "wp:make-all": [
+            "@wp:make-pot",
+            "@wp:make-php",
+            "@wp:make-json"
         ],
         "post-install-cmd": [
             "\"vendor/bin/mozart\" compose",
