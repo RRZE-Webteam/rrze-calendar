@@ -14,7 +14,6 @@ node_modules/
 /composer.lock
 ### WordPress ###
 /languages/*.pot
-/languages/*.l10n.php
-/languages/*.l10n.php.*
+/languages/*.mo
 ### Tmp ###
 /_tmp/
