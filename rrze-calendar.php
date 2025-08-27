@@ -3,7 +3,7 @@
 /*
 Plugin Name:        RRZE Calendar
 Plugin URI:         https://github.com/RRZE-Webteam/rrze-calendar
-Version:            2.4.3
+Version:            2.4.4
 Description:        Administration of local events and import of public events.
 Author:             RRZE Webteam
 Author URI:         https://blogs.fau.de/webworking/
@@ -24,9 +24,6 @@ use RRZE\Calendar\CPT\CalendarFeed;
 
 // Composer autoloader
 require_once 'vendor/autoload.php';
-
-// Load the plugin's text domain for localization.
-add_action('init', fn() => load_plugin_textdomain('rrze-calendar', false, dirname(plugin_basename(__FILE__)) . '/languages'));
 
 // Register activation hook for the plugin
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
