@@ -50,9 +50,9 @@ class Events
             'kategorien'        => '',   // CSV of slugs (DE)
             'tags'              => '',   // CSV of slugs
             'schlagworte'       => '',   // CSV of slugs (DE)
-            'count'             => 0,
-            'number'            => 0,
-            'anzahl'            => 0,
+            'count'             => '0',
+            'number'            => '0',
+            'anzahl'            => '0',
             'page_link'         => '',   // target page ID for “more” button
             'page_link_label'   => __('Show All Events', 'rrze-calendar'),
             'abonnement_link'   => '',   // whether to show ICS/subscribe button
@@ -72,12 +72,9 @@ class Events
         $display = ($atts['display'] === 'list') ? 'list' : 'teaser';
 
         // How many to show. Fallback to 10; archive view shows more.
-        $number = absint($atts['number']) + absint($atts['count']) + absint($atts['anzahl']);
+        $number = absint($atts['number']) ?: absint($atts['count']) ?: absint($atts['anzahl']);
         if ($number < 1) {
             $number = 10;
-        }
-        if (is_archive()) {
-            $number = 100;
         }
 
         $IDs = [];
@@ -85,6 +82,7 @@ class Events
         // Base WP_Query args
         $args = [
             'post_type'              => CalendarEvent::POST_TYPE,
+            'post_status'            => 'publish',
             // Heuristic: fetch 3x what we plan to render to allow for after-the-fact filtering (past dates, multiday expansion)
             'posts_per_page'         => min($number * 3, 300),
             // Performance flags (we don't need totals/caches for a shortcode list)
@@ -95,25 +93,28 @@ class Events
             // Only events that are not finished yet (or have no repeat end)
             'meta_query' => [
                 'relation' => 'AND',
+
+                // start >= now
+                [
+                    'key'     => 'start',
+                    'value'   => time(),
+                    'type'    => 'NUMERIC',
+                    'compare' => '>='
+                ],
+
+                // repeat-lastdate is either empty, 0, or in the future
                 [
                     'relation' => 'OR',
-                    [
-                        'key'     => 'repeat-lastdate',
-                        'compare' => 'NOT EXISTS',
-                    ],
-                    [
-                        'key'     => 'repeat-lastdate',
-                        'value'   => time(),
-                        'type'    => 'NUMERIC', // ensure numeric comparison
-                        'compare' => '>=',
-                    ],
+                    ['key' => 'repeat-lastdate', 'compare' => 'NOT EXISTS'],
+                    ['key' => 'repeat-lastdate', 'value' => '',  'compare' => '='],
+                    ['key' => 'repeat-lastdate', 'value' => '0', 'compare' => '='],
+                    ['key' => 'repeat-lastdate', 'value' => time(), 'type' => 'NUMERIC', 'compare' => '>='],
                 ],
             ],
 
-            // Sort by numeric "start" epoch (if your "start" is a timestamp)
-            'meta_key'  => 'start',
-            'orderby'   => 'meta_value_num',
-            'order'     => 'ASC',
+            // Sort by numeric "start" (earliest first)
+            'meta_key'   => 'start',
+            'order'      => 'DESC',
         ];
 
         // Featured filter (normalize truthy inputs)
@@ -170,6 +171,7 @@ class Events
 
         // Fetch events
         $events = get_posts($args);
+        error_log(print_r($events, true));
 
         if ($exclude !== '' || $include !== '') {
             remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
