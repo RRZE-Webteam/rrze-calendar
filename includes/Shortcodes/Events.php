@@ -171,7 +171,6 @@ class Events
 
         // Fetch events
         $events = get_posts($args);
-        error_log(print_r($events, true));
 
         if ($exclude !== '' || $include !== '') {
             remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
