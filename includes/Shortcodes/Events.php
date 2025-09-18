@@ -42,7 +42,7 @@ class Events
     public static function shortcode($atts, $content = "")
     {
         // Default attributes (kept for backward compatibility with aliases)
-        $atts_default = [
+        $attsDefault = [
             'featured'          => 'false',
             'display'           => '',
             'layout'            => '',   // Compatibility with calendar shortcode and block
@@ -61,7 +61,7 @@ class Events
             'include'           => '',
             'exclude'           => '',
         ];
-        $atts = shortcode_atts($atts_default, $atts);
+        $atts = shortcode_atts($attsDefault, $atts);
 
         // Back-compat: allow "layout" to alias "display"
         if ($atts['layout'] !== '') {
@@ -83,8 +83,7 @@ class Events
         $args = [
             'post_type'              => CalendarEvent::POST_TYPE,
             'post_status'            => 'publish',
-            // Heuristic: fetch 3x what we plan to render to allow for after-the-fact filtering (past dates, multiday expansion)
-            'posts_per_page'         => min($number * 3, 300),
+            'posts_per_page'         => -1,
             // Performance flags (we don't need totals/caches for a shortcode list)
             'no_found_rows'          => true,
             'update_post_meta_cache' => false,
@@ -94,32 +93,30 @@ class Events
             'meta_query' => [
                 'relation' => 'AND',
 
-                // start >= now
-                [
-                    'key'     => 'start',
-                    'value'   => time(),
-                    'type'    => 'NUMERIC',
-                    'compare' => '>='
-                ],
-
-                // repeat-lastdate is either empty, 0, or in the future
+                // repeat-lastdate is either empty, or in the future
                 [
                     'relation' => 'OR',
-                    ['key' => 'repeat-lastdate', 'compare' => 'NOT EXISTS'],
-                    ['key' => 'repeat-lastdate', 'value' => '',  'compare' => '='],
-                    ['key' => 'repeat-lastdate', 'value' => '0', 'compare' => '='],
-                    ['key' => 'repeat-lastdate', 'value' => time(), 'type' => 'NUMERIC', 'compare' => '>='],
+                    [
+                        'key'     => 'repeat-lastdate',
+                        'compare' => 'NOT EXISTS'
+                    ],
+                    [
+                        'key'     => 'repeat-lastdate',
+                        'value'   => time(),
+                        'compare' => '>='
+                    ],
                 ],
             ],
 
-            // Sort by numeric "start" (earliest first)
-            'meta_key'   => 'start',
-            'order'      => 'DESC',
+            // Sort by meta_key "start" (earliest first)
+            'orderby'  => 'meta_key',
+            'meta_key' => 'start',
+            'order'    => 'DESC',
         ];
 
         // Featured filter (normalize truthy inputs)
-        $featured_truthy = ['true', '1', 'yes', 'ja', 'on'];
-        if (in_array(strtolower((string) $atts['featured']), $featured_truthy, true)) {
+        $featuredTruthy = ['true', '1', 'yes', 'ja', 'on'];
+        if (in_array(strtolower((string) $atts['featured']), $featuredTruthy, true)) {
             $args['meta_query'][] = [
                 'key'   => 'featured',
                 'value' => 'on',
@@ -127,14 +124,14 @@ class Events
         }
 
         // Build a unified tax_query so categories/tags do not overwrite each other
-        $tax_query = ['relation' => 'AND'];
+        $taxQuery = ['relation' => 'AND'];
 
         // Categories (CSV of slugs)
         $categoriesRaw = $atts['categories'] ?: $atts['kategorien'];
         if (!empty($categoriesRaw)) {
             $categories = Utils::strListToArray($categoriesRaw, 'sanitize_title');
             if (!empty($categories)) {
-                $tax_query[] = [
+                $taxQuery[] = [
                     'taxonomy' => CalendarEvent::TAX_CATEGORY,
                     'field'    => 'slug',
                     'terms'    => $categories,
@@ -147,7 +144,7 @@ class Events
         if (!empty($tagsRaw)) {
             $tags = Utils::strListToArray($tagsRaw, 'sanitize_title');
             if (!empty($tags)) {
-                $tax_query[] = [
+                $taxQuery[] = [
                     'taxonomy' => CalendarEvent::TAX_TAG,
                     'field'    => 'slug',
                     'terms'    => $tags,
@@ -155,8 +152,8 @@ class Events
             }
         }
 
-        if (count($tax_query) > 1) { // at least one real condition besides 'relation'
-            $args['tax_query'] = $tax_query;
+        if (count($taxQuery) > 1) { // at least one real condition besides 'relation'
+            $args['tax_query'] = $taxQuery;
         }
 
         // Title include/exclude (via WHERE filter)
@@ -255,7 +252,7 @@ class Events
                         // If filterContent is inside this namespace; otherwise import the correct Shortcode FQCN.
                         $location = Shortcode::filterContent($location);
                     }
-                    $vc_url       = (string) get_post_meta($event['id'], 'vc-url', true);
+                    $vcUrl       = (string) get_post_meta($event['id'], 'vc-url', true);
                     $allDay       = (get_post_meta($event['id'], 'all-day', true) === 'on');
 
                     $startDate    = date('Y-m-d', $tsStart);
@@ -266,21 +263,21 @@ class Events
                     $metaEnd   = '<meta itemprop="endDate" content="' . esc_attr(date('c', (int) $tsEndUTC)) . '" />';
 
                     // Attendance & location meta
-                    if ($location !== '' && $vc_url === '') {
+                    if ($location !== '' && $vcUrl === '') {
                         // Offline
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
                         $metaLocation   = '<meta itemprop="location" content="' . esc_attr(wp_strip_all_tags($location)) . '">';
                         $locationOut    = $location;
-                    } elseif ($location === '' && $vc_url !== '') {
+                    } elseif ($location === '' && $vcUrl !== '') {
                         // Online
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OnlineEventAttendanceMode" />';
-                        $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vc_url) . '" /></span>';
+                        $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vcUrl) . '" /></span>';
                         $locationOut    = esc_html__('Online', 'rrze-calendar');
-                    } elseif ($location !== '' && $vc_url !== '') {
+                    } elseif ($location !== '' && $vcUrl !== '') {
                         // Hybrid
                         $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
                         $metaLocation   = '<meta itemprop="location" content="' . esc_attr(wp_strip_all_tags($location)) . '">'
-                            . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vc_url) . '" /></span>';
+                            . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vcUrl) . '" /></span>';
                         $locationOut    = '<p>' . esc_html(wp_strip_all_tags($location)) . ' / ' . esc_html__('Online', 'rrze-calendar') . '</p>';
                     } else {
                         $metaLocation = '';
