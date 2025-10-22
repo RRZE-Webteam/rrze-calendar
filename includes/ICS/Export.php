@@ -158,9 +158,9 @@ class Export
             $dtend   = $endTs > 0   ? get_gmt_from_date(date('Y-m-d H:i:s', $endTs),   'Y-m-d H:i:s') : '';
 
             $args = [
-                'summary'     => (string) $post->post_title,
+                'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
                 'uid'         => isset($meta['event-uid'][0]) ? (string) $meta['event-uid'][0] : '',
-                'description' => isset($meta['description'][0]) ? (string) $meta['description'][0] : '',
+                'description' => isset($meta['description'][0]) ? Utils::prepareDescriptionFromPostContent($meta['description'][0]) : '',
                 'dtstart'     => $dtstart,
                 'dtend'       => $dtend,
                 'location'    => isset($meta['location'][0]) ? (string) $meta['location'][0] : '',

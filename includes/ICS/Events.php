@@ -472,7 +472,7 @@ class Events
                                 $data[$i]['uid'] = $event['uid'];
 
                                 // Event summary (title)
-                                $summary = html_entity_decode(str_replace('/', '/<wbr />', $event['summary']));
+                                $summary = $event['summary'];
                                 if ($searchTerm && stripos($summary, $searchTerm) === false) {
                                     continue;
                                 }
