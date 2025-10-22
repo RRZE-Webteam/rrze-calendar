@@ -1032,4 +1032,62 @@ class Utils
 
         return $map[$norm] ?? $summary;
     }
+
+    /**
+     * Prepare a post_title to be used safely as SUMMARY in an iCalendar/vCalendar file.
+     *
+     * @param string $postTitle The raw post title from WordPress.
+     * @return string Cleaned and RFC 5545–escaped summary text.
+     */
+    public static function prepareSummaryFromPostTitle(string $postTitle): string
+    {
+        // Decode HTML entities (&amp;, &quot;, etc.)
+        $summary = wp_specialchars_decode($postTitle, ENT_QUOTES);
+
+        // Sanitize as plain text (removes invalid octets, trims, normalizes whitespace)
+        $summary = sanitize_text_field($summary);
+
+        // Escape special characters for iCalendar / vCalendar (RFC 5545)
+        $summary = str_replace('\\', '\\\\', $summary);                // Escape backslashes
+        $summary = str_replace(',',  '\,',  $summary);                 // Escape commas
+        $summary = str_replace(';',  '\;',  $summary);                 // Escape semicolons
+        $summary = str_replace(["\r\n", "\n", "\r"], '\\n', $summary); // Normalize newlines
+
+        // Limit maximum length
+        $summary = mb_substr($summary, 0, 255, 'UTF-8');
+
+        return $summary;
+    }
+
+    /**
+     * Prepare post_content to be used safely as DESCRIPTION in an iCalendar/vCalendar file.
+     *
+     * @param string $postContent The raw post content from WordPress.
+     * @return string Cleaned and RFC 5545–escaped description text.
+     */
+    public static function prepareDescriptionFromPostContent(string $postContent): string
+    {
+        // Expand shortcodes and blocks into rendered HTML
+        $description = apply_filters('the_content', $postContent);
+
+        // Strip all HTML tags
+        $description = wp_strip_all_tags($description, true);
+
+        // Decode HTML entities (&amp;, &quot;, etc.)
+        $description = wp_specialchars_decode($description, ENT_QUOTES);
+
+        // Sanitize as plain text (removes control chars, trims, normalizes whitespace)
+        $description = sanitize_text_field($description);
+
+        // Escape special characters for iCalendar / vCalendar (RFC 5545)
+        $description = str_replace('\\', '\\\\', $description);                // Escape backslashes
+        $description = str_replace(',',  '\,',  $description);                 // Escape commas
+        $description = str_replace(';',  '\;',  $description);                 // Escape semicolons
+        $description = str_replace(["\r\n", "\n", "\r"], '\\n', $description); // Normalize newlines
+
+        // Limit the length to a safe range
+        $description = mb_substr($description, 0, 2000, 'UTF-8');
+
+        return $description;
+    }
 }
