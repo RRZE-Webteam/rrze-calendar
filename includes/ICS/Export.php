@@ -192,7 +192,7 @@ class Export
         $rrule = '';
         if (!empty($rruleArgsJson)) {
             $decoded = json_decode((string) $rruleArgsJson, true);
-            if (is_array($decoded)) {
+            if (is_array($decoded) && !empty($decoded)) {
                 $rr = new RRule($decoded);
                 // Convert to RFC string and strip leading "RRULE:" if present
                 $rfc = $rr->rfcString();
