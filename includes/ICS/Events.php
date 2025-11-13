@@ -650,10 +650,10 @@ class Events
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
             }
 
-            $dtStart = strtotime($event['dt_start']);
-            $dtEnd = strtotime($event['dt_end']);
-            // $post_date = date('Y-m-d H:i:s', $dtStart);
-            // $post_date_gmt = get_gmt_from_date($post_date);
+            $dt = new \DateTime($event['dt_start'], wp_timezone());
+            $dtStart = $dt->getTimestamp();
+            $dt = new \DateTime($event['dt_end'], wp_timezone());
+            $dtEnd = $dt->getTimestamp();
 
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
