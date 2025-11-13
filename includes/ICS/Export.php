@@ -154,8 +154,8 @@ class Export
             $endTs   = isset($meta['end'][0])   ? (int) $meta['end'][0]   : 0;
 
             // Convert to UTC ISO-like strings the ICS builder consumes
-            $dtstart = $startTs > 0 ? get_gmt_from_date(date('Y-m-d H:i:s', $startTs), 'Y-m-d H:i:s') : '';
-            $dtend   = $endTs > 0   ? get_gmt_from_date(date('Y-m-d H:i:s', $endTs),   'Y-m-d H:i:s') : '';
+            $dtstart = $startTs > 0 ? get_gmt_from_date(wp_date('Y-m-d H:i:s', $startTs), 'Y-m-d H:i:s') : '';
+            $dtend   = $endTs > 0   ? get_gmt_from_date(wp_date('Y-m-d H:i:s', $endTs),   'Y-m-d H:i:s') : '';
 
             $args = [
                 'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
