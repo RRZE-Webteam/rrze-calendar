@@ -1090,4 +1090,47 @@ class Utils
 
         return $description;
     }
+
+    /**
+     * Convert a UTC timestamp into a date/time in the WordPress timezone.
+     *
+     * @param int    $timestamp UTC timestamp.
+     * @param string $format    Optional output format (default: 'Y-m-d H:i:s').
+     * @return string
+     */
+    public static function timestampToLocal(int $timestamp, string $format = 'Y-m-d H:i:s'): string
+    {
+        $dt = new DateTime('@' . $timestamp);      // Interpret as UTC
+        $dt->setTimezone(wp_timezone());           // Convert to WP timezone
+        return $dt->format($format);
+    }
+
+    /**
+     * Convert a local WordPress date/time string to a UTC timestamp.
+     *
+     * @param string $datestr Date/time in WP local timezone (e.g. '2025-09-10 09:00').
+     * @return int UTC timestamp.
+     */
+    public static function localToTimestamp(string $datestr): int
+    {
+        $dt = new DateTime($datestr, wp_timezone());     // Interpret in WP timezone
+        $dt->setTimezone(new DateTimeZone('UTC'));       // Convert to UTC
+        return $dt->getTimestamp();
+    }
+
+    /**
+     * Convert a UTC timestamp into an ICS-compatible UTC datetime string.
+     *
+     * Output format: YYYYMMDDTHHMMSSZ
+     * Example: 20250910T090000Z
+     *
+     * @param int $timestamp UTC timestamp.
+     * @return string ICS UTC datetime.
+     */
+    public static function timestampToIcsUtc(int $timestamp): string
+    {
+        $dt = new DateTime('@' . $timestamp);                  // interpret timestamp as UTC
+        $dt->setTimezone(new DateTimeZone('UTC'));             // ensure UTC
+        return $dt->format('Ymd\THis\Z');
+    }
 }
