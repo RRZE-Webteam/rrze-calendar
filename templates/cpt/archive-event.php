@@ -31,12 +31,13 @@ global $wp_query;
                     <?php } else { ?>
                         <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
                     <?php }
-                    $atts = [];
+                    $atts = [
+                        'number' => '99',
+                    ];
                     $queryVars = $wp_query->query_vars;
                     if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
                         $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
                         $atts['abonnement_link'] = '1';
-                        $atts['number'] = '99';
                     }
                     echo Events::shortcode($atts);
                     ?>
