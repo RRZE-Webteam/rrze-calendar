@@ -14,11 +14,11 @@ $attributes['abonnement_link'] = $attributes['abonnementLink'] ? '1' : '';
 switch ( $attributes['layout'] ) {
     case 'teaser':
     case 'list':
-    echo wp_kses_post(\RRZE\Calendar\Shortcodes\Events::shortcode($attributes));
+    echo \RRZE\Calendar\Shortcodes\Events::shortcode($attributes);
         break;
     case 'full':
     case '':
     default:
-        echo wp_kses_post(\RRZE\Calendar\Shortcodes\Calendar::shortcode($attributes));
+        echo \RRZE\Calendar\Shortcodes\Calendar::shortcode($attributes);
         break;
 }

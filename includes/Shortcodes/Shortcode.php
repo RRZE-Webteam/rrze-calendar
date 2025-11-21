@@ -17,6 +17,7 @@ class Shortcode
     const ALLOWED_HTML = [
         'p' => [],
         'a' => [
+            'itemprop' => [],
             'href' => [],
             'rel' => [],
         ],
@@ -27,7 +28,15 @@ class Shortcode
         'ul' => [],
         'li' => [],
         'ins' => [],
-        'blockquote' => []
+        'blockquote' => [],
+        'span'  => [
+            'itemprop' => [],
+            'content'  => [],
+        ],
+        'meta'  => [
+            'itemprop' => [],
+            'content'  => [],
+        ]
     ];
 
     /**
