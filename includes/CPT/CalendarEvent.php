@@ -485,27 +485,6 @@ class CalendarEvent
         update_post_meta($post_id, 'event-rrule-args', json_encode($rruleArgs));
 
         add_post_meta($post_id, 'event-uid', Utils::createUuid($post_id), true);
-
-        // unhook this function to prevent infinite looping
-        /* remove_action( 'save_post', 'saveEvent' );
-
-         $slugRaw = get_the_title($post_id);
-         $eventDate = get_post_meta($post_id, 'my-event-calendar-event-date', true);
-         if ($eventDate != '') {
-             $slugRaw .= '-' . date('Y-m-d', $eventDate);
-         }
-         $slugRaw = sanitize_title($slugRaw);
-         $postStatus = get_post_status($post_id);
-
-         $slug = wp_unique_post_slug($slugRaw, $post_id, $postStatus, 'event', 0);
-         // update the post slug
-         wp_update_post( array(
-             'ID' => $post_id,
-             'post_name' => $slug // do your thing here
-         ));
-
-         // re-hook this function
-         add_action( 'save_post', 'saveEvent' );*/
     }
 
     /**
@@ -654,7 +633,7 @@ class CalendarEvent
     public static function getEventData($post_id)
     {
         $meta = get_post_meta($post_id);
-        $eventItems = Utils::buildEventsArray([get_post($post_id)]/*, date('Y-m-d', time())*/);
+        $eventItems = Utils::buildEventsArray([get_post($post_id)]);
         $data['allDay'] = Utils::getMeta($meta, 'all-day');
         $data['repeat'] = Utils::getMeta($meta, 'repeat');
         $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
@@ -688,10 +667,10 @@ class CalendarEvent
                 //    continue;
                 //}
                 $tsEnd = $item['end'];
-                $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
-                $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
-                $startDay = date('Y-m-d', $tsStart);
-                $endDay = date('Y-m-d', $tsEnd);
+                $tsStartUTC = $tsStart;
+                $tsEndUTC   = $tsEnd;
+                $startDay = wp_date('Y-m-d', $tsStart);
+                $endDay = wp_date('Y-m-d', $tsEnd);
                 if ($startDay != $endDay) {
                     // multiday
                     if ($data['allDay'] == 'on') {
@@ -914,7 +893,7 @@ class CalendarEvent
      */
     public static function listTableContent($column_name, $post_id)
     {
-        $data = CalendarEvent::getEventData($post_id);
+        $data = self::getEventData($post_id);
         $meta = get_post_meta($post_id);
         $feedID = get_post_meta($post_id, 'ics_feed_id', true);
         switch ($column_name) {
