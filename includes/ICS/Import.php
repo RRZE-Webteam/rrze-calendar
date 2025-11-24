@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarFeed;
 use RRZE\Calendar\Utils;
-use RRZE\Calendar\Vendor\Dependencies\ICal\ICal;
+use ICal\ICal;
 use DateTime;
 use function RRZE\Calendar\plugin;
 
@@ -27,11 +27,18 @@ class Import
      */
     public static function getEvents(int $feedID, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
+        // Get the current timestamp according to the WordPress timezone.
         $currentTimestamp = current_time('timestamp');
-        $currentDateTime = date('Y-m-d H:i:s', $currentTimestamp);
-        $pastDays = abs($pastDays);
+
+        // Format the timestamp using wp_date(), which uses the WordPress timezone.
+        $currentDateTime = wp_date('Y-m-d H:i:s', $currentTimestamp);
+
+        // Ensure positive values
+        $pastDays  = abs($pastDays);
         $limitDays = abs($limitDays);
-        $startDate = date('Ymd', $currentTimestamp);
+
+        // Another date formatted using the WP timezone
+        $startDate = wp_date('Ymd', $currentTimestamp);
 
         // Add a month to $pastDays to accommodate multi-day events that may begin out of range.
         $rangeStart = Utils::dateFormat('Y/m/d', $startDate, null, '-' . ($pastDays + 30) . 'days');
@@ -40,10 +47,6 @@ class Import
 
         // The value in years to use for indefinite, recurring events
         $defaultSpan = intval(ceil($pastDays + $limitDays) / 365) ?: self::DEFAULT_SPAN;
-
-        // WP Timezone
-        $urlTz = wp_timezone();
-        $defaultTimeZone = $urlTz->getName();
 
         // Get day counts for ICS Parser's range filters
         $nowDtm = new DateTime($currentDateTime);
@@ -82,7 +85,7 @@ class Import
                 // Parse ICS contents
                 $ICal = new ICal('ICal.ics', [
                     'defaultSpan'                 => $defaultSpan,
-                    'defaultTimeZone'             => $defaultTimeZone,
+                    'defaultTimeZone'             => 'UTC',
                     'disableCharacterReplacement' => true,
                     'filterDaysAfter'             => $filterDaysAfter,
                     'filterDaysBefore'            => $filterDaysBefore,
