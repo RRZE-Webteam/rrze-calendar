@@ -6,8 +6,9 @@ defined('ABSPATH') || exit;
 
 use DateTime;
 use DateTimeZone;
-use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
-use RRZE\Calendar\Vendor\Dependencies\RRule\RSet;
+use DateTimeImmutable;
+use RRule\RRule;
+use RRule\RSet;
 
 /**
  * Utils class
@@ -138,323 +139,227 @@ class Utils
     }
 
     /**
-     * Format time string data.
+     * Format a datetime string or timestamp using WordPress locale rules.
+     *
+     * - If $dtStr is numeric → interpreted as UTC timestamp.
+     * - If $dtStr includes timezone info → respected.
+     * - Otherwise → interpreted in WordPress timezone.
+     * - $offset supports "+2 days", "-1 month", etc.
+     *
      * @param string $format
-     * @param mixed $dtStr
-     * @param mixed $tz
-     * @param mixed $offset
-     * @return string
+     * @param mixed $dtStr Date string or timestamp.
+     * @param mixed $tz Timezone string or DateTimeZone object.
+     * @param string $offset
+     * @return string|null
      */
-    public static function dateFormat($format, $dtStr = '', $tz = '', $offset = '')
+    public static function dateFormat(string $format, $dtStr = '', $tz = null, string $offset = ''): ?string
     {
         global $wp_locale;
-        $date = '';
 
-        // Safely catch Unix timestamps
-        if (strlen($dtStr) >= 10 && is_numeric($dtStr)) {
-            $dtStr = '@' . $dtStr;
+        // Normalize timezone
+        if (!($tz instanceof \DateTimeZone)) {
+            $tz = empty($tz)
+                ? wp_timezone()
+                : new \DateTimeZone((string) $tz);
         }
 
-        // Convert $tz to DateTimeZone object if applicable
-        if (!empty($tz) && is_string($tz)) {
-            $tz = new DateTimeZone($tz);
+        // Detect numeric timestamp
+        if (is_numeric($dtStr) && strlen((string) $dtStr) >= 10) {
+            $dtStr = '@' . $dtStr; // UTC timestamp
         }
 
-        // Set default timezone if null
-        if (empty($tz)) {
-            $tz = new DateTimeZone(get_option('timezone_string') ? get_option('timezone_string') : 'UTC');
+        // Normalize weird offset "--" or "+-"
+        if (!empty($offset)) {
+            $offset = trim(str_replace(['--', '+-'], ['+', '-'], $offset));
         }
 
-        // Fix signs in offset
-        $offset = str_replace('--', '+', str_replace('+-', '-', $offset));
+        // Build DateTime safely
+        try {
+            $dt = new \DateTime(trim($dtStr . ' ' . $offset), $tz);
+        } catch (\Throwable $e) {
+            return null;
+        }
 
-        // Create new datetime from date string
-        $dt = new DateTime(trim($dtStr . ' ' . $offset), $tz);
-
-        // Localize
+        // If locale is unavailable → simple format
         if (empty($wp_locale->month) || empty($wp_locale->weekday)) {
-            $date = $dt->format($format);
-        } else {
-            $format = preg_replace('/(?<!\\\\)r/', DATE_RFC2822, $format);
-            $newFormat    = '';
-            $formatLength = strlen($format);
-            $month = $wp_locale->get_month($dt->format('m'));
-            $weekday = $wp_locale->get_weekday($dt->format('w'));
-            for ($i = 0; $i < $formatLength; $i++) {
-                switch ($format[$i]) {
-                    case 'D':
-                        $newFormat .= addcslashes($wp_locale->get_weekday_abbrev($weekday), '\\A..Za..z');
-                        break;
-                    case 'F':
-                        $newFormat .= addcslashes($month, '\\A..Za..z');
-                        break;
-                    case 'l':
-                        $newFormat .= addcslashes($weekday, '\\A..Za..z');
-                        break;
-                    case 'M':
-                        $newFormat .= addcslashes($wp_locale->get_month_abbrev($month), '\\A..Za..z');
-                        break;
-                    case 'a':
-                        $newFormat .= addcslashes($wp_locale->get_meridiem($dt->format('a')), '\\A..Za..z');
-                        break;
-                    case 'A':
-                        $newFormat .= addcslashes($wp_locale->get_meridiem($dt->format('A')), '\\A..Za..z');
-                        break;
-                    case '\\':
-                        $newFormat .= $format[$i];
-                        if ($i < $formatLength) {
-                            $newFormat .= $format[++$i];
-                        }
-                        break;
-                    default:
-                        $newFormat .= $format[$i];
-                        break;
-                }
-            }
-            $date = $dt->format($newFormat);
-            $date = wp_maybe_decline_date($date, $format);
+            return $dt->format($format);
         }
 
-        return !empty($date) ? $date : null;
+        // Handle unescaped "r"
+        $format = preg_replace('/(?<!\\\\)r/', DATE_RFC2822, $format);
+
+        $new = '';
+        $len = strlen($format);
+
+        $month   = $wp_locale->get_month($dt->format('m'));
+        $weekday = $wp_locale->get_weekday($dt->format('w'));
+
+        for ($i = 0; $i < $len; $i++) {
+            switch ($format[$i]) {
+                case 'D':
+                    $new .= addcslashes($wp_locale->get_weekday_abbrev($weekday), '\\A..Za..z');
+                    break;
+                case 'F':
+                    $new .= addcslashes($month, '\\A..Za..z');
+                    break;
+                case 'l':
+                    $new .= addcslashes($weekday, '\\A..Za..z');
+                    break;
+                case 'M':
+                    $new .= addcslashes($wp_locale->get_month_abbrev($month), '\\A..Za..z');
+                    break;
+                case 'a':
+                    $new .= addcslashes($wp_locale->get_meridiem($dt->format('a')), '\\A..Za..z');
+                    break;
+                case 'A':
+                    $new .= addcslashes($wp_locale->get_meridiem($dt->format('A')), '\\A..Za..z');
+                    break;
+
+                case '\\': // escaped character
+                    $new .= $format[$i];
+                    if ($i + 1 < $len) {
+                        $new .= $format[++$i];
+                    }
+                    break;
+
+                default:
+                    $new .= $format[$i];
+            }
+        }
+
+        $out = $dt->format($new);
+        return wp_maybe_decline_date($out, $format);
     }
 
     /**
-     * Format time string data.
+     * Format a time string (HHMMSS, HH:MM, 9pm, 09:30, etc.)
+     *
+     * Always returns a valid formatted time or empty string.
+     *
      * @param string $timeString
-     * @param string $format
-     * @return string
+     * @param string $format Default "H:i:s"
      */
-    public static function timeFormat($timeString, $format = 'H:i:s')
+    public static function timeFormat(string $timeString, string $format = 'H:i:s'): string
     {
-        $output = '';
-        if (empty($format)) {
-            $format = get_option('time_format');
+        if ($timeString === '') {
+            return '';
         }
 
-        // Strip unsupported format elements from string
+        // Fallback to WP time_format if empty
+        if ($format === '') {
+            $format = get_option('time_format') ?: 'H:i';
+        }
+
+        // Remove unsupported tokens
         $format = trim(preg_replace('/[BsueOPTZ]/', '', $format));
 
-        // Get digits from time string
-        $timeDigits = preg_replace('/[^0-9]+/', '', $timeString);
-
-        // Get am/pm from time string
-        $timeAmPm = preg_replace('/[^amp]+/', '', strtolower($timeString));
-        if ($timeAmPm != 'am' && $timeAmPm != 'pm') {
-            $timeAmPm = null;
+        // Digits only → HHMMSS or HHMM
+        $digits = preg_replace('/[^0-9]/', '', $timeString);
+        if ($digits === '') {
+            return '';
         }
 
-        // Prepend zero to digits if length is odd
-        if (strlen($timeDigits) % 2 == 1) {
-            $timeDigits = '0' . $timeDigits;
+        // Odd length → pad left
+        if (strlen($digits) % 2 === 1) {
+            $digits = '0' . $digits;
         }
 
-        // Get hour, minutes and seconds from time digits
-        $timeH = substr($timeDigits, 0, 2);
-        $timeM = substr($timeDigits, 2, 2);
-        $timeS = strlen($timeDigits) == 6 ? substr($timeDigits, 4, 2) : null;
+        $H = substr($digits, 0, 2);
+        $M = substr($digits, 2, 2) ?: '00';
+        $S = substr($digits, 4, 2) ?: '00';
 
-        // Convert hour to correct 24-hour value if needed
-        if ($timeAmPm == 'pm') {
-            $timeH = (int)$timeH + 12;
+        // Detect AM/PM
+        $ampm = strtolower(preg_replace('/[^amp]/', '', strtolower($timeString)));
+        $ampm = ($ampm === 'am' || $ampm === 'pm') ? $ampm : null;
+
+        // Convert to 24h format
+        if ($ampm === 'pm' && (int)$H < 12) {
+            $H = (string)((int)$H + 12);
+        } elseif ($ampm === 'am' && $H === '12') {
+            $H = '00';
         }
 
-        if ($timeAmPm == 'am' && $timeH == '12') {
-            $timeH = '00';
+        // Compute 12h version
+        $H12 = (int)$H % 12;
+        if ($H12 === 0) {
+            $H12 = 12;
+        }
+        $H12 = str_pad($H12, 2, '0', STR_PAD_LEFT);
+
+        // Greek AM/PM adjustment
+        if (get_locale() === 'el' && $ampm !== null) {
+            $ampm = ($ampm === 'am') ? 'πμ' : 'μμ';
         }
 
-        // Determine am/pm if not passed in
-        if (empty($timeAmPm)) {
-            $timeAmPm = (int)$timeH >= 12 ? 'pm' : 'am';
-        }
-
-        // Get 12-hour version of hour
-        $timeH12 = (int)$timeH % 12;
-        if ($timeH12 == 0) {
-            $timeH12 = 12;
-        }
-        if ($timeH12 < 10) {
-            $timeH12 = '0' . (string)$timeH12;
-        }
-
-        // Convert am/pm abbreviations for Greek (this is simpler than putting it in the i18n files)
-        if (get_locale() == 'el') {
-            $timeAmPm = ($timeAmPm == 'am') ? 'πμ' : 'μμ';
-        }
-
-        // Format output
+        // Output switch (compact)
         switch ($format) {
-            // 12-hour formats without seconds
             case 'g:i a':
-                $output = intval($timeH12) . ':' . $timeM . '&nbsp;' . $timeAmPm;
-                break;
+                return intval($H12) . ':' . $M . ' ' . $ampm;
             case 'g:ia':
-                $output = intval($timeH12) . ':' . $timeM . $timeAmPm;
-                break;
+                return intval($H12) . ':' . $M . $ampm;
             case 'g:i A':
-                $output = intval($timeH12) . ':' . $timeM . '&nbsp;' . strtoupper($timeAmPm);
-                break;
+                return intval($H12) . ':' . $M . ' ' . strtoupper($ampm);
             case 'g:iA':
-                $output = intval($timeH12) . ':' . $timeM . strtoupper($timeAmPm);
-                break;
-            case 'h:i a':
-                $output = $timeH12 . ':' . $timeM . '&nbsp;' . $timeAmPm;
-                break;
-            case 'h:ia':
-                $output = $timeH12 . ':' . $timeM . $timeAmPm;
-                break;
-            case 'h:i A':
-                $output = $timeH12 . ':' . $timeM . '&nbsp;' . strtoupper($timeAmPm);
-                break;
-            case 'h:iA':
-                $output = $timeH12 . ':' . $timeM . strtoupper($timeAmPm);
-                break;
-            // 24-hour formats without seconds
-            case 'G:i':
-                $output = intval($timeH) . ':' . $timeM;
-                break;
-            case 'Gi':
-                $output = intval($timeH) . $timeM;
-                break;
-            // case 'H:i': is the default, below
-            case 'Hi':
-                $output = $timeH . $timeM;
-                break;
-            // 24-hour formats without seconds, using h and m or min
-            case 'G \h i \m\i\n':
-                $output = intval($timeH) . '&nbsp;h&nbsp;' . $timeM . '&nbsp;min';
-                break;
-            case 'G\h i\m\i\n':
-                $output = intval($timeH) . 'h&nbsp;' . $timeM . 'min';
-                break;
-            case 'G\hi\m\i\n':
-                $output = intval($timeH) . 'h' . $timeM . 'min';
-                break;
-            case 'G \h i \m':
-                $output = intval($timeH) . '&nbsp;h&nbsp;' . $timeM . '&nbsp;m';
-                break;
-            case 'G\h i\m':
-                $output = intval($timeH) . 'h&nbsp;' . $timeM . 'm';
-                break;
-            case 'G\hi\m':
-                $output = intval($timeH) . 'h' . $timeM . 'm';
-                break;
-            case 'H \h i \m\i\n':
-                $output = $timeH . '&nbsp;h&nbsp;' . $timeM . '&nbsp;min';
-                break;
-            case 'H\h i\m\i\n':
-                $output = $timeH . 'h&nbsp;' . $timeM . 'min';
-                break;
-            case 'H\hi\m\i\n':
-                $output = $timeH . 'h' . $timeM . 'min';
-                break;
-            case 'H \h i \m':
-                $output = $timeH . '&nbsp;h&nbsp;' . $timeM . '&nbsp;m';
-                break;
-            case 'H\h i\m':
-                $output = $timeH . 'h&nbsp;' . $timeM . 'm';
-                break;
-            case 'H\hi\m':
-                $output = $timeH . 'h' . $timeM . 'm';
-                break;
-            // 12-hour formats with seconds
-            case 'g:i:s a':
-                $output = intval($timeH12) . ':' . $timeM . ':' . $timeS . '&nbsp;' . $timeAmPm;
-                break;
-            case 'g:i:sa':
-                $output = intval($timeH12) . ':' . $timeM . ':' . $timeS . $timeAmPm;
-                break;
-            case 'g:i:s A':
-                $output = intval($timeH12) . ':' . $timeM . ':' . $timeS . '&nbsp;' . strtoupper($timeAmPm);
-                break;
-            case 'g:i:sA':
-                $output = intval($timeH12) . ':' . $timeM . ':' . $timeS . strtoupper($timeAmPm);
-                break;
-            case 'h:i:s a':
-                $output = $timeH12 . ':' . $timeM . ':' . $timeS . '&nbsp;' . $timeAmPm;
-                break;
-            case 'h:i:sa':
-                $output = $timeH12 . ':' . $timeM . ':' . $timeS . $timeAmPm;
-                break;
-            case 'h:i:s A':
-                $output = $timeH12 . ':' . $timeM . ':' . $timeS . '&nbsp;' . strtoupper($timeAmPm);
-                break;
-            case 'h:i:sA':
-                $output = $timeH12 . ':' . $timeM . ':' . $timeS . strtoupper($timeAmPm);
-                break;
-            // 24-hour formats with seconds
-            case 'G:i:s':
-                $output = intval($timeH) . ':' . $timeM . ':' . $timeS;
-                break;
+                return intval($H12) . ':' . $M . strtoupper($ampm);
             case 'H:i:s':
-                $output = $timeH . ':' . $timeM . ':' . $timeS;
-                break;
-            case 'His':
-                $output = $timeH . $timeM . $timeS;
-                break;
-            // Hour-only formats used for grid labels
-            case 'H:00':
-                $output = $timeH . ':00';
-                break;
-            case 'h:00':
-                $output = $timeH12 . ':00';
-                break;
-            case 'H00':
-                $output = $timeH . '00';
-                break;
-            case 'g a':
-                $output = intval($timeH12) . ' ' . $timeAmPm;
-                break;
-            case 'g A':
-                $output = intval($timeH12) . ' ' . strtoupper($timeAmPm);
-                break;
-            // Default
+                return "$H:$M:$S";
             case 'H:i':
+                return "$H:$M";
+            case 'His':
+                return "$H$M$S";
+            case 'G:i':
+                return intval($H) . ':' . $M;
+            case 'Gi':
+                return intval($H) . $M;
             default:
-                $output = $timeH . ':' . $timeM;
-                break;
+                return "$H:$M";
         }
-
-        return $output;
     }
 
     /**
-     * Get the days of the week according to the start of the week setting.
-     * @param string $format
-     * @return array
+     * Get the days of the week according to the start_of_week setting.
+     *
+     * @param string $format 'full'|'short'|'min'|'rrule'
+     * @return array Indexed 0..6 in display order.
      */
     public static function getDaysOfWeek($format = '')
     {
-        $days = [];
-        $daysOfWeek = self::daysOfWeek($format);
-        $startOfWeek = get_option('start_of_week', 0);
+        $daysOfWeek  = self::daysOfWeek($format);
+        $startOfWeek = (int) get_option('start_of_week', 0);
+
+        $ordered = [];
         for ($i = 0; $i < 7; $i++) {
-            $weekDay = ($i + $startOfWeek) % 7;
-            $days[$weekDay] = $daysOfWeek[$weekDay];
+            $weekDay   = ($i + $startOfWeek) % 7;
+            $ordered[] = $daysOfWeek[$weekDay];
         }
-        return $days;
+
+        return $ordered;
     }
 
     /**
-     * Get the days of the week.
-     * @param string $format
+     * Get the days of the week (base order, Sunday=0).
+     *
+     * @param string $format 'full'|'short'|'min'|'rrule'
      * @return array
      */
     public static function daysOfWeek($format = '')
     {
         global $wp_locale;
         $daysOfWeek = [];
+
         switch ($format) {
             case 'rrule':
                 $daysOfWeek = [
-                    'monday' => 'MO',
-                    'tuesday' => 'TU',
+                    'monday'    => 'MO',
+                    'tuesday'   => 'TU',
                     'wednesday' => 'WE',
-                    'thursday' => 'TH',
-                    'friday' => 'FR',
-                    'saturday' => 'SA',
-                    'sunday' => 'SU',
+                    'thursday'  => 'TH',
+                    'friday'    => 'FR',
+                    'saturday'  => 'SA',
+                    'sunday'    => 'SU',
                 ];
                 break;
+
             case 'min':
                 $daysOfWeek = [
                     0 => $wp_locale->get_weekday_initial($wp_locale->get_weekday(0)),
@@ -466,6 +371,7 @@ class Utils
                     6 => $wp_locale->get_weekday_initial($wp_locale->get_weekday(6)),
                 ];
                 break;
+
             case 'short':
                 $daysOfWeek = [
                     0 => $wp_locale->get_weekday_abbrev($wp_locale->get_weekday(0)),
@@ -477,6 +383,7 @@ class Utils
                     6 => $wp_locale->get_weekday_abbrev($wp_locale->get_weekday(6)),
                 ];
                 break;
+
             case 'full':
             default:
                 $daysOfWeek = [
@@ -490,18 +397,21 @@ class Utils
                 ];
                 break;
         }
+
         return $daysOfWeek;
     }
 
     /**
      * Get the month names.
-     * @param string $format
+     *
+     * @param string $format 'full'|'short'|'rrule'
      * @return array
      */
     public static function getMonthNames($format = '')
     {
         global $wp_locale;
         $monthNames = [];
+
         switch ($format) {
             case 'rrule':
                 $monthNames = [
@@ -519,100 +429,127 @@ class Utils
                     'dec' => 12,
                 ];
                 break;
+
             case 'short':
                 $monthNames = [
-                    0 => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
-                    1 => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
-                    2 => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
-                    3 => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
-                    4 => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
-                    5 => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
-                    6 => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
-                    7 => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
-                    8 => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
-                    9 => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
+                    0  => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
+                    1  => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
+                    2  => $wp_locale->get_month_abbrev($wp_locale->get_month('03')),
+                    3  => $wp_locale->get_month_abbrev($wp_locale->get_month('04')),
+                    4  => $wp_locale->get_month_abbrev($wp_locale->get_month('05')),
+                    5  => $wp_locale->get_month_abbrev($wp_locale->get_month('06')),
+                    6  => $wp_locale->get_month_abbrev($wp_locale->get_month('07')),
+                    7  => $wp_locale->get_month_abbrev($wp_locale->get_month('08')),
+                    8  => $wp_locale->get_month_abbrev($wp_locale->get_month('09')),
+                    9  => $wp_locale->get_month_abbrev($wp_locale->get_month('10')),
                     10 => $wp_locale->get_month_abbrev($wp_locale->get_month('11')),
                     11 => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
-                    12 => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
                 ];
                 break;
+
             case 'full':
             default:
                 $monthNames = [
-                    0 => $wp_locale->get_month('01'),
-                    1 => $wp_locale->get_month('02'),
-                    2 => $wp_locale->get_month('03'),
-                    3 => $wp_locale->get_month('04'),
-                    4 => $wp_locale->get_month('05'),
-                    5 => $wp_locale->get_month('06'),
-                    6 => $wp_locale->get_month('07'),
-                    7 => $wp_locale->get_month('08'),
-                    8 => $wp_locale->get_month('09'),
-                    9 => $wp_locale->get_month('10'),
+                    0  => $wp_locale->get_month('01'),
+                    1  => $wp_locale->get_month('02'),
+                    2  => $wp_locale->get_month('03'),
+                    3  => $wp_locale->get_month('04'),
+                    4  => $wp_locale->get_month('05'),
+                    5  => $wp_locale->get_month('06'),
+                    6  => $wp_locale->get_month('07'),
+                    7  => $wp_locale->get_month('08'),
+                    8  => $wp_locale->get_month('09'),
+                    9  => $wp_locale->get_month('10'),
                     10 => $wp_locale->get_month('11'),
                     11 => $wp_locale->get_month('12'),
-                    12 => $wp_locale->get_month('12'),
                 ];
                 break;
         }
+
         return $monthNames;
     }
 
     /**
-     * Get the first day of the week.
-     * @param string $date
-     * @return string
+     * Get the weekday (0–6, Sunday=0) of the first day of the month.
+     *
+     * @param string|int $date Date string or timestamp.
+     * @return int 0 (Sunday) .. 6 (Saturday)
      */
     public static function firstDow($date = '')
     {
-        return self::date('w', self::date('Ym', $date) . '01');
+        // Base date string or "now"
+        $base = $date ?: 'now';
+
+        // "Ym" in WP timezone
+        $ym = self::dateFormat('Ym', $base);
+        // First of that month
+        $w  = self::dateFormat('w', $ym . '01');
+
+        return (int) $w;
     }
 
     /**
-     * Get the css classes for the day.
-     * @param array $args
-     * @return string
+     * Get CSS classes for a calendar day.
+     *
+     * @param array $args {
+     *     @type string $date  Day in Ymd.
+     *     @type string $today Today in Ymd.
+     *     @type int    $count Number of events.
+     *     @type bool   $filler If this is a "filler" day.
+     *     @type bool   $flat  If true, return string; if false, return array.
+     * }
+     * @return string|array
      */
-    public static function dayClasses($args)
+    public static function dayClasses(array $args)
     {
         $defaults = [
-            'date' => self::date('Ymd'),
-            'today' => self::date('Ymd'),
-            'count' => 0,
+            'date'   => self::dateFormat('Ymd', 'now'),
+            'today'  => self::dateFormat('Ymd', 'now'),
+            'count'  => 0,
             'filler' => false,
-            'flat' => true,
+            'flat'   => true,
         ];
-        extract(array_merge($defaults, $args));
-        $day_classes = [];
+
+        $args = array_merge($defaults, $args);
+        $date   = $args['date'];
+        $today  = $args['today'];
+        $count  = (int) $args['count'];
+        $filler = !empty($args['filler']);
+        $flat   = !empty($args['flat']);
+
+        $dayClasses = [];
+
         if ($date < $today) {
-            $day_classes[] = 'past';
-        } elseif ($date == $today) {
-            $day_classes[] = 'today';
+            $dayClasses[] = 'past';
+        } elseif ($date === $today) {
+            $dayClasses[] = 'today';
         } else {
-            $day_classes[] = 'future';
+            $dayClasses[] = 'future';
         }
-        if ($count == 0) {
-            $day_classes[] = 'empty';
-        } elseif ($count == 1 && !empty($filler)) {
-            $day_classes[] = 'available';
+
+        if ($count === 0) {
+            $dayClasses[] = 'empty';
+        } elseif ($count === 1 && $filler) {
+            $dayClasses[] = 'available';
         } else {
-            $day_classes[] = 'has_events';
+            $dayClasses[] = 'has_events';
         }
-        if (!empty($flat)) {
-            $day_classes = implode(' ', $day_classes);
-        }
-        return $day_classes;
+
+        return $flat ? implode(' ', $dayClasses) : $dayClasses;
     }
 
     /**
-     * Recursives array key sort.
+     * Recursively ksort an array by keys.
+     *
      * @param array $array
-     * @return boolean
+     * @return bool
      */
-    public static function recurKsort(array &$array)
+    public static function recurKsort(array &$array): bool
     {
         foreach ($array as &$value) {
-            if (is_array($value)) self::recurKsort($value);
+            if (is_array($value)) {
+                self::recurKsort($value);
+            }
         }
         return ksort($array);
     }
@@ -691,8 +628,15 @@ class Utils
                 foreach ($occurrences as $startDt) {
                     $startTStmp = absint(Utils::getMeta($meta, 'start'));
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
-                    $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
-                    $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
+
+                    // $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
+                    $dt = new \DateTimeImmutable($startDt . ' ' . gmdate('H:i', $startTStmp), new DateTimeZone('UTC'));
+                    $startTS = $dt->getTimestamp();
+
+                    // $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
+                    $dt = new \DateTimeImmutable($startDt . ' ' . gmdate('H:i', $endTStmp), new DateTimeZone('UTC'));
+                    $endTS = $dt->getTimestamp();
+
                     $eventTitle = get_the_title($event->ID);
                     $location = get_post_meta($event->ID, 'location', TRUE);
                     if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
@@ -709,7 +653,18 @@ class Utils
                 foreach ($occurrences as $occurrence) {
                     $startTS = $occurrence->getTimestamp();
                     $endTStmp = absint(Utils::getMeta($meta, 'end'));
-                    $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
+
+                    // $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
+                    $startDateUTC = gmdate('Y-m-d', $startTS);
+                    $endTimeUTC   = gmdate('H:i', $endTStmp);
+
+                    $endDT = new \DateTimeImmutable(
+                        $startDateUTC . ' ' . $endTimeUTC,
+                        new DateTimeZone('UTC')
+                    );
+
+                    $endTS = $endDT->getTimestamp();
+
                     $eventTitle = get_the_title($event->ID);
                     $location = get_post_meta($event->ID, 'location', TRUE);
                     if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
@@ -760,14 +715,17 @@ class Utils
             return [];
         $startTS = self::getMeta($meta, 'start');
         if ($startTS == '') return [];
-        if ($startTS >= strtotime('-1 year')) {
-            $dtstart = date('Y-m-d H:i:s', (int)$startTS);
+
+        $oneYearAgo = new DateTime('-1 year', wp_timezone());
+        $oneYearAgoTS = $oneYearAgo->getTimestamp();
+        if ($startTS >= $oneYearAgoTS) {
+            $dtstart = wp_date('Y-m-d H:i:s', $startTS);
         } else {
-            $dtstart = date('Y-m-d', strtotime('-1 year')) . ' ' . date('H:i:s', $startTS);
+            $dtstart = wp_date('Y-m-d', $oneYearAgoTS) . ' ' . wp_date('H:i:s', $startTS);
         }
+
         $endTS = self::getMeta($meta, 'end');
         if ($endTS == '') return [];
-        $dtend = date('Y-m-d H:i:s', (int)$endTS);
 
         $rruleArgs = [
             'DTSTART' => $dtstart,
@@ -775,11 +733,16 @@ class Utils
         ];
 
         $lastDateTS = self::getMeta($meta, 'repeat-lastdate');
+
         if ($lastDateTS != '') {
-            $lastDate = '@' . $lastDateTS;
+            $lastDate = '@' . (int) $lastDateTS;
         } else {
-            $lastDate = '@' . strtotime('+1 year');
+            $tz = wp_timezone();
+            $tsPlusOneYear = (new DateTime('+1 year', $tz))->getTimestamp();
+
+            $lastDate = '@' . $tsPlusOneYear;
         }
+
         $rruleArgs['UNTIL'] = $lastDate;
 
         $repeatInterval = self::getMeta($meta, 'repeat-interval');
@@ -843,7 +806,7 @@ class Utils
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
             $startTS = absint(Utils::getMeta($meta, 'start'));
-            $startTime = date('H:i', $startTS);
+            $startTime = wp_date('H:i', $startTS);
 
             // Exceptions
             $exceptionsRaw = Utils::getMeta($meta, 'exceptions');
@@ -967,18 +930,13 @@ class Utils
     }
 
     /**
-     * This function will now return true if $date is a valid date 
-     * (a \DateTime object, a string representation of a date, or a timestamp), 
-     * and false otherwise.
-     * @param mixed $date (\DateTime|string|int)
-     * @return boolean
+     * Validate any date representation: timestamp, string, DateTime.
+     * 
+     * @param mixed $date
+     * @return bool
      */
-    public static function validateDate($date = '')
+    public static function validateDate($date): bool
     {
-        if (empty($date)) {
-            return false;
-        }
-
         if ($date instanceof \DateTime) {
             return true;
         }
@@ -987,15 +945,15 @@ class Utils
             try {
                 new \DateTime('@' . $date);
                 return true;
-            } catch (\Exception $e) {
-                // continue to the next check
+            } catch (\Throwable $e) {
+                return false;
             }
         }
 
         try {
             new \DateTime($date);
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }
@@ -1127,10 +1085,63 @@ class Utils
      * @param int $timestamp UTC timestamp.
      * @return string ICS UTC datetime.
      */
-    public static function timestampToIcsUtc(int $timestamp): string
+    public static function timestampToIcsUtc($timestamp): string
     {
-        $dt = new DateTime('@' . $timestamp);                  // interpret timestamp as UTC
-        $dt->setTimezone(new DateTimeZone('UTC'));             // ensure UTC
+        if (!is_numeric($timestamp) || $timestamp <= 0) {
+            return '';
+        }
+
+        $dt = new DateTimeImmutable('@' . $timestamp, new DateTimeZone('UTC'));
         return $dt->format('Ymd\THis\Z');
+    }
+
+    /**
+     * Parse any feed datetime safely using WordPress timezone rules.
+     *
+     * - If the string contains a timezone offset (Z, +02:00), parse as UTC
+     * - If the string has no timezone, interpret in WP timezone
+     * - Returns a correct UTC timestamp for comparisons
+     */
+    public static function parseFeedDatetime(string $feedDateTime): int
+    {
+        $hasTZ = preg_match('/(Z|[+-][0-9]{2}:?[0-9]{2}|GMT|UTC)/i', $feedDateTime);
+
+        if ($hasTZ) {
+            // String includes timezone info → parse as UTC
+            $dt = new DateTime($feedDateTime, new DateTimeZone('UTC'));
+        } else {
+            // No timezone → interpret using the WordPress timezone
+            $dt = new DateTime($feedDateTime, wp_timezone());
+            $dt->setTimezone(new DateTimeZone('UTC'));
+        }
+
+        return $dt->getTimestamp();
+    }
+
+    /**
+     * Parse any datetime string:
+     * - If it already contains timezone → respect it
+     * - Otherwise → interpret in WordPress timezone
+     *
+     * @param string $dateString
+     * @return DateTime
+     */
+    public static function parseAnyDatetime($dateString)
+    {
+        // Contains explicit timezone? Then trust it.
+        $hasTZ = preg_match(
+            '/Z$|GMT|UTC|[+-][0-9]{2}:?[0-9]{2}/i',
+            $dateString
+        );
+
+        try {
+            if ($hasTZ) {
+                return new \DateTime($dateString);
+            }
+            return new \DateTime($dateString, wp_timezone());
+        } catch (\Exception $e) {
+            // Safe fallback: now()
+            return new \DateTime('now', wp_timezone());
+        }
     }
 }
