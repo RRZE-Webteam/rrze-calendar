@@ -6,8 +6,8 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
-use RRZE\Calendar\Vendor\Dependencies\ICal\ICal;
-use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
+use ICal\ICal;
+use RRule\RRule;
 use function RRZE\Calendar\plugin;
 
 /**
@@ -46,7 +46,7 @@ class Export
     {
         $plugin  = isset($_GET['ical-plugin']) ? sanitize_title((string) $_GET['ical-plugin']) : '';
         $action  = isset($_GET['action']) ? sanitize_text_field((string) $_GET['action']) : '';
-        $filename = isset($_GET['filename']) ? sanitize_file_name((string) $_GET['filename']) : '';
+        $filename = isset($_GET['filename']) ? sanitize_title((string) $_GET['filename']) : '';
 
         // Default filename falls back to site host slug if not matching.
         $urlHost = sanitize_title((string) parse_url(site_url(), PHP_URL_HOST));
@@ -156,6 +156,11 @@ class Export
             // Convert to UTC ISO-like strings the ICS builder consumes
             $dtstart = $startTs > 0 ? Utils::timestampToIcsUtc($startTs) : '';
             $dtend = $endTs > 0 ? Utils::timestampToIcsUtc($endTs) : '';
+
+            error_log('Event ID: ' . $post->ID);
+            error_log(Utils::prepareSummaryFromPostTitle($post->post_title));
+            error_log('Start TS: ' . $startTs . ' => ' . $dtstart);
+            error_log('End TS: ' . $endTs . ' => ' . $dtend);
 
             $args = [
                 'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
@@ -315,7 +320,7 @@ class Export
     private function stream(string $filename): void
     {
         $charset = get_option('blog_charset') ?: 'UTF-8';
-        $safe = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $filename) ?: 'calendar';
+        $safe = sanitize_title($filename) ?: 'calendar';
         $file = $safe . '.ics';
 
         // Headers
@@ -355,7 +360,7 @@ class Export
         $qArgs = [
             'ical-plugin' => sanitize_title(plugin()->getSlug()),
             'action'      => 'export',
-            'filename'    => sanitize_file_name($filename),
+            'filename'    => $filename,
         ];
 
         // Append optional filters as CSV
