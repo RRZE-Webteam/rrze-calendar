@@ -287,7 +287,14 @@ class Calendar
 
     /**
      * Render list of events on one day
-     * @param array $events
+     * 
+     * @param integer $year
+     * @param integer $month
+     * @param integer $day
+     * @param array $eventsArray
+     * @param array $taxQuery
+     * @param bool $aboLink
+     * @return string
      */
     private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = [], $aboLink = false)
     {
@@ -365,13 +372,14 @@ class Calendar
 
     /**
      * Render mini calendar month view with availability information for external use
-     * @param   integer $month
-     * @param   integer $year
-     * @param   array   $events
-     * @param   bool    $showYear
-     * @return  string
+     *
+     * @param integer $year
+     * @param integer $month
+     * @param array $eventsArray
+     * @param bool $showYear
+     * @param array $taxQuery
+     * @return string
      */
-
     private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = [])
     {
         $startOfWeek = get_option('start_of_week', 0);
@@ -398,7 +406,7 @@ class Calendar
         for ($i = 0; $i < $first_day_in_month; $i++) {
             $output .= '<td> </td>';
         }
-        //var_dump($eventsArray);
+
         for ($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
             $date = $year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
@@ -410,10 +418,6 @@ class Calendar
                 foreach ($events as $event) {
                     $eventStart = $ts;
                     $eventEnd = $event['end'];
-                    //var_dump($calDay >= $eventStart && $calDay <= $eventEnd);
-                    //var_dump($date, date('Y-m-d', $eventStart), date('Y-m-d', $eventEnd), ($date >= date('Y-m-d', $eventStart) && $date <= date('Y-m-d', $eventEnd)) );
-                    //print "<br />";
-                    //if ($calDay >= $eventStart && $calDay <= $eventEnd) {
                     if ($date >= date('Y-m-d', $eventStart) && $date <= date('Y-m-d', $eventEnd)) {
                         $linkOpen = '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . str_pad($day, 2, '0', STR_PAD_LEFT) . '" title="' . __('View Details', 'rrze-calendar') . '">';
                         $linkClose = '</a>';
@@ -436,14 +440,15 @@ class Calendar
 
     /**
      * Render Full Calendar Month View with event details
-     * @param integer $month
+     *
      * @param integer $year
-     * @param array $events
-     * @param bool $paging  Allow skipping to next/previous month
-     * @param array $locations
+     * @param integer $month
+     * @param array $eventsArray
+     * @param bool $paging
+     * @param array $taxQuery
+     * @param bool $aboLink
      * @return string
      */
-
     private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false)
     {
         $startOfWeek = get_option('start_of_week', 0);
@@ -511,10 +516,10 @@ class Calendar
                     }
                     $eventStart = $ts;
                     $eventEnd = $event['end'];
-                    $eventStartUTC = get_gmt_from_date(date('Y-m-d H:i', $eventStart), 'U');
-                    $eventEndUTC = get_gmt_from_date(date('Y-m-d H:i', $eventEnd), 'U');
-                    $eventStartDate = date('Y-m-d', $eventStart);
-                    $eventEndDate = date('Y-m-d', $eventEnd);
+                    $eventStartUTC = $eventStart;
+                    $eventEndUTC = $eventEnd;
+                    $eventStartDate = wp_date('Y-m-d', $eventStartUTC);
+                    $eventEndDate = wp_date('Y-m-d', $eventEndUTC);
                     if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
                         continue;
                     }
