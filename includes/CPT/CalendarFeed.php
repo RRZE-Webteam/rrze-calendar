@@ -218,8 +218,10 @@ class CalendarFeed
                 $feedDateTime = get_post_meta($postId, self::FEED_DATETIME, true);
                 $error = get_post_meta($postId, self::FEED_ERROR, true);
                 if ($published && $feedDateTime) {
-                    $lastUpdate = strtotime($feedDateTime);
-                    $timeDiff = time() - $lastUpdate;
+
+                    $lastUpdate = Utils::parseFeedDatetime($feedDateTime);
+                    $timeDiff = current_time('timestamp') - $lastUpdate;
+
                     if ($lastUpdate && $timeDiff > 0 && $timeDiff < DAY_IN_SECONDS) {
                         /* translators: %s: Human-readable time difference. */
                         printf(__('%s ago'), human_time_diff($lastUpdate));
