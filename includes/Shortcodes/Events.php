@@ -177,7 +177,11 @@ class Events
 
         if (!empty($events)) {
             // Build day-indexed structure (today .. +1 year). Ensure array and sort by day.
-            $eventsArray = Utils::buildEventsArray($events, date('Y-m-d'), date('Y-m-d', strtotime('+1 year')));
+            $tz = wp_timezone();
+            $today        = wp_date('Y-m-d');
+            $oneYearLater = (new \DateTime('now', $tz))->modify('+1 year')->format('Y-m-d');
+
+            $eventsArray = Utils::buildEventsArray($events, $today, $oneYearLater);
             $eventsArray = is_array($eventsArray) ? $eventsArray : [];
             if (!empty($eventsArray)) {
                 ksort($eventsArray);
@@ -196,12 +200,22 @@ class Events
                 $expanded = [];
                 foreach ($eventsArray as $tsStart => $dayEvents) {
                     foreach ($dayEvents as $event) {
+
+                        // Add event to its start day
                         $expanded[$tsStart][] = $event;
-                        $tsEnd    = $event['end'];
-                        $startYmd = date('Y-m-d', $tsStart);
-                        $endYmd   = date('Y-m-d', $tsEnd);
+
+                        $tsEnd = (int) $event['end'];
+
+                        // Compare start/end dates in the SITE timezone (important for DST)
+                        $startYmd = wp_date('Y-m-d', $tsStart);
+                        $endYmd   = wp_date('Y-m-d', $tsEnd);
+
+                        // If the event spans multiple days, expand it over each day
                         if ($endYmd !== $startYmd) {
+
+                            // Cursor at next local midnight relative to event start
                             $cursor = $tsStart + DAY_IN_SECONDS;
+
                             while ($cursor < $tsEnd) {
                                 $expanded[$cursor][] = $event;
                                 $cursor += DAY_IN_SECONDS;
@@ -228,20 +242,24 @@ class Events
 
             foreach ($eventsArray as $tsCount => $eventsOfDay) {
                 // In teaser mode, skip past days
-                if ($display === 'teaser' && date('Ymd', $tsCount) < date('Ymd')) {
+                if ($display === 'teaser' && wp_date('Ymd', $tsCount) < wp_date('Ymd')) {
                     continue;
                 }
 
                 foreach ($eventsOfDay as $event) {
                     // In list mode, hide events that already ended
-                    if ($display === 'list' && (date('Ymd', $event['end']) < date('Ymd'))) {
+                    if ($display === 'list' && wp_date('Ymd', $event['end']) < wp_date('Ymd')) {
                         continue;
                     }
 
                     $tsEnd        = (int) $event['end'];
                     $tsStart      = (int) $event['start'];
-                    $tsStartUTC   = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
-                    $tsEndUTC     = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
+                    $tsStartUTC = (new \DateTime('@' . $tsStart, wp_timezone()))
+                        ->setTimezone(new \DateTimeZone('UTC'))
+                        ->getTimestamp();
+                    $tsEndUTC = (new \DateTime('@' . $tsEnd, wp_timezone()))
+                        ->setTimezone(new \DateTimeZone('UTC'))
+                        ->getTimestamp();
                     $eventTitle   = get_the_title($event['id']);
                     $eventURL     = get_the_permalink($event['id']);
                     $eventTitle   = '<a href="' . esc_url($eventURL) . '">' . esc_html($eventTitle) . '</a>';
@@ -255,12 +273,17 @@ class Events
                     $vcUrl       = (string) get_post_meta($event['id'], 'vc-url', true);
                     $allDay       = (get_post_meta($event['id'], 'all-day', true) === 'on');
 
-                    $startDate    = date('Y-m-d', $tsStart);
-                    $endDate      = date('Y-m-d', $tsEnd);
+                    $startDate = wp_date('Y-m-d', $tsStart);
+                    $endDate   = wp_date('Y-m-d', $tsEnd);
 
                     // Microdata (schema.org/Event)
-                    $metaStart = '<meta itemprop="startDate" content="' . esc_attr(date('c', (int) $tsStartUTC)) . '" />';
-                    $metaEnd   = '<meta itemprop="endDate" content="' . esc_attr(date('c', (int) $tsEndUTC)) . '" />';
+                    $metaStart = '<meta itemprop="startDate" content="'
+                        . esc_attr(wp_date('c', (int) $tsStartUTC, new \DateTimeZone('UTC')))
+                        . '" />';
+
+                    $metaEnd = '<meta itemprop="endDate" content="'
+                        . esc_attr(wp_date('c', (int) $tsEndUTC, new \DateTimeZone('UTC')))
+                        . '" />';
 
                     // Attendance & location meta
                     if ($location !== '' && $vcUrl === '') {
@@ -352,8 +375,8 @@ class Events
 
                         $output .= '<div class="event-date"' . $styleAttr . '>'
                             .   '<div class="day-month">'
-                            .     '<div class="day">' . esc_html(date('d', $tsCount)) . '</div>'
-                            .     '<div class="month">' . esc_html(date_i18n('M', $tsCount)) . '</div>'
+                            .     '<div class="day">' . esc_html(wp_date('d', $tsCount)) . '</div>'
+                            .     '<div class="month">' . esc_html(wp_date('M', $tsCount)) . '</div>'
                             .   '</div>'
                             . '</div>'
                             . '<div class="event-info">'
