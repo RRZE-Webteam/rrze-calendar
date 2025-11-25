@@ -157,11 +157,6 @@ class Export
             $dtstart = $startTs > 0 ? Utils::timestampToIcsUtc($startTs) : '';
             $dtend = $endTs > 0 ? Utils::timestampToIcsUtc($endTs) : '';
 
-            error_log('Event ID: ' . $post->ID);
-            error_log(Utils::prepareSummaryFromPostTitle($post->post_title));
-            error_log('Start TS: ' . $startTs . ' => ' . $dtstart);
-            error_log('End TS: ' . $endTs . ' => ' . $dtend);
-
             $args = [
                 'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
                 'uid'         => isset($meta['event-uid'][0]) ? (string) $meta['event-uid'][0] : '',
