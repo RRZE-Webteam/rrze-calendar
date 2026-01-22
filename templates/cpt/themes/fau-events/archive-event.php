@@ -24,7 +24,6 @@ global $wp_query;
 
                 <?php
                 $atts = [];
-                $atts = [];
                 $queryVars = $wp_query->query_vars;
                 if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
                     $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
