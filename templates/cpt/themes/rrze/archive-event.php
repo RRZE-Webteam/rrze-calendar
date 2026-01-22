@@ -32,9 +32,6 @@ global $wp_query;
 			</header><!-- .page-header -->
 
 			<?php
-            $atts = [
-                'number' => '99',
-            ];
             $queryVars = $wp_query->query_vars;
             if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
                 $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
@@ -42,6 +39,8 @@ global $wp_query;
             }
             echo Events::shortcode($atts);
             ?>
+
+            <?php the_posts_pagination(); ?>
 
 		</main><!-- #main -->
 	</div><!-- #primary -->
