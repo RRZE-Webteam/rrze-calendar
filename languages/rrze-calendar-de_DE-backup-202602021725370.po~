@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: RRZE Autoshare\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-calendar\n"
 "POT-Creation-Date: 2025-08-26T08:15:26+00:00\n"
-"PO-Revision-Date: 2026-02-02 17:25+0000\n"
+"PO-Revision-Date: 2026-02-02 17:24+0000\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -224,7 +224,7 @@ msgstr "Ende"
 
 #: includes/ICS/Events.php:321
 msgid "Ends"
-msgstr "Endet"
+msgstr ""
 
 #: includes/ICS/Metabox.php:103
 msgid ""
@@ -393,7 +393,7 @@ msgstr "Stündlich"
 
 #: build/block/index.js:240 src/block/edit.jsx:167 build/block/index.js:167
 msgid "How many events do you want to show? Default: 10"
-msgstr "Wie viele Termine sollen angezeigt werden? Standard: 10"
+msgstr ""
 
 #. Author URI of the plugin
 #: rrze-calendar.php

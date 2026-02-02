@@ -28,7 +28,8 @@
 			"default": []
 		},
 		"numEvents": {
-			"type": "integer"
+			"type": "integer",
+			"default": 10
 		},
 		"pageLink": {
 			"type": "string",

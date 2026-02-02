@@ -393,7 +393,7 @@ msgstr "Stündlich"
 
 #: build/block/index.js:240 src/block/edit.jsx:167 build/block/index.js:167
 msgid "How many events do you want to show? Default: 10"
-msgstr "Wie viele Termine sollen angezeigt werden? Standard: 10"
+msgstr "Wie viele Termine sollen angezeigt werden? Standardwert: 10"
 
 #. Author URI of the plugin
 #: rrze-calendar.php
