@@ -619,82 +619,144 @@ class Utils
         $i = 0;
         $identifiers = [];
         $removeDuplicates = settings()->getOption('remove_duplicates') === '1';
+
+        $tz = function_exists('wp_timezone') ? wp_timezone() : new \DateTimeZone(date_default_timezone_get());
+
+        // Helper: parse "Y-m-d" or "Y-m-d H:i" or "Y-m-d H:i:s" as WP local time
+        $parseWpLocal = static function (string $value) use ($tz): ?\DateTimeImmutable {
+            $value = trim($value);
+            if ($value === '') {
+                return null;
+            }
+
+            $value = str_replace('T', ' ', $value);
+
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                $value .= ' 00:00:00';
+            } elseif (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/', $value)) {
+                $value .= ':00';
+            }
+
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value, $tz);
+            return $dt ?: null;
+        };
+
         foreach ($events as $event) {
-            if (empty($event)) continue;
+            if (empty($event)) {
+                continue;
+            }
+
             $meta = get_post_meta($event->ID);
-            if (empty($meta)) continue;
+            if (empty($meta)) {
+                continue;
+            }
+
+            $eventTitle = get_the_title($event->ID);
+            $location   = get_post_meta($event->ID, 'location', true);
+
             $isImport = get_post_meta($event->ID, 'ics_feed_id', true);
-            if ($isImport && $occurrences = get_post_meta($event->ID, 'ics_event_ocurrences', true)) {
+
+            if ($isImport && ($occurrences = get_post_meta($event->ID, 'ics_event_ocurrences', true))) {
+
+                // Stored as UNIX timestamps, created from WP local time (wp_timezone)
+                $startTStmp = absint(Utils::getMeta($meta, 'start'));
+                $endTStmp   = absint(Utils::getMeta($meta, 'end'));
+
+                // Extract local time-of-day from stored timestamps
+                $startTimeLocal = $startTStmp ? wp_date('H:i:s', $startTStmp, $tz) : '00:00:00';
+                $endTimeLocal   = $endTStmp   ? wp_date('H:i:s', $endTStmp,   $tz) : '00:00:00';
+
                 foreach ($occurrences as $startDt) {
-                    $startTStmp = absint(Utils::getMeta($meta, 'start'));
-                    $endTStmp = absint(Utils::getMeta($meta, 'end'));
-
-                    // $startTS = strtotime($startDt . ' ' . date('H:i', $startTStmp));
-                    $dt = new \DateTimeImmutable($startDt . ' ' . gmdate('H:i', $startTStmp), new DateTimeZone('UTC'));
-                    $startTS = $dt->getTimestamp();
-
-                    // $endTS = strtotime($startDt . ' ' . date('H:i', $endTStmp));
-                    $dt = new \DateTimeImmutable($startDt . ' ' . gmdate('H:i', $endTStmp), new DateTimeZone('UTC'));
-                    $endTS = $dt->getTimestamp();
-
-                    $eventTitle = get_the_title($event->ID);
-                    $location = get_post_meta($event->ID, 'location', TRUE);
-                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                    // $startDt is expected to be Y-m-d (date of occurrence). If it ever includes time, we keep the date part.
+                    $occDate = trim((string) $startDt);
+                    if ($occDate === '') {
                         continue;
-                    } else {
-                        $eventsArray[$startTS][$i]['id'] = $event->ID;
-                        $eventsArray[$startTS][$i]['start'] = $startTS;
-                        $eventsArray[$startTS][$i]['end'] = $endTS;
-                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
                     }
+
+                    // If it comes as "Y-m-d ..." keep only date
+                    $occDate = substr($occDate, 0, 10);
+
+                    $startDT = $parseWpLocal($occDate . ' ' . $startTimeLocal);
+                    $endDT   = $parseWpLocal($occDate . ' ' . $endTimeLocal);
+
+                    if (!$startDT || !$endDT) {
+                        continue;
+                    }
+
+                    $startTS = $startDT->getTimestamp();
+                    $endTS   = $endDT->getTimestamp();
+
+                    $key = $startTS . $endTS . $eventTitle . $location;
+                    if ($removeDuplicates && in_array($key, $identifiers, true)) {
+                        continue;
+                    }
+
+                    $eventsArray[$startTS][$i] = [
+                        'id'    => $event->ID,
+                        'start' => $startTS,
+                        'end'   => $endTS,
+                    ];
+                    $identifiers[] = $key;
                 }
             } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
+
                 $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
+
+                // Stored as UNIX timestamp, created from WP local time (wp_timezone)
+                $endTStmp = absint(Utils::getMeta($meta, 'end'));
+                $endTimeLocal = $endTStmp ? wp_date('H:i:s', $endTStmp, $tz) : '00:00:00';
+
                 foreach ($occurrences as $occurrence) {
+                    // $occurrence->getTimestamp() gives an absolute timestamp.
+                    // We must format the DATE in WP timezone (Berlín), not UTC.
                     $startTS = $occurrence->getTimestamp();
-                    $endTStmp = absint(Utils::getMeta($meta, 'end'));
 
-                    // $endTS = strtotime(date('Y-m-d', $startTS) . ' ' . date('H:i', $endTStmp));
-                    $startDateUTC = gmdate('Y-m-d', $startTS);
-                    $endTimeUTC   = gmdate('H:i', $endTStmp);
+                    $startDateLocal = wp_date('Y-m-d', $startTS, $tz);
 
-                    $endDT = new \DateTimeImmutable(
-                        $startDateUTC . ' ' . $endTimeUTC,
-                        new DateTimeZone('UTC')
-                    );
+                    $endDT = $parseWpLocal($startDateLocal . ' ' . $endTimeLocal);
+                    if (!$endDT) {
+                        continue;
+                    }
 
                     $endTS = $endDT->getTimestamp();
 
-                    $eventTitle = get_the_title($event->ID);
-                    $location = get_post_meta($event->ID, 'location', TRUE);
-                    if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                    $key = $startTS . $endTS . $eventTitle . $location;
+                    if ($removeDuplicates && in_array($key, $identifiers, true)) {
                         continue;
-                    } else {
-                        $eventsArray[$startTS][$i]['id'] = $event->ID;
-                        $eventsArray[$startTS][$i]['start'] = $startTS;
-                        $eventsArray[$startTS][$i]['end'] = $endTS;
-                        $identifiers[] = $startTS . $endTS . $eventTitle . $location;
                     }
+
+                    $eventsArray[$startTS][$i] = [
+                        'id'    => $event->ID,
+                        'start' => $startTS,
+                        'end'   => $endTS,
+                    ];
+                    $identifiers[] = $key;
                 }
             } else {
+
                 $startTS = absint(Utils::getMeta($meta, 'start'));
-                $endTS = absint(Utils::getMeta($meta, 'end'));
-                $eventTitle = get_the_title($event->ID);
-                $location = get_post_meta($event->ID, 'location', TRUE);
-                if ($removeDuplicates && in_array($startTS . $endTS . $eventTitle . $location, $identifiers)) {
+                $endTS   = absint(Utils::getMeta($meta, 'end'));
+
+                $key = $startTS . $endTS . $eventTitle . $location;
+                if ($removeDuplicates && in_array($key, $identifiers, true)) {
                     continue;
-                } else {
-                    $eventsArray[$startTS][$i]['id'] = $event->ID;
-                    $eventsArray[$startTS][$i]['start'] = $startTS;
-                    $eventsArray[$startTS][$i]['end'] = $endTS;
-                    $identifiers[] = $startTS . $endTS . $eventTitle . $location;
                 }
+
+                $eventsArray[$startTS][$i] = [
+                    'id'    => $event->ID,
+                    'start' => $startTS,
+                    'end'   => $endTS,
+                ];
+                $identifiers[] = $key;
             }
+
             $i++;
         }
+
         if ($eventsArray) {
             ksort($eventsArray);
         }
+
         return $eventsArray;
     }
 
@@ -713,16 +775,28 @@ class Utils
             return [];
         if (self::getMeta($meta, 'repeat-interval') == 'month' && self::getMeta($meta, 'repeat-monthly-type') == '')
             return [];
-        $startTS = self::getMeta($meta, 'start');
-        if ($startTS == '') return [];
 
-        $oneYearAgo = new DateTime('-1 year', wp_timezone());
-        $oneYearAgoTS = $oneYearAgo->getTimestamp();
-        if ($startTS >= $oneYearAgoTS) {
-            $dtstart = wp_date('Y-m-d H:i:s', $startTS);
-        } else {
-            $dtstart = wp_date('Y-m-d', $oneYearAgoTS) . ' ' . wp_date('H:i:s', $startTS);
+        $tz = wp_timezone();
+
+        $startTS = (int) self::getMeta($meta, 'start');
+        if ($startTS <= 0) {
+            return [];
         }
+
+        $oneYearAgoTS = (new \DateTimeImmutable('-1 year', $tz))->getTimestamp();
+
+        if ($startTS >= $oneYearAgoTS) {
+            $dtstart = $startTS;
+        } else {
+            $startLocal = (new \DateTimeImmutable('@' . $startTS))->setTimezone($tz);
+            $oneYearAgo = new \DateTimeImmutable('-1 year', $tz);
+
+            $dtstart = (new \DateTimeImmutable(
+                $oneYearAgo->format('Y-m-d') . ' ' . $startLocal->format('H:i:s'),
+                $tz
+            ))->getTimestamp();
+        }
+        $dtstart = '@' . $dtstart;
 
         $endTS = self::getMeta($meta, 'end');
         if ($endTS == '') return [];
@@ -732,18 +806,14 @@ class Utils
             //'COUNT' => 100,
         ];
 
-        $lastDateTS = self::getMeta($meta, 'repeat-lastdate');
-
-        if ($lastDateTS != '') {
-            $lastDate = '@' . (int) $lastDateTS;
+        $lastDateTS = (int) self::getMeta($meta, 'repeat-lastdate');
+        if ($lastDateTS > 0) {
+            $lastLocal = (new \DateTimeImmutable('@' . $lastDateTS))->setTimezone($tz);
+            $lastDateTS = (new \DateTimeImmutable($lastLocal->format('Y-m-d') . ' 23:59:59', $tz))->getTimestamp();
         } else {
-            $tz = wp_timezone();
-            $tsPlusOneYear = (new DateTime('+1 year', $tz))->getTimestamp();
-
-            $lastDate = '@' . $tsPlusOneYear;
+            $lastDateTS = (new \DateTimeImmutable('+1 year', $tz))->getTimestamp();
         }
-
-        $rruleArgs['UNTIL'] = $lastDate;
+        $rruleArgs['UNTIL'] = '@' . $lastDateTS;
 
         $repeatInterval = self::getMeta($meta, 'repeat-interval');
         if ($repeatInterval == 'week') {
@@ -779,13 +849,6 @@ class Utils
                 $rruleArgs['BYSETPOS'] = ($monthlyDow["daycount"] ?? 1);
             }
         }
-        //$rrule = new RRule($rruleArgs);
-        //var_dump($rrule);
-        //exit;
-        //foreach ( $rrule as $occurrence ) {
-        //    echo $occurrence->format('r'),"<br />";
-        //}
-        // exit;
 
         return $rruleArgs;
     }
@@ -799,51 +862,80 @@ class Utils
      */
     public static function makeRRuleSet($event_id, $start = '', $end = '')
     {
+        $event_id = absint($event_id);
+
         $meta = get_post_meta($event_id);
-        $rruleArgs = Utils::getMeta($meta, 'event-rrule-args');
+        if (empty($meta)) {
+            return [];
+        }
 
-        if ($rruleArgs = json_decode($rruleArgs, true)) {
-            $rset = new RSet();
-            $rset->addRRule($rruleArgs);
-            $startTS = absint(Utils::getMeta($meta, 'start'));
-            $startTime = wp_date('H:i', $startTS);
+        $rruleArgsRaw = Utils::getMeta($meta, 'event-rrule-args');
+        if (empty($rruleArgsRaw)) {
+            return [];
+        }
 
-            // Exceptions
-            $exceptionsRaw = Utils::getMeta($meta, 'exceptions');
-            if (!empty($exceptionsRaw)) {
-                $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
-                foreach ($exceptions as $exception) {
-                    $date = $exception . ' ' . $startTime;
-                    if (self::validateDate($date)) {
-                        $rset->addExDate($date);
-                    }
-                }
-            }
-            // Additions
-            $additionsRaw = Utils::getMeta($meta, 'additions');
-            if (!empty($additionsRaw)) {
-                $additions = explode("\n", str_replace("\r", '', $additionsRaw));
-                foreach ($additions as $addition) {
-                    $date = $addition . ' ' . $startTime;
-                    if (self::validateDate($date)) {
-                        $rset->addDate($date);
-                    }
-                }
-            }
+        $rruleArgs = json_decode($rruleArgsRaw, true);
+        if (!is_array($rruleArgs) || empty($rruleArgs)) {
+            return [];
+        }
 
-            $start = self::validateDate($start) ? $start : '';
-            // if no time is set, getOccurrencesBetween() uses YYYY-MM-DD 00:00, so events starting on the end date at YYYY-MM-DD 09:00 would not be included
-            if ($end != '' && !str_contains($end, ':')) {
-                $end .= ' 23:59';
-            }
-            $end = self::validateDate($end) ? $end : '';
-            if ($start != '' || $end != '') {
-                return $rset->getOccurrencesBetween($start, $end);
-            } else {
-                return $rset->getOccurrences();
+        $tz = function_exists('wp_timezone') ? wp_timezone() : new \DateTimeZone(date_default_timezone_get());
+
+        $rset = new RSet();
+        $rset->addRRule($rruleArgs);
+
+        // Stored as UNIX timestamp derived from WP local time
+        $startTS = absint(Utils::getMeta($meta, 'start'));
+        $startTime = $startTS ? wp_date('H:i', $startTS, $tz) : '00:00';
+
+        $normalizeLines = static function ($raw): array {
+            $raw = (string) $raw;
+            $raw = str_replace("\r", '', $raw);
+            $lines = array_map('trim', explode("\n", $raw));
+            return array_values(array_filter($lines, static fn($v) => $v !== ''));
+        };
+
+        // Exceptions (dates only, one per line) -> add time-of-day of event start
+        $exceptionsRaw = Utils::getMeta($meta, 'exceptions');
+        foreach ($normalizeLines($exceptionsRaw) as $exception) {
+            // expected: Y-m-d
+            $dateTime = $exception . ' ' . $startTime; // Y-m-d H:i
+            if (self::validateDate($dateTime)) {
+                $rset->addExDate($dateTime);
             }
         }
-        return [];
+
+        // Additions (dates only, one per line) -> add time-of-day of event start
+        $additionsRaw = Utils::getMeta($meta, 'additions');
+        foreach ($normalizeLines($additionsRaw) as $addition) {
+            $dateTime = $addition . ' ' . $startTime; // Y-m-d H:i
+            if (self::validateDate($dateTime)) {
+                $rset->addDate($dateTime);
+            }
+        }
+
+        // Normalize $start / $end (UI/API inputs) to what validateDate() expects.
+        $start = trim((string) $start);
+        $end   = trim((string) $end);
+
+        // If start is only a date, set to beginning of day in local time
+        if ($start !== '' && !str_contains($start, ':')) {
+            $start .= ' 00:00';
+        }
+
+        // If end is only a date, set to end of day so occurrences on that date are included
+        if ($end !== '' && !str_contains($end, ':')) {
+            $end .= ' 23:59';
+        }
+
+        $start = self::validateDate($start) ? $start : '';
+        $end   = self::validateDate($end) ? $end : '';
+
+        if ($start !== '' || $end !== '') {
+            return $rset->getOccurrencesBetween($start, $end);
+        }
+
+        return $rset->getOccurrences();
     }
 
     /**
@@ -937,25 +1029,42 @@ class Utils
      */
     public static function validateDate($date): bool
     {
-        if ($date instanceof \DateTime) {
+        if ($date instanceof \DateTimeInterface) {
             return true;
         }
 
+        // Numeric timestamp
         if (is_numeric($date)) {
-            try {
-                new \DateTime('@' . $date);
+            return ((int) $date) > 0;
+        }
+
+        if (!is_string($date)) {
+            return false;
+        }
+
+        $date = trim($date);
+        if ($date === '') {
+            return false;
+        }
+
+        $tz = function_exists('wp_timezone')
+            ? wp_timezone()
+            : new \DateTimeZone(date_default_timezone_get());
+
+        $formats = [
+            'Y-m-d H:i:s',
+            'Y-m-d H:i',
+            'Y-m-d',
+        ];
+
+        foreach ($formats as $format) {
+            $dt = \DateTimeImmutable::createFromFormat($format, $date, $tz);
+            if ($dt instanceof \DateTimeImmutable) {
                 return true;
-            } catch (\Throwable $e) {
-                return false;
             }
         }
 
-        try {
-            new \DateTime($date);
-            return true;
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -1143,5 +1252,40 @@ class Utils
             // Safe fallback: now()
             return new \DateTime('now', wp_timezone());
         }
+    }
+
+    /**
+     * Convert a WP-local datetime string (Y-m-d[ H:i[:s]]) to a UNIX timestamp.
+     *
+     * Interprets the input as local time in the WordPress timezone settings.
+     *
+     * @param string $datetime
+     * @return int
+     */
+    public static function wpLocalToTimestamp(string $datetime): int
+    {
+        $datetime = trim($datetime);
+        $datetime = str_replace('T', ' ', $datetime);
+
+        // Get WP timezone
+        $tz = function_exists('wp_timezone')
+            ? wp_timezone()
+            : new \DateTimeZone(date_default_timezone_get());
+
+        // Normalize formats
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $datetime)) {
+            $datetime .= ' 00:00:00';
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/', $datetime)) {
+            $datetime .= ':00';
+        }
+
+        $dt = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $datetime, $tz);
+
+        if (!$dt) {
+            // You can replace this with logging if preferred
+            return 0;
+        }
+
+        return $dt->getTimestamp();
     }
 }
