@@ -54,6 +54,56 @@ class CalendarEvent
         add_filter('cmb2_render_select_weekdayofmonth', [__CLASS__, 'renderMonthDayField'], 10, 5);
         add_filter('cmb2_render_event_items', [__CLASS__, 'renderEventItemsField'], 10, 5);
 
+        add_filter('cmb2_sanitize_text_datetime_timestamp', function ($override_value, $value, $object_id, $field_args, $sanitize_object) {
+            $tz = wp_timezone();
+
+            if (is_array($value)) {
+                $date = trim((string) ($value['date'] ?? ''));
+                $time = trim((string) ($value['time'] ?? ''));
+                if ($date === '') {
+                    return $override_value;
+                }
+                $time = $time !== '' ? $time : '00:00';
+                $dtString = $date . ' ' . $time;
+            } else {
+                $dtString = trim((string) $value);
+            }
+
+            if (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/', $dtString)) {
+                $dtString .= ':00';
+            }
+
+            $dt = \DateTimeImmutable::createFromFormat('d.m.Y H:i:s', $dtString, $tz);
+            if (!$dt) {
+                $dt = \DateTimeImmutable::createFromFormat('d.m.Y H:i', $dtString, $tz);
+            }
+
+            if (!$dt) {
+                return $override_value;
+            }
+
+            return $dt->getTimestamp();
+        }, 10, 5);
+
+        add_filter('cmb2_override_meta_value', function ($override, $object_id, $args, $field) {
+
+            $fields = ['start', 'end', 'repeat-lastdate'];
+            $id = $field->args('id') ?? '';
+
+            if (!in_array($id, $fields, true)) {
+                return $override;
+            }
+
+            $raw = get_post_meta($object_id, $id, true);
+            $ts  = is_numeric($raw) ? (int) $raw : 0;
+
+            if ($ts <= 0) {
+                return $override;
+            }
+
+            return wp_date('d.m.Y H:i', $ts, wp_timezone());
+        }, 10, 4);
+
         // Update Feed Items.
         add_action('save_post', [__CLASS__, 'save'], 10, 2);
         add_action('updated_post_meta', [__CLASS__, 'updatedMeta'], 10, 4);
@@ -71,6 +121,8 @@ class CalendarEvent
 
         // Disables the ability to edit the post if it has the post meta ics_feed_id.
         add_filter('user_has_cap', [__CLASS__, 'disablePostEditing'], 10, 3);
+
+        CalendarEventReadOnly::init();
     }
 
     /**
@@ -176,6 +228,7 @@ class CalendarEvent
             'priority' => 'high',
             'show_names' => true,
         ]);
+
         $cmb_info->add_field([
             'id' => 'ics-warning',
             'type' => 'title',
@@ -187,57 +240,57 @@ class CalendarEvent
             ) . '</div>',
             'show_on_cb' => [__CLASS__, 'showOnFeedImportOnly'],
         ]);
+
         $cmb_info->add_field([
-            'name' => __('Start', 'rrze-calendar'),
-            //'desc'    => __('Date / Time', 'rrze-calendar'),
-            'id' => 'start',
-            'type' => 'text_datetime_timestamp',
+            'name'        => __('Start', 'rrze-calendar'),
+            'id'          => 'start',
+            'type'        => 'text_datetime_timestamp',
             'date_format' => 'd.m.Y',
             'time_format' => 'H:i',
-            'attributes' => array(
-                // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode(array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
+            'attributes'  => [
+                'data-datepicker' => wp_json_encode([
+                    'firstDay'        => 1,
+                    'dayNames'        => Utils::getDaysOfWeek('short'),
+                    'dayNamesMin'     => Utils::getDaysOfWeek('min'),
                     'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                    'dateFormat' => 'dd.mm.yy',
-                )),
-                'data-timepicker' => json_encode(array(
+                    'yearRange'       => '-1:+10',
+                    'dateFormat'      => 'dd.mm.yy',
+                ]),
+                'data-timepicker' => wp_json_encode([
                     'timeFormat' => 'HH:mm',
-                )),
-                'required'    => 'required',
-            ),
+                ]),
+                'required' => 'required',
+            ],
         ]);
+
         $cmb_info->add_field([
-            'name' => __('End', 'rrze-calendar'),
-            //'desc'    => __('Date / Time', 'rrze-calendar'),
-            'id' => 'end',
-            'type' => 'text_datetime_timestamp',
+            'name'        => __('End', 'rrze-calendar'),
+            'id'          => 'end',
+            'type'        => 'text_datetime_timestamp',
             'date_format' => 'd.m.Y',
             'time_format' => 'H:i',
-            'attributes' => array(
-                // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode(array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
+            'attributes'  => [
+                'data-datepicker' => wp_json_encode([
+                    'firstDay'        => 1,
+                    'dayNames'        => Utils::getDaysOfWeek('short'),
+                    'dayNamesMin'     => Utils::getDaysOfWeek('min'),
                     'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                    'dateFormat' => 'dd.mm.yy',
-                )),
-                'data-timepicker' => json_encode(array(
+                    'yearRange'       => '-1:+10',
+                    'dateFormat'      => 'dd.mm.yy',
+                ]),
+                'data-timepicker' => wp_json_encode([
                     'timeFormat' => 'HH:mm',
-                )),
-                'required'    => 'required',
-            ),
+                ]),
+                'required' => 'required',
+            ],
         ]);
+
         $cmb_info->add_field([
             'name' => __('All day event', 'rrze-calendar') . '<br /><span style="font-weight: normal;color: #666;font-size: 13px;">' . __('(Time settings will be ignored.)', 'rrze-calendar') . '</span>',
             'id' => 'all-day',
             'type' => 'checkbox',
         ]);
+
         $cmb_info->add_field(array(
             'name'    => esc_html__('Description', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -247,6 +300,7 @@ class CalendarEvent
                 'textarea_rows' => get_option('default_post_edit_rows', 12),
             ),
         ));
+
         $cmb_info->add_field([
             'name' => __('Location', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -258,12 +312,14 @@ class CalendarEvent
                 'media_buttons' => false,
             ),
         ]);
+
         $cmb_info->add_field(array(
             'name' => esc_html__('VC URL', 'rrze-calendar'),
             //'desc' => esc_html__( '', 'rrze-calendar' ),
             'id'   => 'vc-url',
             'type' => 'text_url',
         ));
+
         $cmb_info->add_field([
             'name' => __('Prices', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -281,6 +337,7 @@ class CalendarEvent
             'id'   => 'registration-url',
             'type' => 'text_url',
         ));
+
         $cmb_info->add_field(array(
             'name'    => __('Downloads', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -300,6 +357,7 @@ class CalendarEvent
             ),
             'preview_size' => 'large', // Image size to use when previewing in the admin.
         ));
+
         $cmb_info->add_field([
             'name' => __('Featured Event', 'rrze-calendar'),
             //'desc'    => __('Show event on home page', 'rrze-calendar'),
@@ -316,35 +374,37 @@ class CalendarEvent
             'priority' => 'high',
             'show_names' => true,
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Repeat', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
             'id' => 'repeat',
             'type' => 'checkbox',
         ]);
+
         $cmb_schedule->add_field([
-            'name' => __('Repeat until', 'rrze-calendar'),
-            'desc'    => __('(optional)', 'rrze-calendar'),
-            'id' => 'repeat-lastdate',
-            'type' => 'text_datetime_timestamp',
+            'name'        => __('Repeat until', 'rrze-calendar'),
+            'desc'        => __('(optional)', 'rrze-calendar'),
+            'id'          => 'repeat-lastdate',
+            'type'        => 'text_datetime_timestamp',
             'date_format' => 'd.m.Y',
             'time_format' => 'H:i',
-            'attributes' => array(
-                // CMB2 checks for datepicker override data here:
-                'data-datepicker' => json_encode(array(
-                    'firstDay' => 1,
-                    'dayNames' => Utils::getDaysOfWeek('short'),
-                    'dayNamesMin' => Utils::getDaysOfWeek('min'),
+            'attributes'  => [
+                'data-datepicker' => wp_json_encode([
+                    'firstDay'        => 1,
+                    'dayNames'        => Utils::getDaysOfWeek('short'),
+                    'dayNamesMin'     => Utils::getDaysOfWeek('min'),
                     'monthNamesShort' => Utils::getMonthNames('short'),
-                    'yearRange' => '-1:+10',
-                    'dateFormat' => 'dd.mm.yy',
-                )),
-                'data-timepicker' => json_encode(array(
+                    'yearRange'       => '-1:+10',
+                    'dateFormat'      => 'dd.mm.yy',
+                ]),
+                'data-timepicker' => wp_json_encode([
                     'timeFormat' => 'HH:mm',
-                )),
-            ),
-            'classes'   => ['repeat'],
+                ]),
+            ],
+            'classes' => ['repeat'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Repeat Interval', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -357,6 +417,7 @@ class CalendarEvent
             ],
             'classes'   => ['repeat'],
         ]);
+
         // repeat weekly
         $cmb_schedule->add_field([
             'name' => __('Repeats', 'rrze-calendar'),
@@ -372,6 +433,7 @@ class CalendarEvent
             'after_field' =>  ' ' . __('week(s)', 'rrze-calendar'),
             'classes'   => ['repeat', 'repeat-weekly'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Repeats on', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -388,6 +450,7 @@ class CalendarEvent
             ],
             'classes'   => ['repeat', 'repeat-weekly'],
         ]);
+
         // repeat monthly
         $cmb_schedule->add_field([
             'name' => __('Each', 'rrze-calendar'),
@@ -404,6 +467,7 @@ class CalendarEvent
         for ($i = 1; $i <= 31; $i++) {
             $monthdays[$i] = $i . '.';
         }
+
         $cmb_schedule->add_field([
             'name' => __('Repeats on', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -414,6 +478,7 @@ class CalendarEvent
             'after_field' =>  ' ' . __('of month', 'rrze-calendar'),
             'classes'   => ['repeat', 'repeat-monthly', 'repeat-monthly-date'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Repeats on', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -423,6 +488,7 @@ class CalendarEvent
             'after_field' =>  ' ' . __('of month', 'rrze-calendar'),
             'classes'   => ['repeat', 'repeat-monthly', 'repeat-monthly-dow'],
         ]);
+
         $monthOptions = [
             'jan' => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
             'feb' => $wp_locale->get_month_abbrev($wp_locale->get_month('02')),
@@ -437,6 +503,7 @@ class CalendarEvent
             'nov' => $wp_locale->get_month_abbrev($wp_locale->get_month('11')),
             'dec' => $wp_locale->get_month_abbrev($wp_locale->get_month('12')),
         ];
+
         $cmb_schedule->add_field([
             'name' => __('Repeats in', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -446,6 +513,7 @@ class CalendarEvent
             'default' => array_keys($monthOptions),
             'classes'   => ['repeat', 'repeat-monthly'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Exceptions', 'rrze-calendar'),
             'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
@@ -454,6 +522,7 @@ class CalendarEvent
             'type' => 'textarea_small',
             'classes'   => ['repeat'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Additions', 'rrze-calendar'),
             'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-calendar'),
@@ -461,6 +530,7 @@ class CalendarEvent
             'type' => 'textarea_small',
             'classes'   => ['repeat'],
         ]);
+
         $cmb_schedule->add_field([
             'name' => __('Event Items', 'rrze-calendar'),
             //'desc'    => __('', 'rrze-calendar'),
@@ -574,16 +644,31 @@ class CalendarEvent
     public static function renderEventItemsField($field, $value, $object_id, $object_type, $field_type)
     {
         $occurrences = Utils::makeRRuleSet($object_id);
-        if (!empty($occurrences)) {
-            echo '<ul class="event-items">';
-            foreach ($occurrences as $occurrence) {
-                $TS = strtotime($occurrence->format('Y-m-d H:i'));
-                $class = $TS < time() ? 'past' : 'future';
-                echo '<li class="' . $class . '">' . date_i18n(get_option('date_format'), $TS) . '</li>';
-            }
-            echo '</ul>';
-            echo '<p class="description">' . __('Maximum +/- 1 year.', 'rrze-calendar') . '</p>';
+        if (empty($occurrences)) {
+            return;
         }
+
+        $tz     = wp_timezone();
+        $nowTs  = (new \DateTimeImmutable('now', $tz))->getTimestamp();
+
+        echo '<ul class="event-items">';
+
+        foreach ($occurrences as $occurrence) {
+            // Keep everything as timestamps (absolute instants)
+            $ts = $occurrence instanceof \DateTimeInterface
+                ? $occurrence->getTimestamp()
+                : (int) $occurrence;
+
+            $class = $ts < $nowTs ? 'past' : 'future';
+
+            // Display in WP timezone
+            echo '<li class="' . esc_attr($class) . '">'
+                . esc_html(wp_date(get_option('date_format'), $ts, $tz))
+                . '</li>';
+        }
+
+        echo '</ul>';
+        echo '<p class="description">' . esc_html(__('Maximum +/- 1 year.', 'rrze-calendar')) . '</p>';
     }
 
     /**
@@ -632,93 +717,101 @@ class CalendarEvent
      */
     public static function getEventData($post_id)
     {
+        $tz   = wp_timezone();
+        $now  = (new \DateTimeImmutable('now', $tz))->getTimestamp();
+
         $meta = get_post_meta($post_id);
         $eventItems = Utils::buildEventsArray([get_post($post_id)]);
+
+        $data = [];
         $data['allDay'] = Utils::getMeta($meta, 'all-day');
         $data['repeat'] = Utils::getMeta($meta, 'repeat');
         $data['scheduleClass'] = count($eventItems) > 3 ? 'cols-3' : '';
         $data['location'] = Utils::getMeta($meta, 'location');
         $data['vcUrl'] = Utils::getMeta($meta, 'vc-url');
-        if ($data['location'] == '' && $data['vcUrl'] != '') {
+
+        if ($data['location'] === '' && $data['vcUrl'] !== '') {
             $data['location'] = __('Online', 'rrze-calendar');
         }
+
         $data['prices'] = Utils::getMeta($meta, 'prices');
         $data['registrationUrl'] = Utils::getMeta($meta, 'registration-url');
         $data['downloads'] = Utils::getMeta($meta, 'downloads');
+
         $categoryObjects = wp_get_object_terms($post_id, 'rrze-calendar-category');
         if (!is_wp_error($categoryObjects) && !empty($categoryObjects)) {
             $categories = [];
             foreach ($categoryObjects as $categoryObject) {
-                $categories[] = '<a href="' . get_term_link($categoryObject->term_id) . '">' . $categoryObject->name . '</a>';
+                $categories[] = '<a href="' . esc_url(get_term_link($categoryObject->term_id)) . '">' . esc_html($categoryObject->name) . '</a>';
             }
             $data['categories'] = implode(', ', $categories);
         } else {
             $data['categories'] = '';
         }
+
         $data['description'] = Utils::getMeta($meta, 'description');
+
+        $dateFormat = get_option('date_format');
+        $timeFormat = get_option('time_format');
 
         $data['eventItemsFormatted'] = [];
         $data['nextOccurrenceFormatted'] = [];
         $nextOccurenceFound = false;
+
         foreach ($eventItems as $tsStart => $items) {
+            $tsStart = (int) $tsStart;
+
             foreach ($items as $item) {
-                //var_dump($data);
-                //if ($data['repeat'] == 'on' && $tsStart < time()) {
-                //    continue;
-                //}
-                $tsEnd = $item['end'];
-                $tsStartUTC = $tsStart;
-                $tsEndUTC   = $tsEnd;
-                $startDay = wp_date('Y-m-d', $tsStart);
-                $endDay = wp_date('Y-m-d', $tsEnd);
-                if ($startDay != $endDay) {
+                $tsEnd = (int) ($item['end'] ?? 0);
+
+                $startDay = wp_date('Y-m-d', $tsStart, $tz);
+                $endDay   = wp_date('Y-m-d', $tsEnd, $tz);
+
+                if ($startDay !== $endDay) {
                     // multiday
-                    if ($data['allDay'] == 'on') {
+                    if ($data['allDay'] === 'on') {
                         $eventItemsFormatted = [
-                            'date' => date_i18n(get_option('date_format'), $tsStart)
-                                . ' &ndash; '
-                                . date_i18n(get_option('date_format'), $tsEnd),
-                            'time' => __('All Day', 'rrze-calendar'),
+                            'date'     => wp_date($dateFormat, $tsStart, $tz) . ' &ndash; ' . wp_date($dateFormat, $tsEnd, $tz),
+                            'time'     => __('All Day', 'rrze-calendar'),
                             'startISO' => $startDay,
-                            'endISO' => $endDay,
+                            'endISO'   => $endDay,
                         ];
                     } else {
                         $eventItemsFormatted = [
-                            'date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
-                                . ' &ndash; '
-                                . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd),
-                            'time' => '',
-                            'startISO' => date_i18n('c', $tsStartUTC, true),
-                            'endISO' => date_i18n('c', $tsEndUTC),
+                            'date'     => wp_date($dateFormat . ', ' . $timeFormat, $tsStart, $tz) . ' &ndash; ' . wp_date($dateFormat . ', ' . $timeFormat, $tsEnd, $tz),
+                            'time'     => '',
+                            'startISO' => wp_date('c', $tsStart, $tz), // WP tz
+                            'endISO'   => wp_date('c', $tsEnd, $tz),   // WP tz
                         ];
                     }
                 } else {
                     // single day
-                    if ($data['allDay'] == 'on') {
+                    if ($data['allDay'] === 'on') {
                         $eventItemsFormatted = [
-                            'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
-                                . ' &ndash; '
-                                . date_i18n(get_option('date_format'), $tsEnd)),
-                            'time' => __('All day', 'rrze-calendar'),
+                            'date'     => wp_date($dateFormat, $tsStart, $tz),
+                            'time'     => __('All day', 'rrze-calendar'),
                             'startISO' => $startDay,
-                            'endISO' => $endDay,
+                            'endISO'   => $endDay,
                         ];
                     } else {
                         $eventItemsFormatted = [
-                            'date' => date_i18n(get_option('date_format'), $tsStart),
-                            'time' => date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd),
-                            'startISO' => date_i18n('c', $tsStartUTC, true),
-                            'endISO' => date_i18n('c', $tsEndUTC),
+                            'date'     => wp_date($dateFormat, $tsStart, $tz),
+                            'time'     => wp_date($timeFormat, $tsStart, $tz) . ' &ndash; ' . wp_date($timeFormat, $tsEnd, $tz),
+                            'startISO' => wp_date('c', $tsStart, $tz), // WP tz
+                            'endISO'   => wp_date('c', $tsEnd, $tz),   // WP tz
                         ];
                     }
                 }
+
                 $data['eventItemsFormatted'][] = $eventItemsFormatted;
-                if (!$nextOccurenceFound && $tsStart >= time()) {
+
+                if (!$nextOccurenceFound && $tsStart >= $now) {
                     $data['nextOccurrenceFormatted'] = $eventItemsFormatted;
                     $nextOccurenceFound = true;
                 }
             }
         }
+
         return $data;
     }
 
