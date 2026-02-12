@@ -164,7 +164,7 @@ export default function Edit({ attributes, setAttributes }) {
 							step={1}
 							value={numEvents}
 							onChange={onChangeNumber}
-							help={__('How many events do you want to show? Enter 0 or leave empty for all events.', 'rrze-calendar')}
+							help={__('How many events do you want to show? Default: 10', 'rrze-calendar')}
 						/>
 					)}
 					<ToggleControl

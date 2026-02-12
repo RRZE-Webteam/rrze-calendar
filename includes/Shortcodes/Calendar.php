@@ -8,6 +8,7 @@ use DateInterval;
 use RRZE\Calendar\ICS\Export;
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
+use function RRZE\Calendar\plugin;
 
 /**
  * Calendar class
@@ -15,6 +16,8 @@ use RRZE\Calendar\CPT\CalendarEvent;
  */
 class Calendar
 {
+    private static bool $didRender = false;
+
     public static function init()
     {
         add_shortcode('rrze-calendar', [__CLASS__, 'shortcode']);
@@ -23,17 +26,69 @@ class Calendar
         add_shortcode('kalender', [__CLASS__, 'shortcode']);
         add_action('wp_ajax_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar']);
         add_action('wp_ajax_nopriv_rrze-calendar-update-calendar', [__CLASS__, 'ajaxUpdateCalendar']);
+
+        add_action('wp_enqueue_scripts', [__CLASS__, 'wpEnqueueScripts']);
+        add_action('wp_footer', [__CLASS__, 'maybePrintLateAssets'], 1);
+    }
+
+    /**
+     * Enqueue scripts and styles for the frontend.
+     * 
+     * @return void
+     */
+    public static function wpEnqueueScripts()
+    {
+        $assetFile = include plugin()->getPath('build') . 'calendar.asset.php';
+
+        wp_register_style(
+            'rrze-calendar-sc-calendar',
+            plugins_url('build/calendar.style.css', plugin()->getBasename()),
+            [],
+            $assetFile['version']
+        );
+
+        wp_register_script(
+            'rrze-calendar-sc-calendar',
+            plugins_url('build/calendar.js', plugin()->getBasename()),
+            $assetFile['dependencies'],
+            $assetFile['version'],
+            true
+        );
+
+        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('rrze-calendar-ajax-nonce'),
+        ]);
+    }
+
+    public static function maybePrintLateAssets(): void
+    {
+        if (!self::$didRender) {
+            return;
+        }
+
+        // If the theme/head timing is broken, force-print enqueued styles now.
+        // This is a pragmatic fallback for themes missing wp_head() / late enqueue.
+        wp_print_styles(['rrze-calendar-sc-calendar']);
     }
 
     public static function shortcode($atts, $content = "")
     {
+        self::$didRender = true;
+
+        wp_enqueue_style('rrze-calendar-sc-calendar');
+        wp_enqueue_script('rrze-calendar-sc-calendar');
+
+        $tz    = wp_timezone();
+        $nowTs = (new \DateTimeImmutable('now', $tz))->getTimestamp();
+
         $atts = shortcode_atts(
             [
-                'categories' => '',  // Multiple categories (slugs) are separated by commas.
-                'kategorien' => '',  // Multiple categories (slugs) are separated by commas.
-                'tags' => '',        // Multiple keywords (slugs) are separated by commas.
-                'schlagworte' => '', // Multiple keywords (slugs) are separated by commas.
-                'year' => date('Y', current_time('timestamp')),
+                'categories' => '',
+                'kategorien' => '',
+                'tags' => '',
+                'schlagworte' => '',
+                'year' => (int) wp_date('Y', $nowTs, $tz),
                 'month' => 'current',
                 'day' => '',
                 'layout' => 'full',
@@ -45,186 +100,208 @@ class Calendar
             $atts
         );
 
-        // Calendar period
-        $buttonDayClass = 'inactive';
+        // Calendar period UI state
+        $buttonDayClass   = 'inactive';
         $buttonMonthClass = 'active';
-        $buttonYearClass = 'inactive';
+        $buttonYearClass  = 'inactive';
         $day = '';
 
-        if (isset($_GET['cal-year']) && is_numeric($_GET['cal-year']) && ((int)$_GET['cal-year'] > 2000 && (int)$_GET['cal-year'] < 3000)) {
-            $year = (int)$_GET['cal-year'];
+        // --- YEAR ---
+        if (isset($_GET['cal-year']) && is_numeric($_GET['cal-year'])) {
+            $y = (int) $_GET['cal-year'];
+            $year = ($y > 2000 && $y < 3000) ? $y : (int) wp_date('Y', $nowTs, $tz);
         } else {
-            if (is_numeric($atts['year']) && ((int)$atts['year'] > 2000 && (int)$atts['year'] < 3000)) {
-                $year = (int)$atts['year'];
-            } else {
-                $year = date('Y', current_time('timestamp'));
-            }
-        }
-        if (isset($_GET['cal-month']) && is_numeric($_GET['cal-month']) && ((int)$_GET['cal-month'] >= 1 && (int)$_GET['cal-month'] <= 12)) {
-            $month = (int)$_GET['cal-month'];
-        } else {
-            if (is_numeric($atts['month']) && ((int)$atts['month'] >= 1 && (int)$atts['month'] <= 12)) {
-                $month = (int)$atts['month'];
-            } elseif (!isset($_GET['cal-year']) && $atts['month'] == "current") {
-                $month = date('m', current_time('timestamp'));
-            } else {
-                $month = '';
-                $atts['layout'] = 'mini';
-                $buttonDayClass = 'inactive';
-                $buttonMonthClass = 'inactive';
-                $buttonYearClass = 'active';
-            }
-        }
-        if ($month != '') {
-            if (isset($_GET['cal-day']) && is_numeric($_GET['cal-day']) && ((int)$_GET['cal-day'] >= 1 && (int)$_GET['cal-day'] <= 31)) {
-                $day = (int)$_GET['cal-day'];
-                $buttonDayClass = 'active';
-                $buttonMonthClass = 'inactive';
-                $buttonYearClass = 'inactive';
-            } else {
-                if (is_numeric($atts['day']) && ((int)$atts['day'] >= 1 && (int)$atts['day'] <= 31)) {
-                    $day = (int)$atts['day'];
-                    $buttonDayClass = 'active';
-                    $buttonMonthClass = 'inactive';
-                    $buttonYearClass = 'inactive';
-                } elseif ($atts['day'] == "heute") {
-                    $day = date('d', current_time('timestamp'));
-                    $buttonDayClass = 'active';
-                    $buttonMonthClass = 'inactive';
-                    $buttonYearClass = 'inactive';
-                } else {
-                    $day = '';
-                    $buttonDayClass = 'inactive';
-                    $buttonMonthClass = 'active';
-                    $buttonYearClass = 'inactive';
-                    $monthName = date("F", mktime(0, 0, 0, $month, 1));
-                    $startObj = date_create('first day of ' . $monthName . ' ' . $year);
-                    $startTS = $startObj->getTimestamp();
-                    $endObj = date_create('last day of ' . $monthName . ' ' . $year);
-                    $endObj->add(new DateInterval('PT23H59M59S'));
-                    $endTS = $endObj->getTimestamp();
-                }
-            }
-        } else {
-            $startObj = date_create('first day of january' . $year);
-            $startTS = $startObj->getTimestamp();
-            $endObj = date_create('last day of december ' . $year);
-            $endObj->add(new DateInterval('PT23H59M59S'));
-            $endTS = $endObj->getTimestamp();
-        }
-        if ($day != '') {
-            $startTS = strtotime($year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT));
-            $endTS = $startTS + 24 * 60 * 60;
+            $y = is_numeric($atts['year']) ? (int) $atts['year'] : 0;
+            $year = ($y > 2000 && $y < 3000) ? $y : (int) wp_date('Y', $nowTs, $tz);
         }
 
-        // Calendar layout: full or mini
-        $layout = $atts['layout'] == 'full' ? 'full' : 'mini';
-        if ($layout == 'full' && $month == '') {
-            $month = date('m', current_time('timestamp'));
+        // --- MONTH ---
+        if (isset($_GET['cal-month']) && is_numeric($_GET['cal-month'])) {
+            $m = (int) $_GET['cal-month'];
+            $month = ($m >= 1 && $m <= 12) ? $m : null;
+        } else {
+            if (is_numeric($atts['month'])) {
+                $m = (int) $atts['month'];
+                $month = ($m >= 1 && $m <= 12) ? $m : null;
+            } elseif (!isset($_GET['cal-year']) && $atts['month'] === 'current') {
+                $month = (int) wp_date('m', $nowTs, $tz);
+            } else {
+                $month = null;
+                $atts['layout'] = 'mini';
+                $buttonDayClass   = 'inactive';
+                $buttonMonthClass = 'inactive';
+                $buttonYearClass  = 'active';
+            }
+        }
+
+        // --- DAY + RANGE ---
+        $startTS = 0;
+        $endTS   = 0;
+
+        if ($month !== null) {
+            if (isset($_GET['cal-day']) && is_numeric($_GET['cal-day'])) {
+                $d = (int) $_GET['cal-day'];
+                if ($d >= 1 && $d <= 31) {
+                    $day = $d;
+                    $buttonDayClass   = 'active';
+                    $buttonMonthClass = 'inactive';
+                    $buttonYearClass  = 'inactive';
+                }
+            } else {
+                if (is_numeric($atts['day'])) {
+                    $d = (int) $atts['day'];
+                    if ($d >= 1 && $d <= 31) {
+                        $day = $d;
+                        $buttonDayClass   = 'active';
+                        $buttonMonthClass = 'inactive';
+                        $buttonYearClass  = 'inactive';
+                    }
+                } elseif ($atts['day'] === 'heute') {
+                    $day = (int) wp_date('d', $nowTs, $tz);
+                    $buttonDayClass   = 'active';
+                    $buttonMonthClass = 'inactive';
+                    $buttonYearClass  = 'inactive';
+                }
+            }
+
+            if ($day !== '') {
+                // Day view: [start, start+1 day)
+                $startObj = new \DateTimeImmutable(sprintf('%04d-%02d-%02d 00:00:00', $year, $month, (int) $day), $tz);
+                $startTS  = $startObj->getTimestamp();
+                $endTS    = $startObj->modify('+1 day')->getTimestamp();
+            } else {
+                // Month view: first day 00:00:00 to last day 23:59:59
+                $startObj = new \DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', $year, $month), $tz);
+                $startTS  = $startObj->getTimestamp();
+                $endObj   = $startObj->modify('last day of this month')->setTime(23, 59, 59);
+                $endTS    = $endObj->getTimestamp();
+
+                $buttonDayClass   = 'inactive';
+                $buttonMonthClass = 'active';
+                $buttonYearClass  = 'inactive';
+            }
+        } else {
+            // Year view: Jan 1 00:00:00 to Dec 31 23:59:59
+            $startObj = new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $year), $tz);
+            $startTS  = $startObj->getTimestamp();
+            $endObj   = new \DateTimeImmutable(sprintf('%04d-12-31 23:59:59', $year), $tz);
+            $endTS    = $endObj->getTimestamp();
+        }
+
+        // Layout: full or mini
+        $layout = ($atts['layout'] === 'full') ? 'full' : 'mini';
+        if ($layout === 'full' && $month === null) {
+            $month = (int) wp_date('m', $nowTs, $tz);
         }
 
         // Paging
-        $paging = in_array($atts['navigation'], ['1', 'ja', 'true', 'yes']) ? true : false;
+        $paging = in_array($atts['navigation'], ['1', 'ja', 'true', 'yes'], true);
 
         // Abonnement-Link
-        $aboLink = in_array($atts['abonnement_link'], ['1', 'ja', 'true', 'yes']) ? true : false;
+        $aboLink = in_array($atts['abonnement_link'], ['1', 'ja', 'true', 'yes'], true);
 
         $args = [
-            'post_type' => CalendarEvent::POST_TYPE,
+            'post_type'   => CalendarEvent::POST_TYPE,
             'numberposts' => -1,
-            'meta_query' => [
+            'meta_query'  => [
                 'relation' => 'OR',
                 [
-                    'key' => 'event-lastdate',
+                    'key'     => 'event-lastdate',
                     'compare' => 'NOT EXISTS'
                 ],
                 [
-                    'key' => 'event-lastdate',
-                    'value' => $startTS,
+                    'key'     => 'event-lastdate',
+                    'value'   => $startTS,
                     'compare' => '>='
                 ],
             ],
         ];
 
-        $taxQuery = [];
-
-        $tax = '';
-        if ($atts['categories']) {
-            $tax = $atts['categories'];
-        } elseif ($atts['kategorien']) {
-            $tax = $atts['kategorien'];
-        }
+        // Tax queries
+        $tax = $atts['categories'] ?: $atts['kategorien'];
         $categories = Utils::strListToArray($tax, 'sanitize_title');
 
-        $tax = '';
-        if ($atts['tags']) {
-            $tax = $atts['tags'];
-        } elseif ($atts['schlagworte']) {
-            $tax = $atts['schlagworte'];
-        }
+        $tax = $atts['tags'] ?: $atts['schlagworte'];
         $tags = Utils::strListToArray($tax, 'sanitize_title');
 
+        $taxQuery = [];
+
         if (!empty($categories)) {
-            $taxQuery = [
-                [
-                    'taxonomy' => CalendarEvent::TAX_CATEGORY,
-                    'field'    => 'slug',
-                    'terms'    => $categories
-                ]
+            $taxQuery[] = [
+                'taxonomy' => CalendarEvent::TAX_CATEGORY,
+                'field'    => 'slug',
+                'terms'    => $categories,
             ];
         }
 
         if (!empty($tags)) {
-            $taxQuery = array_merge(
-                $taxQuery,
-                [
-                    [
-                        'taxonomy' => CalendarEvent::TAX_TAG,
-                        'field'    => 'slug',
-                        'terms'    => $tags
-                    ]
-                ]
-            );
+            $taxQuery[] = [
+                'taxonomy' => CalendarEvent::TAX_TAG,
+                'field'    => 'slug',
+                'terms'    => $tags,
+            ];
         }
 
-        if ($taxQuery) {
-            $taxQuery = array_merge(['relation' => 'AND'], $taxQuery);
-            $args = array_merge($args, ['tax_query' => $taxQuery]);
+        if (!empty($taxQuery)) {
+            $args['tax_query'] = array_merge(['relation' => 'AND'], $taxQuery);
         }
 
+        // Title include/exclude
         $include = sanitize_text_field($atts['include']);
         $exclude = sanitize_text_field($atts['exclude']);
-        if ($exclude != '' || $include != '') {
+        if ($exclude !== '' || $include !== '') {
             add_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter'], 10, 2);
-            if ($include != '') $args['title_filter'] = $include;
-            if ($exclude != '') $args['title_filter_exclude'] = $exclude;
+            if ($include !== '') {
+                $args['title_filter'] = $include;
+            }
+            if ($exclude !== '') {
+                $args['title_filter_exclude'] = $exclude;
+            }
             $args['suppress_filters'] = false;
         }
 
-        // Get events in calendar period
         $events = get_posts($args);
 
-        if ($exclude != '' || $include != '') {
+        if ($exclude !== '' || $include !== '') {
             remove_filter('posts_where', ['RRZE\Calendar\Utils', 'titleFilter']);
         }
 
-        $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
+        // IMPORTANT: pass date bounds in WP timezone
+        $eventsArray = Utils::buildEventsArray(
+            $events,
+            wp_date('Y-m-d', $startTS, $tz),
+            $endTS ? wp_date('Y-m-d', $endTS, $tz) : null
+        );
 
-        // Render calendar output
+        // Render output
         $output = '<div class="rrze-calendar">';
-        if ($layout == 'full' || $layout == 'mini' && $month == '') {
+
+        if ($layout === 'full' || ($layout === 'mini' && $month === null)) {
+            $currentMonth = wp_date('m', $nowTs, $tz);
+            $currentDay   = wp_date('d', $nowTs, $tz);
+
             $output .= '<p class="cal-type-select">'
-                . do_shortcode('[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '&cal-day=' . date('d', current_time('timestamp')) . '" class="' . $buttonDayClass . '" title="' . __('View day', 'rrze-calendar') . '"]' . __('Day', 'rrze-calendar') . '[/button]'
-                    . '[button style="ghost" link="?cal-year=' . $year . '&cal-month=' . date('m', current_time('timestamp')) . '" class="' . $buttonMonthClass . '" title="' . __('View monthly calendar', 'rrze-calendar') . '"]' . __('Month', 'rrze-calendar') . '[/button]'
-                    . '[button style="ghost" link="?cal-year=' . $year . '" class="' . $buttonYearClass . '" title="' . __('View yearly calendar', 'rrze-calendar') . '"]' . __('Year', 'rrze-calendar') . '[/button]')
+                . do_shortcode(
+                    '[button style="ghost" link="?cal-year=' . (int) $year . '&cal-month=' . esc_attr($currentMonth) . '&cal-day=' . esc_attr($currentDay) . '" class="' . esc_attr($buttonDayClass) . '" title="' . esc_attr(__('View day', 'rrze-calendar')) . '"]' . __('Day', 'rrze-calendar') . '[/button]'
+                        . '[button style="ghost" link="?cal-year=' . (int) $year . '&cal-month=' . esc_attr($currentMonth) . '" class="' . esc_attr($buttonMonthClass) . '" title="' . esc_attr(__('View monthly calendar', 'rrze-calendar')) . '"]' . __('Month', 'rrze-calendar') . '[/button]'
+                        . '[button style="ghost" link="?cal-year=' . (int) $year . '" class="' . esc_attr($buttonYearClass) . '" title="' . esc_attr(__('View yearly calendar', 'rrze-calendar')) . '"]' . __('Year', 'rrze-calendar') . '[/button]'
+                )
                 . '</p>';
         }
-        $output .= self::buildCalendar($year, $month, $day, $eventsArray, $layout, $paging, $taxQuery, $aboLink);
+
+        $output .= self::buildCalendar(
+            (int) $year,
+            $month === null ? '' : (int) $month,
+            $day,
+            $eventsArray,
+            $layout,
+            $paging,
+            $taxQuery,
+            $aboLink
+        );
+
         $output .= '</div>';
 
-        wp_enqueue_style('rrze-calendar-sc-calendar');
-        wp_enqueue_script('jquery');
-        wp_enqueue_script('rrze-calendar-sc-calendar', plugin_dir_url(__DIR__) . 'js/shortcode.js', array(), '1.0.0', true);
         return $output;
     }
 
@@ -248,116 +325,161 @@ class Calendar
     private static function buildCalendar($year, $month, $day, $eventsArray, $layout = 'full', $paging = true, $taxQuery = [], $aboLink = false): string
     {
         $output = '';
-        if ($day != '') {
-            $output .= '<div class="calendar-wrapper cal-day" data-period="' . $year . '-' . $month . '-' . $day . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
+
+        $year  = (int) $year;
+        $month = $month !== '' ? (int) $month : '';
+        $day   = $day !== '' ? (int) $day : '';
+
+        if ($day !== '') {
+            $output .= '<div class="calendar-wrapper cal-day" data-period="' . esc_attr(sprintf('%04d-%02d-%02d', $year, $month, $day)) . '" data-layout="' . esc_attr($layout === 'full' ? 'full' : 'mini') . '" data-abolink="' . esc_attr($aboLink ? '1' : '0') . '">';
             $output .= self::renderDayList($year, $month, $day, $eventsArray, $taxQuery, $aboLink);
             $output .= '</div>';
-        } elseif ($month != '') {
-            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-            $output .= '<div class="calendar-wrapper cal-month" data-period="' . $year . '-' . $month . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
-            if ($layout == 'full') {
-                $output .= self::renderMonthCalendarFull($year, $month,  $eventsArray, $paging, $taxQuery, $aboLink);
-            } else {
-                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, true, $taxQuery);
-            }
-            $output .= '</div>';
-        } else {
-            $output .= '<div class="calendar-wrapper cal-year" data-period="' . $year . '" data-layout="' . ($layout == 'full' ? 'full' : 'mini') . '" data-abolink="' . ($aboLink ? '1' : '0') . '">';
-            $output .= '<div class="calendar-header"><h2 class="title-year">' . $year . '</h2>';
-            if ($paging) {
-                $output .= '<ul class="calendar-pager">
-                    <li class="date-prev">
-                        <a href="#" title="' . __('Go to previous year', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
-                    </li>
-                    <li class="date-next">
-                        <a href="#" title="' . __('Go to next year', 'rrze-calendar') . '" rel="nofollow" data-direction="next">' . __('Next', 'rrze-calendar') . ' »</a>
-                    </li>
-                </ul>';
-            }
-            $output .= '</div>'
-                . '<div class="calendar-year">';
-            for ($i = 1; $i <= 12; $i++) {
-                $month = str_pad((string)$i, 2, '0', STR_PAD_LEFT);
-                $output .= self::renderMonthCalendarMini($year, $month,  $eventsArray, false, $taxQuery);
-            }
-            $output .= '</div></div>';
+            return $output;
         }
+
+        if ($month !== '') {
+            $monthStr = str_pad((string) $month, 2, '0', STR_PAD_LEFT);
+            $output .= '<div class="calendar-wrapper cal-month" data-period="' . esc_attr(sprintf('%04d-%s', $year, $monthStr)) . '" data-layout="' . esc_attr($layout === 'full' ? 'full' : 'mini') . '" data-abolink="' . esc_attr($aboLink ? '1' : '0') . '">';
+
+            if ($layout === 'full') {
+                $output .= self::renderMonthCalendarFull($year, $monthStr, $eventsArray, $paging, $taxQuery, $aboLink);
+            } else {
+                $output .= self::renderMonthCalendarMini($year, $monthStr, $eventsArray, true, $taxQuery);
+            }
+
+            $output .= '</div>';
+            return $output;
+        }
+
+        // Year view
+        $output .= '<div class="calendar-wrapper cal-year" data-period="' . esc_attr((string) $year) . '" data-layout="' . esc_attr($layout === 'full' ? 'full' : 'mini') . '" data-abolink="' . esc_attr($aboLink ? '1' : '0') . '">';
+        $output .= '<div class="calendar-header"><h2 class="title-year">' . esc_html((string) $year) . '</h2>';
+
+        if ($paging) {
+            $output .= '<ul class="calendar-pager">
+            <li class="date-prev">
+                <a href="#" title="' . esc_attr(__('Go to previous year', 'rrze-calendar')) . '" rel="nofollow" data-direction="prev">« ' . esc_html(__('Previous', 'rrze-calendar')) . '</a>
+            </li>
+            <li class="date-next">
+                <a href="#" title="' . esc_attr(__('Go to next year', 'rrze-calendar')) . '" rel="nofollow" data-direction="next">' . esc_html(__('Next', 'rrze-calendar')) . ' »</a>
+            </li>
+        </ul>';
+        }
+
+        $output .= '</div><div class="calendar-year">';
+
+        for ($i = 1; $i <= 12; $i++) {
+            $m = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+            $output .= self::renderMonthCalendarMini($year, $m, $eventsArray, false, $taxQuery);
+        }
+
+        $output .= '</div></div>';
+
         return $output;
     }
 
     /**
      * Render list of events on one day
-     * @param array $events
+     * 
+     * @param integer $year
+     * @param integer $month
+     * @param integer $day
+     * @param array $eventsArray
+     * @param array $taxQuery
+     * @param bool $aboLink
+     * @return string
      */
     private static function renderDayList($year, $month, $day, $eventsArray = [], $taxQuery = [], $aboLink = false)
     {
+        $tz = wp_timezone();
 
-        $IDs = [];
-        $calDay = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-        $calDayTs = strtotime($calDay);
-        $output = '<div class="calendar-header"><h2 class="title-year">' . date_i18n(get_option('date_format'), $calDayTs) . '</h2>';
+        $calDayStr = sprintf('%04d-%02d-%02d', (int) $year, (int) $month, (int) $day);
+        $calDayDt  = new \DateTimeImmutable($calDayStr . ' 00:00:00', $tz);
+        $calDayTs  = $calDayDt->getTimestamp();
+
+        $output  = '<div class="calendar-header"><h2 class="title-year">'
+            . esc_html(wp_date(get_option('date_format'), $calDayTs, $tz))
+            . '</h2>';
+
         $output .= '<ul class="calendar-pager">
-            <li class="date-prev">
-                <a href="#" title="' . __('Go to previous day', 'rrze-calendar') . '" rel="nofollow" data-direction="prev">« ' . __('Previous', 'rrze-calendar') . '</a>
-            </li>
-            <li class="date-next">
-                <a href="#" title="' . __('Go to next day', 'rrze-calendar') . '" rel="nofollow" data-direction="next">' . __('Next', 'rrze-calendar') . ' »</a>
-            </li>
-        </ul>';
+        <li class="date-prev">
+            <a href="#" title="' . esc_attr(__('Go to previous day', 'rrze-calendar')) . '" rel="nofollow" data-direction="prev">« ' . esc_html(__('Previous', 'rrze-calendar')) . '</a>
+        </li>
+        <li class="date-next">
+            <a href="#" title="' . esc_attr(__('Go to next day', 'rrze-calendar')) . '" rel="nofollow" data-direction="next">' . esc_html(__('Next', 'rrze-calendar')) . ' »</a>
+        </li>
+    </ul>';
         $output .= '</div>';
 
+        $IDs = [];
         $list = '<ul class="day-list">';
         $hasEvents = false;
 
         foreach ($eventsArray as $ts => $events) {
+            $eventStart = (int) $ts;
+
             foreach ($events as $event) {
-                $meta = get_post_meta($event['id']);
-                $eventStart = $ts;
-                $eventEnd = $event['end'];
-                $eventStartDate = date('Y-m-d', $eventStart);
-                $eventEndDate = date('Y-m-d', $eventEnd);
-                if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
+                $eventEnd = (int) ($event['end'] ?? 0);
+                if ($eventEnd <= 0) {
                     continue;
                 }
-                $isAllDay = Utils::getMeta($meta, 'all-day') == 'on';
-                $timeText = '';
 
-                $eventTitle = get_the_title($event['id']);
-                $eventURL = get_the_permalink($event['id']);
-                $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
-                // Date/Time
-                if ($eventStartDate == $eventEndDate && !$isAllDay) {
-                    $timeText = '<span class="event-date">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '</span>';
-                } elseif ($eventStartDate == $eventEndDate && $isAllDay) {
-                    $timeText = '<span class="event-date">' . __('All Day', 'rrze-calendar') . '</span>';
-                } else {
-                    $timeText = '<span class="event-date">' . date_i18n(get_option('date_format'), $eventStart) . ' - ' . date_i18n(get_option('date_format'), $eventEnd) . '</span>';
+                // Compare using WP-local dates (YYYY-mm-dd)
+                $eventStartDate = wp_date('Y-m-d', $eventStart, $tz);
+                $eventEndDate   = wp_date('Y-m-d', $eventEnd, $tz);
+
+                if ($calDayStr < $eventStartDate || $calDayStr > $eventEndDate) {
+                    continue;
                 }
+
+                $meta = get_post_meta((int) $event['id']);
+                $isAllDay = (Utils::getMeta($meta, 'all-day') === 'on');
+
+                $eventTitle = get_the_title((int) $event['id']);
+                $eventURL   = get_the_permalink((int) $event['id']);
+                $eventTitleHtml = '<a href="' . esc_url($eventURL) . '">' . esc_html($eventTitle) . '</a>';
+
+                // Date/Time (display in WP TZ)
+                if ($eventStartDate === $eventEndDate && !$isAllDay) {
+                    $timeText = '<span class="event-date">'
+                        . esc_html(wp_date('H:i', $eventStart, $tz) . ' - ' . wp_date('H:i', $eventEnd, $tz))
+                        . '</span>';
+                } elseif ($eventStartDate === $eventEndDate && $isAllDay) {
+                    $timeText = '<span class="event-date">' . esc_html(__('All Day', 'rrze-calendar')) . '</span>';
+                } else {
+                    $timeText = '<span class="event-date">'
+                        . esc_html(wp_date(get_option('date_format'), $eventStart, $tz) . ' - ' . wp_date(get_option('date_format'), $eventEnd, $tz))
+                        . '</span>';
+                }
+
                 // Location
-                $location = Utils::getMeta($meta, 'location');
-                if ($location != '') {
+                $location = (string) Utils::getMeta($meta, 'location');
+                $locationText = '';
+                if ($location !== '') {
                     $location = Shortcode::filterContent($location);
-                    $locationText = '<br />' . $location;
-                } else {
-                    $locationText = '';
+                    $locationText = '<br />' . $location; // assumes filterContent returns safe HTML
                 }
 
-                $list .= '<li>';
-                $list .= $timeText . '<br />' . $eventTitle . $locationText;
-                $list .= '</li>';
+                $list .= '<li>' . $timeText . '<br />' . $eventTitleHtml . $locationText . '</li>';
+
                 $hasEvents = true;
-                $IDs[] = $event['id'];
+                $IDs[] = (int) $event['id'];
             }
         }
+
         $list .= '</ul>';
 
         if ($hasEvents) {
             $output .= $list;
             if ($aboLink) {
-                $output .= do_shortcode('[button link="' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . '"]' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+                $output .= do_shortcode(
+                    '[button link="' . esc_url(Export::makeIcsLink(['ids' => array_values(array_unique($IDs))])) . '"]'
+                        . __('Add to calendar', 'rrze-calendar')
+                        . '[/button]'
+                );
             }
         } else {
-            $output .= '<p>' . __('There are no events scheduled for this day.', 'rrze-calendar') . '</p>';
+            $output .= '<p>' . esc_html(__('There are no events scheduled for this day.', 'rrze-calendar')) . '</p>';
         }
 
         return $output;
@@ -365,226 +487,279 @@ class Calendar
 
     /**
      * Render mini calendar month view with availability information for external use
-     * @param   integer $month
-     * @param   integer $year
-     * @param   array   $events
-     * @param   bool    $showYear
-     * @return  string
+     *
+     * @param integer $year
+     * @param integer $month
+     * @param array $eventsArray
+     * @param bool $showYear
+     * @param array $taxQuery
+     * @return string
      */
-
-    private static function renderMonthCalendarMini($year, $month,  $eventsArray = [], $showYear = false, $taxQuery = [])
+    private static function renderMonthCalendarMini($year, $month, $eventsArray = [], $showYear = false, $taxQuery = [])
     {
-        $startOfWeek = get_option('start_of_week', 0);
-        $first_day_in_month = date('w', mktime(0, 0, 0, $month, 1, $year));
-        if ($first_day_in_month == 0) $first_day_in_month = 7;
-        $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
-        $month_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+        $tz = wp_timezone();
+        $startOfWeek = (int) get_option('start_of_week', 0); // 0=Sunday
+
+        $year  = (int) $year;
+        $month = (int) $month;
+
+        $firstOfMonth = new \DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', $year, $month), $tz);
+
+        // PHP: N = 1..7 (Mon..Sun). Convert to 0..6 (Sun..Sat) to match WP start_of_week logic
+        $weekdayN = (int) $firstOfMonth->format('N'); // 1..7
+        $weekday0 = $weekdayN % 7;                    // 0=Sun..6=Sat
+
+        // Shift based on start_of_week (0=Sun..6=Sat)
+        $first_day_in_month = ($weekday0 - $startOfWeek + 7) % 7;
+
+        $month_days = (int) $firstOfMonth->format('t');
+
         $month_names = Utils::getMonthNames('full');
-        $month_name = $month_names[(int)$month - 1];
+        $month_name = $month_names[$month - 1] ?? (string) $month;
+
         if ($showYear) {
             $month_name .= ' ' . $year;
+            $monthTitle = esc_html($month_name);
         } else {
-            $month_name = '<a href="?cal-year=' . $year . '&cal-month=' . $month . '"">' . $month_name . '</a>';
+            $monthTitle = '<a href="?cal-year=' . esc_attr((string) $year) . '&cal-month=' . esc_attr(str_pad((string) $month, 2, '0', STR_PAD_LEFT)) . '">' . esc_html($month_name) . '</a>';
         }
-        $output = '<div class="calendar-month mini">';
+
+        $output  = '<div class="calendar-month mini">';
         $output .= '<table>';
-        $output .= '<tr><th colspan="7">' . $month_name . '</th></tr>';
+        $output .= '<tr><th colspan="7">' . $monthTitle . '</th></tr>';
         $output .= '<tr class="days">';
+
         foreach (Utils::getDaysOfWeek('short') as $dayOfWeek) {
-            $output .= '<td>' . $dayOfWeek . '</td>';
+            $output .= '<td>' . esc_html($dayOfWeek) . '</td>';
         }
-        $output .= '<tr>';
+
+        $output .= '</tr><tr>';
 
         for ($i = 0; $i < $first_day_in_month; $i++) {
             $output .= '<td> </td>';
         }
-        //var_dump($eventsArray);
+
         for ($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
-            $date = $year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-            $calDay = strtotime($date);
+
+            $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day);
+            $class = 'has-no-events';
             $linkOpen = '';
             $linkClose = '';
-            $class = 'has-no-events';
+
+            // Determine if any event overlaps this date (compare as WP-local dates)
             foreach ($eventsArray as $ts => $events) {
+                $eventStart = (int) $ts;
+
                 foreach ($events as $event) {
-                    $eventStart = $ts;
-                    $eventEnd = $event['end'];
-                    //var_dump($calDay >= $eventStart && $calDay <= $eventEnd);
-                    //var_dump($date, date('Y-m-d', $eventStart), date('Y-m-d', $eventEnd), ($date >= date('Y-m-d', $eventStart) && $date <= date('Y-m-d', $eventEnd)) );
-                    //print "<br />";
-                    //if ($calDay >= $eventStart && $calDay <= $eventEnd) {
-                    if ($date >= date('Y-m-d', $eventStart) && $date <= date('Y-m-d', $eventEnd)) {
-                        $linkOpen = '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . str_pad($day, 2, '0', STR_PAD_LEFT) . '" title="' . __('View Details', 'rrze-calendar') . '">';
+                    $eventEnd = (int) ($event['end'] ?? 0);
+                    if ($eventEnd <= 0) {
+                        continue;
+                    }
+
+                    $eventStartDate = wp_date('Y-m-d', $eventStart, $tz);
+                    $eventEndDate   = wp_date('Y-m-d', $eventEnd, $tz);
+
+                    if ($dateStr >= $eventStartDate && $dateStr <= $eventEndDate) {
+                        $linkOpen = '<a href="?cal-year=' . esc_attr((string) $year) . '&cal-month=' . esc_attr(str_pad((string) $month, 2, '0', STR_PAD_LEFT)) . '&cal-day=' . esc_attr(str_pad((string) $day, 2, '0', STR_PAD_LEFT)) . '" title="' . esc_attr(__('View Details', 'rrze-calendar')) . '">';
                         $linkClose = '</a>';
                         $class = 'has-events';
-                        continue 2;
+                        break 2;
                     }
                 }
             }
-            $day = date('d', $calDay);
-            $output .= '<td class="' . $class . '">' . $linkOpen . $day . $linkClose . '</td>';
-            if ($pos == 0) $output .= '</tr><tr>';
+
+            $output .= '<td class="' . esc_attr($class) . '">' . $linkOpen . esc_html((string) $day) . $linkClose . '</td>';
+
+            if ($pos === 0 && $day !== $month_days) {
+                $output .= '</tr><tr>';
+            }
         }
 
-        $output .= '</tr>';
-        $output .= '</table>';
-        $output .= '</div>';
+        $output .= '</tr></table></div>';
 
         return $output;
     }
 
     /**
      * Render Full Calendar Month View with event details
-     * @param integer $month
+     *
      * @param integer $year
-     * @param array $events
-     * @param bool $paging  Allow skipping to next/previous month
-     * @param array $locations
+     * @param integer $month
+     * @param array $eventsArray
+     * @param bool $paging
+     * @param array $taxQuery
+     * @param bool $aboLink
      * @return string
      */
-
-    private static function renderMonthCalendarFull($year, $month,  $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false)
+    private static function renderMonthCalendarFull($year, $month, $eventsArray = [], $paging = true, $taxQuery = [], $aboLink = false)
     {
-        $startOfWeek = get_option('start_of_week', 0);
-        $first_day_in_month = date('w', mktime(0, 0, 0, $month, 1, $year));
-        if ($first_day_in_month == 0) $first_day_in_month = 7;
-        $first_day_in_month = ($first_day_in_month - $startOfWeek) % 7;
-        $month_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+        $tz = wp_timezone();
+
+        $startOfWeek = (int) get_option('start_of_week', 0); // 0=Sunday
+        $year  = (int) $year;
+        $month = (int) $month;
+
+        $firstOfMonth = new \DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', $year, $month), $tz);
+
+        // weekday handling (0=Sun..6=Sat) aligned with start_of_week
+        $weekdayN = (int) $firstOfMonth->format('N'); // 1..7 Mon..Sun
+        $weekday0 = $weekdayN % 7;                    // 0..6 Sun..Sat
+        $first_day_in_month = ($weekday0 - $startOfWeek + 7) % 7;
+
+        $month_days = (int) $firstOfMonth->format('t');
+
         $month_names = Utils::getMonthNames('full');
-        $month_name = $month_names[(int)$month - 1];
+        $month_name = $month_names[$month - 1] ?? (string) $month;
+
         $day_names = Utils::getDaysOfWeek('full');
         $IDs = [];
 
-        $taxQueryJSON = json_encode($taxQuery);
-        $taxQueryBase64 = base64_encode($taxQueryJSON);
+        $taxQueryBase64 = base64_encode(wp_json_encode($taxQuery));
 
-        // Calender Header (Title + Nav)
-        $output = '<div class="calendar-header"><h2 class="title-year">' . $month_name . ' ' . $year . '</h2>';
+        $output = '<div class="calendar-header"><h2 class="title-year">' . esc_html($month_name . ' ' . $year) . '</h2>';
+
         if ($paging) {
             $output .= '<ul class="calendar-pager">
             <li class="date-prev">
-                <a href="#" title="' . __('Go to previous month', 'rrze-calendar') . '" rel="nofollow" data-direction="prev" data-taxquery="' . $taxQueryBase64 . '">« ' . __('Previous', 'rrze-calendar') . '</a>
+                <a href="#" title="' . esc_attr(__('Go to previous month', 'rrze-calendar')) . '" rel="nofollow" data-direction="prev" data-taxquery="' . esc_attr($taxQueryBase64) . '">« ' . esc_html(__('Previous', 'rrze-calendar')) . '</a>
             </li>
             <li class="date-next">
-                <a href="#" title="' . __('Go to next month', 'rrze-calendar') . '" rel="nofollow" data-direction="next" data-taxquery="' . $taxQueryBase64 . '">' . __('Next', 'rrze-calendar') . ' »</a>
+                <a href="#" title="' . esc_attr(__('Go to next month', 'rrze-calendar')) . '" rel="nofollow" data-direction="next" data-taxquery="' . esc_attr($taxQueryBase64) . '">' . esc_html(__('Next', 'rrze-calendar')) . ' »</a>
             </li>
         </ul>';
         }
+
         $output .= '</div>';
         $output .= '<div class="calendar-month full">';
         $output .= '<div class="days">';
+
         $gridIndex = 1;
         foreach ($day_names as $day_name) {
-            $output .= '<div style="grid-column-start: day-' . ($gridIndex) . '; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . $day_name . '</div>';
+            $output .= '<div style="grid-column-start: day-' . $gridIndex . '; grid-column-end: span 1; grid-row-start: date; grid-row-end: span 1;" class="day-names">' . esc_html($day_name) . '</div>';
             $gridIndex++;
         }
         $output .= '</div>';
 
-        // Weeks
         $output .= '<div class="week">';
+
         for ($i = 0; $i < $first_day_in_month; $i++) {
             $gridIndex = $i + 1;
             $output .= '<div class="empty-day" style="grid-column: day-' . $gridIndex . ' / day-' . $gridIndex . ';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
         }
-        $weekNum = 1;
-        $rowsOccupied = [];
+
+        $rowsOccupied = []; // [YYYY-mm-dd][row] => event_id
 
         for ($day = 1; $day <= $month_days; $day++) {
             $pos = ($day + $first_day_in_month) % 7;
-            $date = $year . '-' . $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-            $col = $pos == 0 ? 7 : $pos;
-            $calDay = $date;
-            $output .= '<div class="day" style="grid-column: day-' . $col . ' / day-' . $col . '; grid-row: 1 / 2;" aria-hidden="true">' . $day . '</div>';
+            $col = ($pos === 0) ? 7 : $pos;
+
+            $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day);
+            $output .= '<div class="day" style="grid-column: day-' . $col . ' / day-' . $col . '; grid-row: 1 / 2;" aria-hidden="true">' . (int) $day . '</div>';
+
             $week = '';
             $daysLeft = $month_days - $day + 1;
             $showMore = false;
 
-            // Background div for each day
+            // Background
             $week .= '<div class="no-event" style="grid-column-start: day-' . $col . '; grid-column-end: span 1; grid-row-start: 2; grid-row-end: 6" aria-hidden="true"> </div>';
 
             foreach ($eventsArray as $ts => $events) {
+                $eventStart = (int) $ts;
+
                 foreach ($events as $event) {
-                    if (isset($rowsOccupied[$date]) && count($rowsOccupied[$date]) >= 3) {
-                        $showMore = true;
-                        //continue;
-                    }
-                    $eventStart = $ts;
-                    $eventEnd = $event['end'];
-                    $eventStartUTC = get_gmt_from_date(date('Y-m-d H:i', $eventStart), 'U');
-                    $eventEndUTC = get_gmt_from_date(date('Y-m-d H:i', $eventEnd), 'U');
-                    $eventStartDate = date('Y-m-d', $eventStart);
-                    $eventEndDate = date('Y-m-d', $eventEnd);
-                    if ($calDay < $eventStartDate || $calDay > $eventEndDate) {
+                    $eventId  = (int) ($event['id'] ?? 0);
+                    $eventEnd = (int) ($event['end'] ?? 0);
+                    if ($eventId <= 0 || $eventEnd <= 0) {
                         continue;
                     }
-                    $meta = get_post_meta($event['id']);
-                    $isAllDay = Utils::getMeta($meta, 'all-day') == 'on';
-                    $eventTitle = get_the_title($event['id']);
-                    $eventURL = get_the_permalink($event['id']);
-                    $categories = get_the_terms($event['id'], CalendarEvent::TAX_CATEGORY);
-                    if ($categories) {
-                        $catID = $categories[0]->term_id;
-                        $catColor = get_term_meta($catID, 'color', true);
-                    } else {
-                        $catColor = '';
-                    }
-                    if ($catColor == '') $catColor = 'var(--color-primary-ci-hell, #003366)';
-                    $eventTitle = '<a href="' . $eventURL . '">' . $eventTitle . '</a>';
 
-                    $locationMeta = '';
-                    $location = Utils::getMeta($meta, 'location');
-                    if ($location != '') {
-                        $location = Shortcode::filterContent($location);
-                        $locationMeta .= '<meta itemprop="location" content="' . trim(strip_tags($location)) . '" />';
+                    // check max 3 rows for this day
+                    if (isset($rowsOccupied[$dateStr]) && count($rowsOccupied[$dateStr]) >= 3) {
+                        $showMore = true;
                     }
-                    $vc_url = Utils::getMeta($meta, 'vc-url');
-                    if ($vc_url != '') {
-                        $locationMeta .= '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . $vc_url . '" /></span>';
+
+                    $eventStartDate = wp_date('Y-m-d', $eventStart, $tz);
+                    $eventEndDate   = wp_date('Y-m-d', $eventEnd, $tz);
+
+                    if ($dateStr < $eventStartDate || $dateStr > $eventEndDate) {
+                        continue;
+                    }
+
+                    $meta = get_post_meta($eventId);
+                    $isAllDay = (Utils::getMeta($meta, 'all-day') === 'on');
+
+                    $eventTitle = '<a href="' . esc_url(get_the_permalink($eventId)) . '">' . esc_html(get_the_title($eventId)) . '</a>';
+
+                    $categories = get_the_terms($eventId, CalendarEvent::TAX_CATEGORY);
+                    $catColor = '';
+                    if ($categories && !is_wp_error($categories)) {
+                        $catID = $categories[0]->term_id;
+                        $catColor = (string) get_term_meta($catID, 'color', true);
+                    }
+                    if ($catColor === '') {
+                        $catColor = 'var(--color-primary-ci-hell, #003366)';
+                    }
+
+                    // location meta
+                    $locationMeta = '';
+                    $location = (string) Utils::getMeta($meta, 'location');
+                    if ($location !== '') {
+                        $locPlain = trim(strip_tags(Shortcode::filterContent($location)));
+                        $locationMeta .= '<meta itemprop="location" content="' . esc_attr($locPlain) . '" />';
+                    }
+                    $vc_url = (string) Utils::getMeta($meta, 'vc-url');
+                    if ($vc_url !== '') {
+                        $locationMeta .= '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vc_url) . '" /></span>';
                     }
 
                     $eventClasses = ['event'];
-                    if ($calDay == $eventStartDate) {
-                        // Events starting on this day
-                        array_push($eventClasses, 'event-start', 'event-end');
-                        $dateClasses = ['event-date'];
-                        $span = floor(($eventEnd - $eventStart) / (60 * 60 * 24) + 1);
+
+                    // --- STARTS TODAY ---
+                    if ($dateStr === $eventStartDate) {
+                        $eventClasses[] = 'event-start';
+                        $eventClasses[] = 'event-end';
+
+                        $span = (int) floor(($eventEnd - $eventStart) / DAY_IN_SECONDS + 1);
                         if ($span < 1) $span = 1;
+
+                        $dateClasses = ['event-date'];
                         if ($span > 1 || $isAllDay) {
                             $timeOut = '';
                         } else {
                             $dateClasses[] = 'hide-desktop';
-                            $timeOut = '<span class="event-time">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '<br /></span>';
+                            $timeOut = '<span class="event-time">' . esc_html(wp_date('H:i', $eventStart, $tz) . ' - ' . wp_date('H:i', $eventEnd, $tz)) . '<br /></span>';
                         }
-                        if ($isAllDay && $eventStartDate == $eventEndDate) {
-                            $dateClasses[] = 'hide-desktop';
-                            $timeOut = '<span class="event-time">' . __('All Day', 'rrze-calendar') . '<br /></span>';
-                        }
-                        if (($col + $span) > 8) {
-                            $span = 8 - $col + 1; // trim if event longer than week
-                            if (($key = array_search('event-end', $eventClasses)) !== false) {
-                                unset($eventClasses[$key]);
-                            }
-                        }
-                        if ($span > $daysLeft) {
-                            $span = $daysLeft; // trim if event longer than month
-                            if (($key = array_search('event-end', $eventClasses)) !== false) {
-                                unset($eventClasses[$key]);
-                            }
-                        }
-                        $eventInfos = [];
 
-                        // Select a free row (from 1 to 3)
-                        $startDay = date('d', $eventStart);
-                        for ($i = 1; $i <= 3; $i++) {
-                            if (isset($rowsOccupied[$eventStartDate][$i])) {
-                                continue;
-                            } else {
-                                $rowNum = $i;
+                        if ($isAllDay && $eventStartDate === $eventEndDate) {
+                            $dateClasses[] = 'hide-desktop';
+                            $timeOut = '<span class="event-time">' . esc_html(__('All Day', 'rrze-calendar')) . '<br /></span>';
+                        }
+
+                        // trim to week
+                        if (($col + $span) > 8) {
+                            $span = 8 - $col + 1;
+                            $eventClasses = array_values(array_diff($eventClasses, ['event-end']));
+                        }
+
+                        // trim to month
+                        if ($span > $daysLeft) {
+                            $span = $daysLeft;
+                            $eventClasses = array_values(array_diff($eventClasses, ['event-end']));
+                        }
+
+                        // choose a free row for THIS date (fix rowsOccupied check)
+                        $rowNum = 1;
+                        for ($r = 1; $r <= 3; $r++) {
+                            if (!isset($rowsOccupied[$dateStr][$r])) {
+                                $rowNum = $r;
+
+                                // occupy rows for each day in span
+                                $startDayOfMonth = (int) substr($dateStr, 8, 2);
                                 for ($j = 0; $j < $span; $j++) {
-                                    $countDay = (int)$startDay + $j;
-                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0', STR_PAD_LEFT);
-                                    $rowsOccupied[$countDate][$i] = $event['id'];
+                                    $countDay = $startDayOfMonth + $j;
+                                    $countDate = sprintf('%04d-%02d-%02d', $year, $month, $countDay);
+                                    $rowsOccupied[$countDate][$r] = $eventId;
                                 }
                                 break;
                             }
@@ -592,125 +767,137 @@ class Calendar
 
                         if ($showMore) {
                             $week .= '<div class="more-events" style="grid-column: day-' . $col . ' / day-' . ($col + 1) . '; grid-row: 5 / 6;">'
-                                . '<a href="?cal-year=' . $year . '&cal-month=' . $month . '&cal-day=' . $day . '">'
-                                . __('More&hellip;', 'rrze-calendar')
+                                . '<a href="?cal-year=' . (int) $year . '&cal-month=' . esc_attr(str_pad((string) $month, 2, '0', STR_PAD_LEFT)) . '&cal-day=' . esc_attr(str_pad((string) $day, 2, '0', STR_PAD_LEFT)) . '">'
+                                . esc_html(__('More&hellip;', 'rrze-calendar'))
                                 . '</a></div>';
                             continue 2;
                         }
-                        if ($eventStartDate == $eventEndDate) {
-                            $dateOut = date('d.m.Y', $eventStart);
-                        } else {
-                            $dateOut = date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd);
-                        }
-                        $thumbnail = get_the_post_thumbnail($event['id'], 'medium');
-                        $content = get_post_meta($event['id'], 'description', true);
-                        $excerpt = strip_tags(do_shortcode($content));
+
+                        $dateOut = ($eventStartDate === $eventEndDate)
+                            ? wp_date('d.m.Y', $eventStart, $tz)
+                            : wp_date('d.m.Y', $eventStart, $tz) . ' - ' . wp_date('d.m.Y', $eventEnd, $tz);
+
+                        $thumbnail = get_the_post_thumbnail($eventId, 'medium');
+                        $content   = (string) get_post_meta($eventId, 'description', true);
+                        $excerpt   = strip_tags(do_shortcode($content));
                         if (strlen($excerpt) > 100) {
                             $excerpt = substr($excerpt, 0, 100);
-                            $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
+                            $excerpt = '<span>' . esc_html(substr($excerpt, 0, (int) strrpos($excerpt, ' '))) . '&hellip;</span>';
+                        } else {
+                            $excerpt = esc_html($excerpt);
                         }
-                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
-                            . '<p><span class="' . implode(' ', $dateClasses) . '">' . $dateOut . '<br /></span>'
+
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . esc_attr(implode(' ', $eventClasses)) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . esc_attr($catColor) . ';">'
+                            . '<p><span class="' . esc_attr(implode(' ', $dateClasses)) . '">' . esc_html($dateOut) . '<br /></span>'
                             . $timeOut
                             . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
-                            . '<meta itemprop="startDate" content="' . date_i18n('c', $eventStartUTC) . '">'
-                            . '<meta itemprop="endDate" content="' . date_i18n('c', $eventEndUTC) . '">'
+                            . '<meta itemprop="startDate" content="' . esc_attr(wp_date('c', $eventStart, $tz)) . '">'
+                            . '<meta itemprop="endDate" content="' . esc_attr(wp_date('c', $eventEnd, $tz)) . '">'
                             . $locationMeta
                             . '<div role="tooltip" aria-hidden="true">'
-                            . ($thumbnail != '' ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
+                            . ($thumbnail ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
                             . '<div class="event-title">' . $eventTitle . '</div>'
-                            . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
-                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
+                            . '<div class="event-date-time">' . esc_html($dateOut) . ', ' . $timeOut . '</div>'
+                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . esc_url(get_the_permalink($eventId)) . '">' . esc_html(__('Read more', 'rrze-calendar')) . ' &raquo;</a></div>'
                             . '</div>'
                             . '</div>';
-                        $IDs[] = $event['id'];
-                    } elseif (($col == 1 || $day == 1) && $calDay > $eventStartDate && $calDay <= $eventEndDate) {
-                        // Event continuing from past week (or past month)
-                        if ((($eventEnd - strtotime($calDay)) / (60 * 60 * 24)) < 0.3) {
-                            // Don't show event that end before 6:00, because it is probably the rest of a previous' day event
+
+                        $IDs[] = $eventId;
+                    }
+
+                    // --- CONTINUES from past week/month ---
+                    elseif (($col === 1 || $day === 1) && $dateStr > $eventStartDate && $dateStr <= $eventEndDate) {
+                        // build local midnight timestamp for this date
+                        $calMidTs = (new \DateTimeImmutable($dateStr . ' 00:00:00', $tz))->getTimestamp();
+
+                        if ((($eventEnd - $calMidTs) / DAY_IN_SECONDS) < 0.25) {
                             continue;
                         }
-                        $span = floor(($eventEnd - strtotime($calDay)) / (60 * 60 * 24) + 1);
+
+                        $span = (int) floor(($eventEnd - $calMidTs) / DAY_IN_SECONDS + 1);
                         if ($span > 7) {
-                            $span = 7; // trim if event longer than week
-                            array_push($eventClasses, 'event-week');
+                            $span = 7;
+                            $eventClasses[] = 'event-week';
                         } else {
-                            array_push($eventClasses, 'event-end');
+                            $eventClasses[] = 'event-end';
                         }
                         if ($span > $daysLeft) {
-                            $span = $daysLeft - 1; // trim if event longer than month
+                            $span = max(1, $daysLeft - 1);
                         }
-                        // Select a free row (from 1 to 3)
-                        $startDay = date('d', $eventStart);
-                        for ($i = 1; $i <= 3; $i++) {
-                            if (isset($rowsOccupied[$eventStartDate][$i])) {
-                                continue;
-                            } else {
-                                $rowNum = $i;
+
+                        $rowNum = 1;
+                        for ($r = 1; $r <= 3; $r++) {
+                            if (!isset($rowsOccupied[$dateStr][$r])) {
+                                $rowNum = $r;
+
+                                $startDayOfMonth = (int) substr($dateStr, 8, 2);
                                 for ($j = 0; $j < $span; $j++) {
-                                    $countDay = (int)$startDay + $j;
-                                    $countDate = date('Y-m-', $eventStart) . str_pad($countDay, 2, '0', STR_PAD_LEFT);
-                                    $rowsOccupied[$countDate][$i] = $event['id'];
+                                    $countDay = $startDayOfMonth + $j;
+                                    $countDate = sprintf('%04d-%02d-%02d', $year, $month, $countDay);
+                                    $rowsOccupied[$countDate][$r] = $eventId;
                                 }
                                 break;
                             }
                         }
 
-                        if ($eventStartDate == $eventEndDate) {
-                            $dateOut = date('d.m.Y', $eventStart);
-                        } else {
-                            $dateOut = date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd);
-                        }
-                        $timeOut = '<span class="event-time">' . date('H:i', $eventStart) . ' - ' . date('H:i', $eventEnd) . '<br /></span>';
-                        $thumbnail = get_the_post_thumbnail($event['id'], 'medium');
-                        $content = get_post_meta($event['id'], 'description', true);
-                        $excerpt = strip_tags($content);
+                        $dateOut = ($eventStartDate === $eventEndDate)
+                            ? wp_date('d.m.Y', $eventStart, $tz)
+                            : wp_date('d.m.Y', $eventStart, $tz) . ' - ' . wp_date('d.m.Y', $eventEnd, $tz);
+
+                        $timeOut = '<span class="event-time">' . esc_html(wp_date('H:i', $eventStart, $tz) . ' - ' . wp_date('H:i', $eventEnd, $tz)) . '<br /></span>';
+
+                        $thumbnail = get_the_post_thumbnail($eventId, 'medium');
+                        $content   = (string) get_post_meta($eventId, 'description', true);
+                        $excerpt   = strip_tags($content);
                         if (strlen($excerpt) > 100) {
                             $excerpt = substr($excerpt, 0, 100);
-                            $excerpt = '<span>' . substr($excerpt, 0, strrpos($excerpt, ' ')) . '&hellip;</span>';
+                            $excerpt = '<span>' . esc_html(substr($excerpt, 0, (int) strrpos($excerpt, ' '))) . '&hellip;</span>';
+                        } else {
+                            $excerpt = esc_html($excerpt);
                         }
-                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . implode(' ', $eventClasses) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . $catColor . ';">'
-                            . '<p><span class="event-date">' . date('d.m.Y', $eventStart) . ' - ' . date('d.m.Y', $eventEnd) . '<br /></span>'
+
+                        $week .= '<div itemtype="https://schema.org/Event" itemscope class="' . esc_attr(implode(' ', $eventClasses)) . '" style="grid-column: day-' . $col . ' / day-' . ($col + $span) . '; grid-row: ' . ($rowNum + 1) . ' / ' . ($rowNum + 2) . '; border-color: ' . esc_attr($catColor) . ';">'
+                            . '<p><span class="event-date">' . esc_html($dateOut) . '<br /></span>'
                             . '<span itemprop="name" class="event-title">' . $eventTitle . '</span></p>'
-                            . '<meta itemprop="startDate" content="' . date_i18n('c', $eventStartUTC) . '">'
-                            . '<meta itemprop="endDate" content="' . date_i18n('c', $eventEndUTC) . '">'
+                            . '<meta itemprop="startDate" content="' . esc_attr(wp_date('c', $eventStart, $tz)) . '">'
+                            . '<meta itemprop="endDate" content="' . esc_attr(wp_date('c', $eventEnd, $tz)) . '">'
                             . $locationMeta
                             . '<div role="tooltip" aria-hidden="true">'
-                            . '<p style="margin: 0;">' . $thumbnail . '</p>'
+                            . ($thumbnail ? '<p style="margin: 0;">' . $thumbnail . '</p>' : '')
                             . '<div class="event-title">' . $eventTitle . '</div>'
-                            . '<div class="event-date-time">' . $dateOut . ', ' . $timeOut . '</div>'
-                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . $eventURL . '">' . __('Read more', 'rrze-calendar') . ' &raquo;</a></div>'
+                            . '<div class="event-date-time">' . esc_html($dateOut) . ', ' . $timeOut . '</div>'
+                            . '<div itemprop="description" class="event-description">' . $excerpt . ' <a href="' . esc_url(get_the_permalink($eventId)) . '">' . esc_html(__('Read more', 'rrze-calendar')) . ' &raquo;</a></div>'
                             . '</div>'
                             . '</div>';
-                        $IDs[] = $event['id'];
+
+                        $IDs[] = $eventId;
                     }
                 }
             }
 
-            // Add empty cells if month ends before weekend
-            if ($day == $month_days && $col < 7) {
+            // End-of-month empty cells (same)
+            if ($day === $month_days && $col < 7) {
                 for ($i = ($col + 1); $i <= 7; $i++) {
                     $week .= '<div class="empty-day" style="grid-column: day-' . $i . ' / day-' . $i . ';  grid-row: 1 / 6;" aria-hidden="true"> </div>';
                 }
             }
 
-            // Add week to output
             $output .= $week;
 
-            // After 7 days: Increment week counter, reset row counter, line break
-            if ($pos == 0) {
-                $weekNum++;
-                $rowsOccupied = [];
+            if ($pos === 0) {
+                $rowsOccupied = []; // reset for next week, as in your original
                 $output .= '</div><div class="week">';
             }
         }
+
         $output .= '</div>';
 
         if ($aboLink) {
-            $output .= do_shortcode('[button link="' . Export::makeIcsLink(['ids' => array_unique($IDs)]) . '"]' . __('Add to calendar', 'rrze-calendar') . '[/button]');
+            $output .= do_shortcode('[button link="' . esc_url(Export::makeIcsLink(['ids' => array_values(array_unique($IDs))])) . '"]' . __('Add to calendar', 'rrze-calendar') . '[/button]');
         }
 
         $output .= '</div>';
+
         return $output;
     }
 
@@ -719,99 +906,100 @@ class Calendar
     public static function ajaxUpdateCalendar()
     {
         check_ajax_referer('rrze-calendar-ajax-nonce');
-        $output = '';
-        $periodRaw = sanitize_text_field($_POST['period']);
+
+        $tz = wp_timezone();
+
+        $periodRaw = sanitize_text_field($_POST['period'] ?? '');
         $period = explode('-', $periodRaw);
-        $layout = sanitize_text_field($_POST['layout']);
-        $aboLink = intval($_POST['abolink']) == 1 ? true : false;
-        if (count($period) == 3) {
+
+        $layout = sanitize_text_field($_POST['layout'] ?? 'full');
+        $aboLink = ((int) ($_POST['abolink'] ?? 0)) === 1;
+
+        $direction = sanitize_text_field($_POST['direction'] ?? 'next');
+
+        $year = 0;
+        $month = '';
+        $day = '';
+
+        if (count($period) === 3) {
             // day view
-            $day = (int)$period[2];
-            $month = (int)$period[1];
-            $year = (int)$period[0];
-            switch ($_POST['direction']) {
-                case 'prev':
-                    $date = date('Y-m-d', strtotime($periodRaw . ' -1 day'));
-                    $day = date('d', strtotime($periodRaw . ' -1 day'));
-                    break;
-                case 'next':
-                default:
-                    $date = date('Y-m-d', strtotime($periodRaw . ' +1 day'));
-                    $day = date('d', strtotime($periodRaw . ' +1 day'));
-                    break;
-            }
-            $startObj = date_create($date);
-            $endObj = $startObj;
-        } elseif (count($period) == 2) {
+            $base = new \DateTimeImmutable(sprintf('%04d-%02d-%02d 00:00:00', (int)$period[0], (int)$period[1], (int)$period[2]), $tz);
+            $base = $base->modify($direction === 'prev' ? '-1 day' : '+1 day');
+
+            $year  = (int) $base->format('Y');
+            $month = (int) $base->format('m');
+            $day   = (int) $base->format('d');
+
+            $startObj = $base;
+            $endObj   = $base->modify('+1 day')->modify('-1 second'); // end of day
+
+        } elseif (count($period) === 2) {
             // month view
-            $day = '';
-            $month = (int)$period[1];
-            $year = (int)$period[0];
-            switch ($month) {
-                case 0:
-                    $month = '';
-                    // $year = $year;
-                    break;
-                case 1:
-                    $month += ($_POST['direction'] == 'next' ? 1 : 11);
-                    $year += ($_POST['direction'] == 'next' ? 0 : -1);
-                    break;
-                case 12:
-                    $month += ($_POST['direction'] == 'next' ? -11 : -1);
-                    $year += ($_POST['direction'] == 'next' ? 1 : 0);
-                    break;
-                default:
-                    $month += ($_POST['direction'] == 'next' ? 1 : -1);
-                    // $year = $year;
-                    break;
-            }
-            $monthName = strtolower(date("F", mktime(0, 0, 0, $month, 1)));
-            $startObj = date_create('first day of ' . $monthName . ' ' . $year);
-            $endObj = date_create('last day of ' . $monthName . ' ' . $year);
+            $base = new \DateTimeImmutable(sprintf('%04d-%02d-01 00:00:00', (int)$period[0], (int)$period[1]), $tz);
+            $base = $base->modify($direction === 'prev' ? '-1 month' : '+1 month');
+
+            $year  = (int) $base->format('Y');
+            $month = (int) $base->format('m');
+            $day   = '';
+
+            $startObj = $base;
+            $endObj   = $base->modify('last day of this month')->setTime(23, 59, 59);
         } else {
             // year view
-            $day = '';
+            $baseYear = (int) ($period[0] ?? 0);
+            $year = $baseYear + ($direction === 'prev' ? -1 : 1);
+
             $month = '';
-            $year = (int)$period[0];
-            $year += ($_POST['direction'] == 'next' ? 1 : -1);
-            $startObj = date_create('first day of january' . $year);
-            $endObj = date_create('last day of december ' . $year);
+            $day   = '';
+
+            $startObj = new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $year), $tz);
+            $endObj   = new \DateTimeImmutable(sprintf('%04d-12-31 23:59:59', $year), $tz);
         }
-        //$endObj->add(new DateInterval('PT23H59M59S'));
-        $endTS = $endObj->getTimestamp();
+
         $startTS = $startObj->getTimestamp();
-        // Get events in calendar period
+        $endTS   = $endObj->getTimestamp();
+
         $args = [
-            'post_type' => CalendarEvent::POST_TYPE,
+            'post_type'      => CalendarEvent::POST_TYPE,
             'posts_per_page' => -1,
-            'meta_query' => [
+            'meta_query'     => [
                 'relation' => 'OR',
                 [
-                    'key' => 'event-lastdate',
-                    'compare' => 'NOT EXISTS'
+                    'key'     => 'event-lastdate',
+                    'compare' => 'NOT EXISTS',
                 ],
                 [
-                    'key' => 'event-lastdate',
-                    'value' => $startTS,
-                    'compare' => '>='
+                    'key'     => 'event-lastdate',
+                    'value'   => $startTS,
+                    'compare' => '>=',
                 ],
             ],
         ];
-        $taxQueryBase64 = '';
-        if ($_POST['taxquery'] != '') {
-            $taxQueryBase64 = sanitize_text_field($_POST['taxquery']);
-            $taxQueryJSON = base64_decode($taxQueryBase64);
-            $taxQuery = json_decode($taxQueryJSON, true);
+
+        $taxQuery = [];
+        $taxQueryBase64 = sanitize_text_field($_POST['taxquery'] ?? '');
+        if ($taxQueryBase64 !== '') {
+            $taxQueryJSON = base64_decode($taxQueryBase64, true);
+            $decoded = $taxQueryJSON ? json_decode($taxQueryJSON, true) : null;
+            if (is_array($decoded)) {
+                $taxQuery = $decoded;
+            }
         }
-        if ($taxQuery) {
-            $taxQuery = array_merge(['relation' => 'AND'], $taxQuery);
-            $args = array_merge($args, ['tax_query' => $taxQuery]);
+
+        if (!empty($taxQuery)) {
+            $args['tax_query'] = array_merge(['relation' => 'AND'], $taxQuery);
         }
+
         $events = get_posts($args);
 
-        $eventsArray = Utils::buildEventsArray($events, date('Y-m-d', $startTS), (isset($endTS) ? date('Y-m-d', $endTS) : NULL));
+        $eventsArray = Utils::buildEventsArray(
+            $events,
+            wp_date('Y-m-d', $startTS, $tz),
+            wp_date('Y-m-d', $endTS, $tz)
+        );
 
-        $output .= self::BuildCalendar($year, $month, $day, $eventsArray, $layout, true, $taxQuery, $aboLink);
+        $output = self::buildCalendar($year, $month === '' ? '' : (int)$month, $day === '' ? '' : (int)$day, $eventsArray, $layout, true, $taxQuery, $aboLink);
+
         echo $output;
         wp_die();
     }

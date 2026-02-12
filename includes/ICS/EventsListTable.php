@@ -6,6 +6,9 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\CPT\CalendarFeed;
 
+/**
+ * Class to create a list table of events (ICS-Feed).
+ */
 class EventsListTable extends \WP_List_Table
 {
     public function __construct()

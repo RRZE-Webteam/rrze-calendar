@@ -195,29 +195,24 @@ class ICS
      */
     private function split(string $value): string
     {
-        // Newlines need to be converted to literal \n
         $value = str_replace("\n", "\\n", str_replace("\r\n", "\n", $value));
-
-        // Get number of bytes
         $length = strlen($value);
 
+        if ($length <= 75) {
+            return $value;
+        }
+
         $output = '';
+        $start = 0;
 
-        if ($length > 75) {
-            $start = 0;
+        while ($start < $length) {
+            $cut = mb_strcut($value, $start, self::LINE_LENGTH, 'UTF-8');
+            $output .= $cut;
+            $start += strlen($cut);
 
-            while ($start < $length) {
-                $cut = mb_strcut($value, $start, self::LINE_LENGTH, 'UTF-8');
-                $output .= $cut;
-                $start = $start + strlen($cut);
-
-                // Add space if not last line
-                if ($start < $length) {
-                    $output .= self::CRLF . ' ';
-                }
+            if ($start < $length) {
+                $output .= self::CRLF . ' ';
             }
-        } else {
-            $output = $value;
         }
 
         return $output;

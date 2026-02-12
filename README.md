@@ -1,17 +1,39 @@
-# RRZE Calendar
+# [![Aktuelle Version](https://img.shields.io/github/package-json/v/rrze-webteam/rrze-calendar/main?label=Version)](https://github.com/RRZE-Webteam/rrze-calendar)
+[![Release Version](https://img.shields.io/github/v/release/rrze-webteam/rrze-calendar?label=Release+Version)](https://github.com/rrze-webteam/rrze-calendar/releases/)
+[![GitHub License](https://img.shields.io/github/license/rrze-webteam/rrze-calendar)](https://github.com/RRZE-Webteam/rrze-calendar)
+[![GitHub issues](https://img.shields.io/github/issues/RRZE-Webteam/rrze-calendar)](https://github.com/RRZE-Webteam/rrze-calendar/issues)
 
-## Wordpress-Plugin
+# RRZE Calendar
 
 Verwaltung und Darstellung von Veranstaltungen: 
 * Erstellung und Verwaltung von Veranstaltungen direkt in WordPress
 * Import und Veröffentlichung öffentlicher Veranstaltungen der FAU sowie anderer Quellen, die das iCalendar-Datenformat unterstützen.
 * Einbindung in die Website als Block oder Shortcode
 
+
+
+## Contributors
+
+* RRZE-Webteam, http://www.rrze.fau.de 
+
+## Copyright
+
+GNU General Public License (GPL) Version 3
+
+
+## Feedback
+
+* https://github.com/RRZE-Webteam/rrze-calendar/issues
+* webmaster@rrze.fau.de
+
+## Documentation
+
+See documenation at https://www.wp.rrze.fau.de
+
+
 ### Einstellungsmenü
 
 Kalender › Einstellungen
-
-## Shortcodes
 
 ### Termine-Shortcode
 

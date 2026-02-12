@@ -6,8 +6,8 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
-use RRZE\Calendar\Vendor\Dependencies\ICal\ICal;
-use RRZE\Calendar\Vendor\Dependencies\RRule\RRule;
+use ICal\ICal;
+use RRule\RRule;
 use function RRZE\Calendar\plugin;
 
 /**
@@ -46,7 +46,7 @@ class Export
     {
         $plugin  = isset($_GET['ical-plugin']) ? sanitize_title((string) $_GET['ical-plugin']) : '';
         $action  = isset($_GET['action']) ? sanitize_text_field((string) $_GET['action']) : '';
-        $filename = isset($_GET['filename']) ? sanitize_file_name((string) $_GET['filename']) : '';
+        $filename = isset($_GET['filename']) ? sanitize_title((string) $_GET['filename']) : '';
 
         // Default filename falls back to site host slug if not matching.
         $urlHost = sanitize_title((string) parse_url(site_url(), PHP_URL_HOST));
@@ -154,8 +154,8 @@ class Export
             $endTs   = isset($meta['end'][0])   ? (int) $meta['end'][0]   : 0;
 
             // Convert to UTC ISO-like strings the ICS builder consumes
-            $dtstart = $startTs > 0 ? get_gmt_from_date(wp_date('Y-m-d H:i:s', $startTs), 'Y-m-d H:i:s') : '';
-            $dtend   = $endTs > 0   ? get_gmt_from_date(wp_date('Y-m-d H:i:s', $endTs),   'Y-m-d H:i:s') : '';
+            $dtstart = $startTs > 0 ? Utils::timestampToIcsUtc($startTs) : '';
+            $dtend = $endTs > 0 ? Utils::timestampToIcsUtc($endTs) : '';
 
             $args = [
                 'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
@@ -315,7 +315,7 @@ class Export
     private function stream(string $filename): void
     {
         $charset = get_option('blog_charset') ?: 'UTF-8';
-        $safe = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $filename) ?: 'calendar';
+        $safe = sanitize_title($filename) ?: 'calendar';
         $file = $safe . '.ics';
 
         // Headers
@@ -355,7 +355,7 @@ class Export
         $qArgs = [
             'ical-plugin' => sanitize_title(plugin()->getSlug()),
             'action'      => 'export',
-            'filename'    => sanitize_file_name($filename),
+            'filename'    => $filename,
         ];
 
         // Append optional filters as CSV

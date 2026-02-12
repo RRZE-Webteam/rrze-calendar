@@ -35,11 +35,13 @@ class Events
         $args = [
             'numberposts' => -1,
             'post_type'   => CalendarFeed::POST_TYPE,
-            'post_status' => ['publish', 'future', 'draft', 'pending', 'private', 'trash']
+            'post_status' => ['publish', 'future', 'draft', 'pending', 'private', 'trash'],
         ];
-        if (!empty($postIn)) {
+
+        if (! empty($postIn)) {
             $args = array_merge($args, ['post__in' => $postIn]);
         }
+
         return get_posts($args);
     }
 
@@ -47,10 +49,11 @@ class Events
     {
         $events = Import::getEvents($postId, $cache, $pastDays, $limitDays);
 
-        $error = !$events ? __('No events found.', 'rrze-calendar') : '';
-        $items = !empty($events['events']) ? $events['events'] : [];
-        $meta = !empty($events['meta']) ? $events['meta'] : [];
+        $error = ! $events ? __('No events found.', 'rrze-calendar') : '';
+        $items = ! empty($events['events']) ? $events['events'] : [];
+        $meta  = ! empty($events['meta']) ? $events['meta'] : [];
 
+        // Store last fetch time in GMT (2nd param true => GMT date)
         update_post_meta($postId, CalendarFeed::FEED_DATETIME, current_time('mysql', true));
         update_post_meta($postId, CalendarFeed::FEED_ERROR, $error);
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, $items);
@@ -58,35 +61,53 @@ class Events
     }
 
     /**
-     * Get feed items
+     * Get ICS feed items
      *
-     * @param integer $postId
-     * @param integer $pastDays
-     * @param integer $limitDays
-     * @return void
+     * @param int $postId Feed Post ID
+     * @param int $pastDays
+     * @param int $limitDays
+     * @return array
      */
     private static function getItems(int $postId, int $pastDays, int $limitDays)
     {
         $feedItems = [];
+
         if (
             get_post_status($postId) !== 'publish'
-            || !$items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
+            || ! $items = get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true)
         ) {
             return $feedItems;
         }
+
         $feedItems['events'] = [];
-        $feedItems['tz'] = get_option('timezone_string');
+        $feedItems['tz']     = get_option('timezone_string');
 
         // Set display date range.
-        $pastDays = abs($pastDays);
+        $pastDays  = abs($pastDays);
         $limitDays = abs($limitDays);
-        $startDate = date('Ymd', current_time('timestamp'));
-        $firstDate = Utils::dateFormat('Ymd', $startDate, null, '-' . $pastDays + 30 . ' days');
-        $limitDate = Utils::dateFormat('Ymd', $startDate, null, '+' . ($limitDays + 7) . ' days');
 
-        // Set earliest and latest dates
+        $startTimestamp = current_time('timestamp');
+        $startDate      = wp_date('Ymd', $startTimestamp);
+
+        // IMPORTANT: fix PHP operator precedence by building proper relative strings.
+        // Previously: '-' . $pastDays + 30 . ' days' → produced nonsense.
+        $firstDate = Utils::dateFormat(
+            'Ymd',
+            $startDate,
+            null,
+            sprintf('-%d days', $pastDays + 30)
+        );
+
+        $limitDate = Utils::dateFormat(
+            'Ymd',
+            $startDate,
+            null,
+            sprintf('+%d days', $limitDays + 7)
+        );
+
+        // Set earliest and latest dates (YYYYMM)
         $feedItems['earliest'] = substr($firstDate, 0, 6);
-        $feedItems['latest'] = substr($limitDate, 0, 6);
+        $feedItems['latest']   = substr($limitDate, 0, 6);
 
         // Get timezone
         $urlTz = wp_timezone();
@@ -104,7 +125,7 @@ class Events
         // Sort events and split into year/month/day groups
         ksort($feedItems['events']);
 
-        foreach ((array)$feedItems['events'] as $date => $events) {
+        foreach ((array) $feedItems['events'] as $date => $events) {
             // Only reorganize dates that are in the proper date range
             if ($date >= $firstDate && $date <= $limitDate) {
                 // Get the date's events in order
@@ -114,9 +135,10 @@ class Events
                 $events = self::fixRecurrenceExceptions($events);
 
                 // Insert the date's events into the year/month/day hierarchical array
-                $year = substr($date, 0, 4);
+                $year  = substr($date, 0, 4);
                 $month = substr($date, 4, 2);
-                $day = substr($date, 6, 2);
+                $day   = substr($date, 6, 2);
+
                 $feedItems['events'][$year][$month][$day] = $events;
             }
 
@@ -124,20 +146,22 @@ class Events
             unset($feedItems['events'][$date]);
         }
 
-        // Add empty event arrays
+        // Add empty event arrays for months in range
         for ($i = substr($firstDate, 0, 6); $i <= substr($limitDate, 0, 6); $i++) {
             $Y = substr($i, 0, 4);
             $m = substr($i, 4, 2);
-            if (intval($m) < 1 || intval($m) > 12) {
+            $mi = (int) $m;
+
+            if ($mi < 1 || $mi > 12) {
                 continue;
             }
-            if (!isset($feedItems['events'][$Y][$m])) {
+            if (! isset($feedItems['events'][$Y][$m])) {
                 $feedItems['events'][$Y][$m] = null;
             }
         }
 
         // Sort events
-        foreach (array_keys((array)$feedItems['events']) as $keyYear) {
+        foreach (array_keys((array) $feedItems['events']) as $keyYear) {
             ksort($feedItems['events'][$keyYear]);
         }
         ksort($feedItems['events']);
@@ -147,144 +171,161 @@ class Events
 
     private static function assembleEvents($postId, $event, $eventKey, $urlTz, &$feedItems)
     {
-        // Set start and end dates for event
+        // Set start and end dates for event (Ymd in WP timezone)
         $dtstartDate = wp_date('Ymd', $event->dtstart_array[2], $urlTz);
+
         // Conditional is for events that are missing DTEND altogether
-        $dtendDate = wp_date('Ymd', (!isset($event->dtend_array[2]) ? $event->dtstart_array[2] : $event->dtend_array[2]), $urlTz);
+        $dtendTimestamp = isset($event->dtend_array[2]) ? $event->dtend_array[2] : $event->dtstart_array[2];
+        $dtendDate      = wp_date('Ymd', $dtendTimestamp, $urlTz);
 
         // All-day events
-        if (strlen($event->dtstart) == 8 || (strpos($event->dtstart, 'T000000') !== false && strpos($event->dtend, 'T000000') !== false)) {
+        if (
+            strlen($event->dtstart) == 8
+            || (strpos($event->dtstart, 'T000000') !== false && strpos($event->dtend, 'T000000') !== false)
+        ) {
             $dtstartTime = null;
-            $dtendTime = null;
-            $allDay = true;
-        }
-        // Start/end times
-        else {
+            $dtendTime   = null;
+            $allDay      = true;
+        } else {
+            // Start/end times (His in WP timezone)
             $dtstartTime = wp_date('His', $event->dtstart_array[2], $urlTz);
-            // Conditional is for events that are missing DTEND altogether
-            $dtendTime = wp_date('His', (!isset($event->dtend_array[2]) ? $event->dtstart_array[2] : $event->dtend_array[2]), $urlTz);
-            $allDay = false;
+            $dtendTime   = wp_date('His', $dtendTimestamp, $urlTz);
+            $allDay      = false;
         }
 
         // Workaround for events in feeds that do not contain an end date/time
         if (empty($dtendDate)) {
-            $dtendDate = isset($dtstartDate) ? $dtstartDate : null;
+            $dtendDate = $dtstartDate ?: null;
         }
         if (empty($dtendTime)) {
-            $dtendTime = isset($dtstartTime) ? $dtstartTime : null;
+            $dtendTime = $dtstartTime ?: null;
         }
 
         // Summary (Title)
-        $summary = empty($event->summary) ?: $event->summary;
+        // FIX: original code used "empty($event->summary) ?: $event->summary", which returns boolean true on empty.
+        $summary = ! empty($event->summary) ? $event->summary : '';
 
-        // Get the terms from the category
+        // Get the terms from the category (top-level only)
         $categories = [];
-        $terms = wp_get_post_terms(
+        $terms      = wp_get_post_terms(
             $postId,
             CalendarEvent::TAX_CATEGORY,
             [
                 'fields' => 'ids',
-                'parent' => 0
+                'parent' => 0,
             ]
         );
-        if (!empty($terms) && !is_wp_error($terms)) {
+        if (! empty($terms) && ! is_wp_error($terms)) {
             $categories = [$terms[0]];
         }
 
         // Get the terms from the tag
-        $tags = [];
+        $tags  = [];
         $terms = wp_get_post_terms(
             $postId,
             CalendarEvent::TAX_TAG
         );
-        if (!empty($terms) && !is_wp_error($terms)) {
+        if (! empty($terms) && ! is_wp_error($terms)) {
             foreach ($terms as $term) {
-                $tags[] = $term->id;
+                // FIX: use term_id instead of id
+                $tags[] = $term->term_id;
             }
         }
 
         // General event item details (regardless of all-day/start/end times)
         $eventItem = [
-            'post_id' => $postId,
-            'feed_url' => get_post_meta($postId, CalendarFeed::FEED_URL),
-            'timezone' => $urlTz->getName(),
-            'summary' => Utils::translateOutlookSummaryToGerman($summary),
-            'categories' => $categories,
-            'tags' => $tags,
-            'uid' => $event->uid,
-            'dtstart_date' => !empty($dtstartDate) ? $dtstartDate : '',
-            'dtstart_time' => !empty($dtstartTime) ? $dtstartTime : '',
-            'dtend_date' => !empty($dtendDate) ? $dtendDate : '',
-            'dtend_time' => !empty($dtendTime) ? $dtendTime : '',
-            'description' => $event->description,
-            'location' => $event->location,
-            'organizer' => $event->organizer ? $event->organizer_array : '',
-            'url' => !is_null($event->url) ? $event->url : '',
-            'rrule' => !is_null($event->rrule) ? $event->rrule : '',
-            'readable_rrule' => !is_null($event->rrule) ? Utils::humanReadableRecurrence($event->rrule) : '',
-            'exdate_array' => !empty($event->exdate_array) ? $event->exdate_array : [],
-            'rdate_array' => !empty($event->rdate_array) ? $event->rdate_array : [],
+            'post_id'        => $postId,
+            'feed_url'       => get_post_meta($postId, CalendarFeed::FEED_URL, true),
+            'timezone'       => $urlTz->getName(),
+            'summary'        => Utils::translateOutlookSummaryToGerman($summary),
+            'categories'     => $categories,
+            'tags'           => $tags,
+            'uid'            => $event->uid,
+            'dtstart_date'   => ! empty($dtstartDate) ? $dtstartDate : '',
+            'dtstart_time'   => ! empty($dtstartTime) ? $dtstartTime : '',
+            'dtend_date'     => ! empty($dtendDate) ? $dtendDate : '',
+            'dtend_time'     => ! empty($dtendTime) ? $dtendTime : '',
+            'description'    => $event->description,
+            'location'       => $event->location,
+            'organizer'      => $event->organizer ? $event->organizer_array : '',
+            'url'            => $event->url ?? '',
+            'rrule'          => $event->rrule ?? '',
+            'readable_rrule' => $event->rrule ? Utils::humanReadableRecurrence($event->rrule) : '',
+            'exdate_array'   => ! empty($event->exdate_array) ? $event->exdate_array : [],
+            'rdate_array'    => ! empty($event->rdate_array) ? $event->rdate_array : [],
         ];
 
         // Events with different start and end dates
         if (
             $dtendDate != $dtstartDate &&
             // Events that are NOT multiday, but end at midnight of the start date!
-            !($dtendDate == Utils::dateFormat('Ymd', $dtstartDate, $urlTz, '+1 day') && $dtendTime == '000000')
+            ! (
+                $dtendDate == Utils::dateFormat('Ymd', $dtstartDate, $urlTz, '+1 day')
+                && $dtendTime == '000000'
+            )
         ) {
             $loopDate = $dtstartDate;
+
             while ($loopDate <= $dtendDate) {
                 // Classified as an all-day event and we've hit the end date
                 if ($allDay && $loopDate == $dtendDate) {
                     break;
                 }
+
                 // Multi-day events may be given with end date/time as midnight of the NEXT day
-                $actualEndDate = (!empty($allDay) && empty($dtendTime))
+                $actualEndDate = (! empty($allDay) && empty($dtendTime))
                     ? Utils::dateFormat('Ymd', $dtendDate, $urlTz, '-1 day')
                     : $dtendDate;
+
                 if ($dtstartDate == $actualEndDate) {
                     $feedItems['events'][$dtstartDate]['all-day'][] = $eventItem;
                     break;
                 }
+
                 // Get full date/time range of multi-day event
                 $eventItem['multiday'] = [
-                    'event_key' => $eventKey,
+                    'event_key'  => $eventKey,
                     'date_start' => $dtstartDate,
                     'start_time' => $dtstartTime,
-                    'date_end' => $actualEndDate,
-                    'end_time' => $dtendTime,
-                    'all_day' => $allDay,
+                    'date_end'   => $actualEndDate,
+                    'end_time'   => $dtendTime,
+                    'all_day'    => $allDay,
                 ];
+
                 // Classified as an all-day event, or we're in the middle of the range -- treat as regular all-day event
                 // For all-day events, $dtendDate is midnight on the date after the event ends
                 if ($allDay || ($loopDate != $dtstartDate && $loopDate != $dtendDate)) {
                     $eventItem['multiday']['position'] = 'middle';
+
                     if ($loopDate == $dtstartDate) {
                         $eventItem['multiday']['position'] = 'first';
                     } elseif ($loopDate == $actualEndDate) {
                         $eventItem['multiday']['position'] = 'last';
                     }
+
                     $eventItem['start'] = $eventItem['end'] = null;
                     $feedItems['events'][$loopDate]['all-day'][] = $eventItem;
                 }
                 // First date in range: show start time
                 elseif ($loopDate == $dtstartDate) {
-                    $eventItem['start'] = Utils::timeFormat($dtstartTime);
-                    $eventItem['end'] = null;
-                    $eventItem['multiday']['position'] = 'first';
+                    $eventItem['start']                    = Utils::timeFormat($dtstartTime);
+                    $eventItem['end']                      = null;
+                    $eventItem['multiday']['position']     = 'first';
                     $feedItems['events'][$loopDate]['t' . $dtstartTime][] = $eventItem;
                 }
                 // Last date in range: show end time
                 elseif ($loopDate == $actualEndDate) {
                     // If event ends at midnight, skip
-                    if (!empty($dtendTime) && $dtendTime != '000000') {
-                        $eventItem['sublabel'] = __('Ends', 'rrze-newsletter') . ' ' . Utils::timeFormat($dtendTime);
-                        $eventItem['start'] = null;
-                        $eventItem['end'] = Utils::timeFormat($dtendTime);
-                        $eventItem['multiday']['position'] = 'last';
+                    if (! empty($dtendTime) && $dtendTime != '000000') {
+                        // FIX: use correct textdomain
+                        $eventItem['sublabel']                = __('Ends', 'rrze-calendar') . ' ' . Utils::timeFormat($dtendTime);
+                        $eventItem['start']                    = null;
+                        $eventItem['end']                      = Utils::timeFormat($dtendTime);
+                        $eventItem['multiday']['position']     = 'last';
                         $feedItems['events'][$loopDate]['t' . $dtendTime][] = $eventItem;
                     }
                 }
+
                 $loopDate = Utils::dateFormat('Ymd', $loopDate, $urlTz, '+1 day');
             }
         }
@@ -295,27 +336,34 @@ class Events
         // Events with start/end times
         else {
             $eventItem['start'] = Utils::timeFormat($dtstartTime);
-            $eventItem['end'] = Utils::timeFormat($dtendTime);
+            $eventItem['end']   = Utils::timeFormat($dtendTime);
             $feedItems['events'][$dtstartDate]['t' . $dtstartTime][] = $eventItem;
         }
     }
 
+    /**
+     * Get the list of events from ICS Feed to be displayed in the list table.
+     * 
+     * @param string $searchTerm Search term in event titles
+     * @return array
+     */
     public static function getListTableData(string $searchTerm = '')
     {
-        $items = [];
+        $items  = [];
         $postId = 0;
-        $screen = get_current_screen();
+
+        $screen   = get_current_screen();
         $screenId = $screen ? $screen->id : '';
 
         if ($screenId == CalendarFeed::POST_TYPE) {
             global $post;
             $postType = get_post_type($post);
             if ($postType === CalendarFeed::POST_TYPE) {
-                $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
-                $pastDays = absint($pastDays) + 30;
+                $pastDays  = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+                $pastDays  = absint($pastDays) + 30;
                 $limitDays = self::$limitDays + 7;
-                $postId = $post->ID;
-                $items = self::getItems($postId, $pastDays, $limitDays);
+                $postId    = $post->ID;
+                $items     = self::getItems($postId, $pastDays, $limitDays);
             }
         }
 
@@ -325,27 +373,28 @@ class Events
     /**
      * Get the list of events to be displayed when the Feed is edited.
      *
-     * @param integer $postId Post ID
-     * @param array $items Feed items splitet into year/month/day groups
+     * @param int    $postId   Post ID
+     * @param array  $items    Feed items split into year/month/day groups
      * @param string $searchTerm Search term in event titles
      * @return array
      */
     public static function getListData(int $postId, array $items, string $searchTerm = ''): array
     {
-        $data = [];
+        $data       = [];
         $dateFormat = __('m-d-Y', 'rrze-calendar');
 
-        $i = 0;
-        $multidayEventKeysUsed = [];
+        $i                        = 0;
+        $multidayEventKeysUsed    = [];
 
         if (empty($items) || empty($items['events'])) {
             return $data;
         }
 
-        foreach (array_keys((array)$items['events']) as $year) {
+        foreach (array_keys((array) $items['events']) as $year) {
             for ($m = 1; $m <= 12; $m++) {
-                $month = $m < 10 ? '0' . $m : '' . $m;
-                $ym = $year . $month;
+                $month = $m < 10 ? '0' . $m : (string) $m;
+                $ym    = $year . $month;
+
                 if ($ym < $items['earliest']) {
                     continue;
                 }
@@ -354,25 +403,23 @@ class Events
                 }
 
                 if (isset($items['events'][$year][$month])) {
-
-                    foreach ((array)$items['events'][$year][$month] as $day => $dayEvents) {
+                    foreach ((array) $items['events'][$year][$month] as $day => $dayEvents) {
                         // Pull out multi-day events and list them separately first
-                        foreach ((array)$dayEvents as $time => $events) {
-
-                            foreach ((array)$events as $eventKey => $event) {
+                        foreach ((array) $dayEvents as $time => $events) {
+                            foreach ((array) $events as $eventKey => $event) {
                                 if (empty($event['multiday'])) {
                                     continue;
                                 }
 
-                                if (in_array($event['multiday']['event_key'], $multidayEventKeysUsed)) {
+                                if (in_array($event['multiday']['event_key'], $multidayEventKeysUsed, true)) {
                                     continue;
                                 }
 
                                 // Event meta
-                                $data[$i]['post_id'] = $event['post_id'];
+                                $data[$i]['post_id']  = $event['post_id'];
                                 $data[$i]['feed_url'] = $event['feed_url'];
                                 $data[$i]['timezone'] = $event['timezone'];
-                                $data[$i]['uid'] = $event['uid'];
+                                $data[$i]['uid']      = $event['uid'];
 
                                 // Event summary (title)
                                 $summary = $event['summary'];
@@ -385,37 +432,44 @@ class Events
                                 $data[$i]['multiday'] = true;
 
                                 // Format date/time
-                                $mdDtStart = Utils::dateFormat($dateFormat, strtotime($event['multiday']['date_start']));
-                                $mdDtEnd = Utils::dateFormat($dateFormat, strtotime($event['multiday']['date_end']));
-                                $dtStart = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_start']));
-                                $dtEnd = Utils::dateFormat('Y-m-d', strtotime($event['multiday']['date_end']));
-                                if ($time != 'all-day') {
+                                $tz = wp_timezone();
+
+                                $start = new \DateTime($event['multiday']['date_start'], $tz);
+                                $end   = new \DateTime($event['multiday']['date_end'], $tz);
+
+                                $mdDtStart = $start->format('m-d-Y');
+                                $mdDtEnd   = $end->format('m-d-Y');
+
+                                $dtStart   = $start->format('Y-m-d');
+                                $dtEnd     = $end->format('Y-m-d');
+
+                                if ($time !== 'all-day') {
                                     $mdDtStart .= ', ' . Utils::timeFormat($event['multiday']['start_time']);
-                                    $mdDtEnd .= ', ' . Utils::timeFormat($event['multiday']['end_time']);
-                                    $dtStart .= ', ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
-                                    $dtEnd .= ', ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
+                                    $mdDtEnd   .= ', ' . Utils::timeFormat($event['multiday']['end_time']);
+                                    $dtStart   .= ', ' . Utils::timeFormat($event['multiday']['start_time'], 'H:i:s');
+                                    $dtEnd     .= ', ' . Utils::timeFormat($event['multiday']['end_time'], 'H:i:s');
                                 } else {
                                     $data[$i]['allday'] = true;
                                 }
 
                                 // Date/time
-                                $data[$i]['dt_start'] = $dtStart;
-                                $data[$i]['dt_end'] = $dtEnd;
+                                $data[$i]['dt_start']      = $dtStart;
+                                $data[$i]['dt_end']        = $dtEnd;
                                 $data[$i]['readable_date'] = $mdDtStart . ' &mdash; ' . $mdDtEnd;
 
                                 // RRULE/FREQ
-                                if ($event['rrule']) {
-                                    $data[$i]['rrule'] = $event['rrule'];
+                                if (! empty($event['rrule'])) {
+                                    $data[$i]['rrule']          = $event['rrule'];
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
                                 // EXDATE
-                                if (!empty($event['exdate_array'])) {
+                                if (! empty($event['exdate_array'])) {
                                     $data[$i]['exdate_array'] = $event['exdate_array'];
                                 }
 
                                 // RDATE
-                                if (!empty($event['rdate_array'])) {
+                                if (! empty($event['rdate_array'])) {
                                     $data[$i]['rdate_array'] = $event['rdate_array'];
                                 }
 
@@ -448,28 +502,20 @@ class Events
                         }
 
                         // Loop through day events
-                        foreach ((array)$dayEvents as $time => $events) {
-
-                            foreach ((array)$events as $event) {
-
-                                if (!empty($event['multiday'])) {
+                        foreach ((array) $dayEvents as $time => $events) {
+                            foreach ((array) $events as $event) {
+                                if (! empty($event['multiday'])) {
                                     continue;
                                 }
 
-                                // If it is not an all day event and limit date >= event end date then skip
-                                if (
-                                    $time !== 'all-day'
-                                    && !empty($event['end'])
-                                    && self::$limitDays >= $year . $month . $day
-                                ) {
-                                    continue;
-                                }
+                                // NOTE: old condition using self::$limitDays was bogus (mixed ints and YYYYMMDD string).
+                                // Removed because getItems() already limits the date range.
 
                                 // Event meta
-                                $data[$i]['post_id'] = $event['post_id'];
+                                $data[$i]['post_id']  = $event['post_id'];
                                 $data[$i]['feed_url'] = $event['feed_url'];
                                 $data[$i]['timezone'] = $event['timezone'];
-                                $data[$i]['uid'] = $event['uid'];
+                                $data[$i]['uid']      = $event['uid'];
 
                                 // Event summary (title)
                                 $summary = $event['summary'];
@@ -479,17 +525,19 @@ class Events
                                 $data[$i]['summary'] = $summary;
 
                                 // Date/time
-                                $mdate = Utils::dateFormat($dateFormat, $day . '-' .  $month . '-' . $year);
-                                $dtStart = Utils::dateFormat('Y-m-d', $day . '-' .  $month . '-' . $year);
-                                $dtEnd = $dtStart;
-                                $mtime = '';
+                                $mdate   = Utils::dateFormat($dateFormat, $day . '-' . $month . '-' . $year);
+                                $dtStart = Utils::dateFormat('Y-m-d', $day . '-' . $month . '-' . $year);
+                                $dtEnd   = $dtStart;
+                                $mtime   = '';
+
                                 if ($time !== 'all-day') {
-                                    if (!empty($event['start'])) {
-                                        $mtime = ' ' . $event['start'];
+                                    if (! empty($event['start'])) {
+                                        $mtime   = ' ' . $event['start'];
                                         $dtStart = $dtStart . ' ' . $event['start'];
-                                        if (!empty($event['end']) && $event['end'] != $event['start']) {
+
+                                        if (! empty($event['end']) && $event['end'] != $event['start']) {
                                             $mtime .= ' &mdash; ' . $event['end'];
-                                            $dtEnd = $dtEnd . ' ' . $event['end'];
+                                            $dtEnd  = $dtEnd . ' ' . $event['end'];
                                         } else {
                                             $dtEnd = $dtStart;
                                         }
@@ -497,23 +545,24 @@ class Events
                                 } else {
                                     $data[$i]['allday'] = true;
                                 }
-                                $data[$i]['dt_start'] = $dtStart;
-                                $data[$i]['dt_end'] = $dtEnd;
+
+                                $data[$i]['dt_start']      = $dtStart;
+                                $data[$i]['dt_end']        = $dtEnd;
                                 $data[$i]['readable_date'] = $mdate . $mtime;
 
                                 // RRULE/FREQ
-                                if ($event['rrule']) {
-                                    $data[$i]['rrule'] = $event['rrule'];
+                                if (! empty($event['rrule'])) {
+                                    $data[$i]['rrule']          = $event['rrule'];
                                     $data[$i]['readable_rrule'] = $event['readable_rrule'];
                                 }
 
                                 // EXDATE
-                                if (!empty($event['exdate_array'])) {
+                                if (! empty($event['exdate_array'])) {
                                     $data[$i]['exdate_array'] = $event['exdate_array'];
                                 }
 
                                 // RDATE
-                                if (!empty($event['rdate_array'])) {
+                                if (! empty($event['rdate_array'])) {
                                     $data[$i]['rdate_array'] = $event['rdate_array'];
                                 }
 
@@ -534,26 +583,33 @@ class Events
             }
         }
 
+        // RRULE occurrences
         $rruleEventUidUsed = [];
-        // RRULE ocurrences
-        $ocurrences = [];
+        $ocurrences        = [];
+
         foreach ($data as $key => $event) {
-            if (in_array($event['uid'], $rruleEventUidUsed) && isset($event['rrule'])) {
-                $ocurrences[$event['uid']][] = date('Y-m-d', strtotime($event['dt_start']));
+            $dt = Utils::parseAnyDatetime($event['dt_start']);
+            $dt->setTimezone(wp_timezone());
+
+            if (in_array($event['uid'], $rruleEventUidUsed, true) && isset($event['rrule'])) {
+                $ocurrences[$event['uid']][] = $dt->format('Y-m-d');
                 unset($data[$key]);
                 continue;
             }
+
             if (isset($event['rrule'])) {
-                $rruleEventUidUsed[] = $event['uid'];
-                $ocurrences[$event['uid']][] = date('Y-m-d', strtotime($event['dt_start']));
+                $rruleEventUidUsed[]        = $event['uid'];
+                $ocurrences[$event['uid']][] = $dt->format('Y-m-d');
             }
         }
+
         foreach ($data as $key => $event) {
             if (isset($ocurrences[$event['uid']]) && isset($event['rrule'])) {
                 $data[$key]['ocurrences'] = $ocurrences[$event['uid']];
             }
         }
-        $meta = get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true);
+
+        $meta                = get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true);
         $meta['event_count'] = count($data);
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
 
@@ -569,49 +625,53 @@ class Events
     private static function fixRecurrenceExceptions(array $events): array
     {
         $recurrenceExceptions = [];
+
         foreach ($events as $time => $timeEvents) {
-            if (!is_array($timeEvents)) {
+            if (! is_array($timeEvents)) {
                 continue;
             }
             foreach ($timeEvents as $teEvent) {
-                if (!empty($teEvent['recurrence_id'])) {
+                if (! empty($teEvent['recurrence_id'])) {
                     $recurrenceExceptions[$teEvent['uid']] = $time;
                 }
             }
         }
-        if (!empty($recurrenceExceptions)) {
+
+        if (! empty($recurrenceExceptions)) {
             foreach ($recurrenceExceptions as $reUid => $reTime) {
                 foreach ($events as $time => $timeEvents) {
-                    if (!is_array($timeEvents)) {
+                    if (! is_array($timeEvents)) {
                         continue;
                     }
                     foreach ($timeEvents as $te_key => $teEvent) {
                         if (empty($teEvent['recurrence_id']) && $teEvent['uid'] == $reUid) {
                             unset($events[$time][$te_key]);
-                            break (2);
+                            break 2;
                         }
                     }
                 }
             }
         }
+
         return $events;
     }
 
     /**
-     * Insert event data in the calendar event post type.
+     * Insert ICS event data in the CalendarEvent::POST_TYPE post type.
      *
-     * @param integer $postId
+     * @param int $postId
      * @return void
      */
     public static function insertData(int $postId)
     {
         $items = [];
-        $post = get_post($postId);
+        $post  = get_post($postId);
+
         if (get_post_type($post) === CalendarFeed::POST_TYPE) {
-            $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
-            $pastDays = absint($pastDays) + 30;
+            $pastDays  = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+            $pastDays  = absint($pastDays) + 30;
             $limitDays = self::$limitDays + 7;
-            $items = self::getItems($postId, $pastDays, $limitDays);
+            $items     = self::getItems($postId, $pastDays, $limitDays);
         }
 
         $items = count($items) ? self::getListData($postId, $items) : $items;
@@ -624,36 +684,37 @@ class Events
 
         foreach ($items as $event) {
             $args = [
-                'post_author' => $post->post_author,
-                'post_title' => $event['summary'],
+                'post_author'  => $post->post_author,
+                'post_title'   => $event['summary'],
                 'post_content' => '',
                 'post_excerpt' => $event['description'] ?? '',
-                'post_type' => CalendarEvent::POST_TYPE,
-                'post_status' => 'publish'
+                'post_type'    => CalendarEvent::POST_TYPE,
+                'post_status'  => 'publish',
             ];
 
             $eventId = wp_insert_post($args, false, false);
-            if (!$eventId) {
+            if (! $eventId) {
                 continue;
             }
 
             update_post_meta($eventId, 'event-uid', $event['uid']);
 
+            // Copy taxonomy terms from feed post
             $terms = get_the_terms($postId, CalendarEvent::TAX_CATEGORY);
-            if ($terms && !is_wp_error($terms)) {
+            if ($terms && ! is_wp_error($terms)) {
                 $termIds = wp_list_pluck($terms, 'term_id');
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_CATEGORY);
             }
+
             $terms = get_the_terms($postId, CalendarEvent::TAX_TAG);
-            if ($terms && !is_wp_error($terms)) {
+            if ($terms && ! is_wp_error($terms)) {
                 $termIds = wp_list_pluck($terms, 'term_id');
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
             }
 
-            $dtStart = strtotime($event['dt_start']);
-            $dtEnd = strtotime($event['dt_end']);
-            // $post_date = date('Y-m-d H:i:s', $dtStart);
-            // $post_date_gmt = get_gmt_from_date($post_date);
+            // Convert dt_start / dt_end (Y-m-d[ H:i:s]) to WP local timestamps (CMB2 compatible)
+            $dtStart = Utils::wpLocalToTimestamp((string) $event['dt_start']);
+            $dtEnd   = Utils::wpLocalToTimestamp((string) $event['dt_end']);
 
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
@@ -678,15 +739,15 @@ class Events
 
     public static function deleteEvent(int $feedId)
     {
-        $metaKey = 'ics_feed_id';
+        $metaKey   = 'ics_feed_id';
         $metaValue = $feedId;
 
         $query = new \WP_Query(
             [
-                'meta_key' => $metaKey,
-                'meta_value' => $metaValue,
-                'post_type' => CalendarEvent::POST_TYPE,
-                'posts_per_page' => -1
+                'meta_key'       => $metaKey,
+                'meta_value'     => $metaValue,
+                'post_type'      => CalendarEvent::POST_TYPE,
+                'posts_per_page' => -1,
             ]
         );
 
@@ -702,10 +763,11 @@ class Events
     public static function deleteUnlinkedEvents()
     {
         $metaKey = 'ics_feed_id';
+
         $query = new \WP_Query([
-            'meta_key' => $metaKey,
-            'post_type' => CalendarEvent::POST_TYPE,
-            'posts_per_page' => 100
+            'meta_key'       => $metaKey,
+            'post_type'      => CalendarEvent::POST_TYPE,
+            'posts_per_page' => 100,
         ]);
 
         if ($query->have_posts()) {
@@ -714,7 +776,7 @@ class Events
                 $postId = get_the_ID();
 
                 $feedId = get_post_meta($postId, $metaKey, true);
-                if (!get_post($feedId)) {
+                if (! get_post($feedId)) {
                     wp_delete_post($postId, true);
                 }
             }

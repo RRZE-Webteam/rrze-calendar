@@ -33,7 +33,6 @@ class Main
         add_filter('block_categories_all', [$this, 'blockCategory'], 10, 2);
 
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
-        add_action('wp_enqueue_scripts', [$this, 'wpEnqueueScripts']);
 
         settings()->loaded();
 
@@ -95,44 +94,6 @@ class Main
                 plugin()->getVersion(true)
             );
         }
-    }
-
-    /**
-     * Enqueue scripts and styles for the frontend.
-     * 
-     * @return void
-     */
-    public function wpEnqueueScripts()
-    {
-        wp_register_style(
-            'rrze-calendar-sc-calendar',
-            plugins_url('build/calendar.style.css', plugin()->getBasename()),
-            [],
-            plugin()->getVersion(true)
-        );
-
-        $assetFile = include(plugin()->getPath('build') . 'calendar.asset.php');
-        wp_register_script(
-            'rrze-calendar-sc-calendar',
-            plugins_url('build/calendar.js', plugin()->getBasename()),
-            $assetFile['dependencies'],
-            plugin()->getVersion(true)
-        );
-        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_i18n', array(
-            'hide_past_events' => __('Hide past events', 'rrze-calendar'),
-            'show_past_events' => __('Show past events', 'rrze-calendar'),
-        ));
-        wp_localize_script('rrze-calendar-sc-calendar', 'rrze_calendar_ajax', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('rrze-calendar-ajax-nonce'),
-        ]);
-
-        wp_register_style(
-            'rrze-calendar-sc-events',
-            plugins_url('build/events.style.css', plugin()->getBasename()),
-            [],
-            plugin()->getVersion(true)
-        );
     }
 
     /**
