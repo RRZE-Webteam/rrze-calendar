@@ -1259,13 +1259,25 @@ class Utils
      *
      * Interprets the input as local time in the WordPress timezone settings.
      *
+     * Accepts formats like:
+     * - 2025-11-14
+     * - 2025-11-14 09:00
+     * - 2025-11-14 09:00:00
+     * - 2025-11-14, 09:00
+     * - 2025-11-14T09:00
+     *
      * @param string $datetime
      * @return int
      */
     public static function wpLocalToTimestamp(string $datetime): int
     {
         $datetime = trim($datetime);
-        $datetime = str_replace('T', ' ', $datetime);
+
+        // Normalize separators
+        $datetime = str_replace(['T', ','], ' ', $datetime);
+
+        // Collapse multiple spaces
+        $datetime = preg_replace('/\s+/', ' ', $datetime);
 
         // Get WP timezone
         $tz = function_exists('wp_timezone')
@@ -1282,7 +1294,6 @@ class Utils
         $dt = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $datetime, $tz);
 
         if (!$dt) {
-            // You can replace this with logging if preferred
             return 0;
         }
 
