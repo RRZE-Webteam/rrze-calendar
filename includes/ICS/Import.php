@@ -79,14 +79,17 @@ class Import
             }
         }
 
+        // WP Timezone
+        $wpTz = wp_timezone();
+
         // ICS data is not empty
         if ($icsContent) {
             try {
                 // Parse ICS contents
                 $ICal = new ICal('ICal.ics', [
                     'defaultSpan'                 => $defaultSpan,
-                    'defaultTimeZone'             => 'UTC',
-                    'disableCharacterReplacement' => true,
+                    'defaultTimeZone'             => $wpTz->getName(),
+                    'disableCharacterReplacement' => false,
                     'filterDaysAfter'             => $filterDaysAfter,
                     'filterDaysBefore'            => $filterDaysBefore,
                     'skipRecurrence'              => false,
