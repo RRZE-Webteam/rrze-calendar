@@ -61,9 +61,9 @@ class Events
     }
 
     /**
-     * Get feed items
+     * Get ICS feed items
      *
-     * @param int $postId
+     * @param int $postId Feed Post ID
      * @param int $pastDays
      * @param int $limitDays
      * @return array
@@ -342,7 +342,7 @@ class Events
     }
 
     /**
-     * Get the list of events to be displayed in the list table.
+     * Get the list of events from ICS Feed to be displayed in the list table.
      * 
      * @param string $searchTerm Search term in event titles
      * @return array
@@ -657,7 +657,7 @@ class Events
     }
 
     /**
-     * Insert event data in the calendar event post type.
+     * Insert ICS event data in the CalendarEvent::POST_TYPE post type.
      *
      * @param int $postId
      * @return void
@@ -712,12 +712,9 @@ class Events
                 wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
             }
 
-            // Convert dt_start / dt_end (Y-m-d[ H:i:s]) to timestamps
-            $dt = new \DateTime($event['dt_start']);
-            $dtStart = $dt->getTimestamp();
-
-            $dt = new \DateTime($event['dt_end']);
-            $dtEnd = $dt->getTimestamp();
+            // Convert dt_start / dt_end (Y-m-d[ H:i:s]) to WP local timestamps (CMB2 compatible)
+            $dtStart = Utils::wpLocalToTimestamp((string) $event['dt_start']);
+            $dtEnd   = Utils::wpLocalToTimestamp((string) $event['dt_end']);
 
             add_post_meta($eventId, 'start', $dtStart, true);
             add_post_meta($eventId, 'end', $dtEnd, true);
