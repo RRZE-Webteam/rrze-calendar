@@ -3,7 +3,7 @@
     "type": "wordpress-plugin",
     "require": {
         "php": "^8.2.0",
-        "johngrogg/ics-parser": "^3.4.0",
+        "johngrogg/ics-parser": "^3.5.1",
         "rlanvin/php-rrule": "^2.5.2",
         "cmb2/cmb2": "^2.11.0"
     },
