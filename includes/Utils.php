@@ -700,7 +700,7 @@ class Utils
                 }
             } elseif ('on' == Utils::getMeta($meta, 'repeat')) {
 
-                $occurrences = Utils::makeRRuleSet($event->ID, $start, $end);
+                $occurrences = Utils::makeRRuleSet($event->ID);
 
                 // Stored as UNIX timestamp, created from WP local time (wp_timezone)
                 $endTStmp = absint(Utils::getMeta($meta, 'end'));
@@ -855,9 +855,15 @@ class Utils
 
     /**
      * Make RRuleSet.
-     * @param integer $event_id
-     * @param string $start
-     * @param string $end
+     *
+     * - Uses WP timezone consistently.
+     * - Forces RRULE dtstart as DateTime (prevents implicit UTC/default TZ surprises).
+     * - Builds EXDATE/DATE using the *same* time-of-day + timezone as the library's occurrences
+     *   (fixes 08:00 vs 09:00 mismatches around TZ/DST).
+     *
+     * @param int    $event_id
+     * @param string $start   Optional filter start (Y-m-d or Y-m-d H:i[:s])
+     * @param string $end     Optional filter end   (Y-m-d or Y-m-d H:i[:s])
      * @return array
      */
     public static function makeRRuleSet($event_id, $start = '', $end = '')
@@ -881,12 +887,20 @@ class Utils
 
         $tz = function_exists('wp_timezone') ? wp_timezone() : new \DateTimeZone(date_default_timezone_get());
 
-        $rset = new RSet();
-        $rset->addRRule($rruleArgs);
-
         // Stored as UNIX timestamp derived from WP local time
         $startTS = absint(Utils::getMeta($meta, 'start'));
-        $startTime = $startTS ? wp_date('H:i', $startTS, $tz) : '00:00';
+        if (!$startTS) {
+            return [];
+        }
+
+        // Explicit DTSTART in WP timezone (important for DST correctness)
+        $dtStartLocal = (new \DateTimeImmutable('@' . $startTS))->setTimezone($tz);
+
+        // Ensure dtstart is passed as DateTime object (rlanvin/php-rrule supports DateTime)
+        $rruleArgs['dtstart'] = $dtStartLocal;
+
+        $rset = new RSet();
+        $rset->addRRule($rruleArgs);
 
         $normalizeLines = static function ($raw): array {
             $raw = (string) $raw;
@@ -895,44 +909,53 @@ class Utils
             return array_values(array_filter($lines, static fn($v) => $v !== ''));
         };
 
-        // Exceptions (dates only, one per line) -> add time-of-day of event start
+        // Derive the "truth" (time-of-day + timezone) from actual generated occurrences.
+        // This avoids 08:00 vs 09:00 mismatches when the library interprets TZ differently.
+        $occurrencesProbe = $rset->getOccurrencesBetween($dtStartLocal, $dtStartLocal->modify('+2 days'));
+        if (!empty($occurrencesProbe) && $occurrencesProbe[0] instanceof \DateTimeInterface) {
+            $occTz   = $occurrencesProbe[0]->getTimezone();
+            $occTime = $occurrencesProbe[0]->format('H:i');
+        } else {
+            $occTz   = $tz;
+            $occTime = $dtStartLocal->format('H:i');
+        }
+
+        // Exceptions (dates only, one per line) -> add occurrence time-of-day
         $exceptionsRaw = Utils::getMeta($meta, 'exceptions');
         foreach ($normalizeLines($exceptionsRaw) as $exception) {
             // expected: Y-m-d
-            $dateTime = $exception . ' ' . $startTime; // Y-m-d H:i
-            if (self::validateDate($dateTime)) {
-                $rset->addExDate($dateTime);
+            $dateTimeStr = $exception . ' ' . $occTime; // Y-m-d H:i
+            if (self::validateDate($dateTimeStr)) {
+                $rset->addExDate(new \DateTimeImmutable($dateTimeStr, $occTz));
             }
         }
 
-        // Additions (dates only, one per line) -> add time-of-day of event start
+        // Additions (dates only, one per line) -> add occurrence time-of-day
         $additionsRaw = Utils::getMeta($meta, 'additions');
         foreach ($normalizeLines($additionsRaw) as $addition) {
-            $dateTime = $addition . ' ' . $startTime; // Y-m-d H:i
-            if (self::validateDate($dateTime)) {
-                $rset->addDate($dateTime);
+            // expected: Y-m-d
+            $dateTimeStr = $addition . ' ' . $occTime; // Y-m-d H:i
+            if (self::validateDate($dateTimeStr)) {
+                $rset->addDate(new \DateTimeImmutable($dateTimeStr, $occTz));
             }
         }
 
-        // Normalize $start / $end (UI/API inputs) to what validateDate() expects.
+        // Normalize $start / $end (UI/API inputs)
         $start = trim((string) $start);
         $end   = trim((string) $end);
 
-        // If start is only a date, set to beginning of day in local time
         if ($start !== '' && !str_contains($start, ':')) {
             $start .= ' 00:00';
         }
-
-        // If end is only a date, set to end of day so occurrences on that date are included
         if ($end !== '' && !str_contains($end, ':')) {
             $end .= ' 23:59';
         }
 
-        $start = self::validateDate($start) ? $start : '';
-        $end   = self::validateDate($end) ? $end : '';
+        $startDT = (self::validateDate($start)) ? new \DateTimeImmutable($start, $tz) : null;
+        $endDT   = (self::validateDate($end))   ? new \DateTimeImmutable($end,   $tz) : null;
 
-        if ($start !== '' || $end !== '') {
-            return $rset->getOccurrencesBetween($start, $end);
+        if ($startDT || $endDT) {
+            return $rset->getOccurrencesBetween($startDT, $endDT);
         }
 
         return $rset->getOccurrences();
