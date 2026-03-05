@@ -10,7 +10,7 @@
         "@wordpress/env": "^10.35.0",
         "@wordpress/icons": "^11.2.0",
         "@wordpress/plugins": "^7.35.0",
-        "@wordpress/scripts": "^31.0.0",
+        "@wordpress/scripts": "^31.6.0",
         "ts-loader": "latest",
         "typescript": "latest"
     },
