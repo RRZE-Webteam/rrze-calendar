@@ -13,7 +13,7 @@ if (isset($_GET['format']) && $_GET['format'] == 'embedded') {
     get_template_part('template-parts/index', 'embedded');
     return;
 }
-if ( is_active_sidebar( 'news-sidebar' ) ) {
+if ( is_active_sidebar( 'news-sidebar' ) && function_exists('fau_use_sidebar') ) {
     fau_use_sidebar(true);
 }
 get_header();
