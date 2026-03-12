@@ -24,6 +24,10 @@ class CategoryMetabox
     public static function addMetaboxes()
     {
         $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
+        if (!$taxonomy) {
+            return;
+        }
+
         add_meta_box(
             CalendarEvent::TAX_CATEGORY . 'div',
             $taxonomy->label,
@@ -31,6 +35,7 @@ class CategoryMetabox
             CalendarEvent::POST_TYPE,
             'side'
         );
+
         add_meta_box(
             CalendarEvent::TAX_CATEGORY . 'div',
             $taxonomy->label,
@@ -42,8 +47,12 @@ class CategoryMetabox
 
     public static function renderCategoryMetabox($post)
     {
-        $taxName = esc_attr(CalendarEvent::TAX_CATEGORY);
+        $taxName  = esc_attr(CalendarEvent::TAX_CATEGORY);
         $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
+
+        if (!$taxonomy) {
+            return;
+        }
 ?>
         <div id="taxonomy-<?php echo $taxName; ?>" class="categorydiv">
             <div id="<?php echo $taxName; ?>-all" class="tabs-panel">
@@ -56,13 +65,14 @@ class CategoryMetabox
                     self::termsChecklist(
                         $post->ID,
                         [
-                            'taxonomy' => $taxName
+                            'taxonomy' => $taxName,
                         ]
                     );
                     ?>
                 </ul>
             </div>
-            <?php if (current_user_can($taxonomy->cap->edit_terms)) : ?>
+
+            <?php if (!empty($taxonomy->cap->edit_terms) && current_user_can($taxonomy->cap->edit_terms)) : ?>
                 <div id="<?php echo $taxName; ?>-adder" class="wp-hidden-children">
                     <a id="<?php echo $taxName; ?>-add-toggle" href="#<?php echo $taxName; ?>-add" class="hide-if-no-js taxonomy-add-new">
                         <?php
@@ -74,9 +84,22 @@ class CategoryMetabox
                         ?>
                     </a>
                     <p id="<?php echo $taxName; ?>-add" class="category-add wp-hidden-child">
-                        <label class="screen-reader-text" for="new<?php echo $taxName; ?>"><?php echo $taxonomy->labels->add_new_item; ?></label>
-                        <input type="text" name="new<?php echo $taxName; ?>" id="new<?php echo $taxName; ?>" class="form-required form-input-tip" value="<?php echo esc_attr($taxonomy->labels->new_item_name); ?>" aria-required="true" />
-                        <input type="button" id="<?php echo $taxName; ?>-add-submit" data-wp-lists="add:<?php echo $taxName; ?>checklist:<?php echo $taxName; ?>-add" class="button category-add-submit" value="<?php echo esc_attr($taxonomy->labels->add_new_item); ?>" />
+                        <label class="screen-reader-text" for="new<?php echo $taxName; ?>">
+                            <?php echo esc_html($taxonomy->labels->add_new_item); ?>
+                        </label>
+                        <input
+                            type="text"
+                            name="new<?php echo $taxName; ?>"
+                            id="new<?php echo $taxName; ?>"
+                            class="form-required form-input-tip"
+                            value="<?php echo esc_attr($taxonomy->labels->new_item_name); ?>"
+                            aria-required="true" />
+                        <input
+                            type="button"
+                            id="<?php echo $taxName; ?>-add-submit"
+                            data-wp-lists="add:<?php echo $taxName; ?>checklist:<?php echo $taxName; ?>-add"
+                            class="button category-add-submit"
+                            value="<?php echo esc_attr($taxonomy->labels->add_new_item); ?>" />
                         <?php wp_nonce_field('add-' . $taxName, '_ajax_nonce-add-' . $taxName, false); ?>
                         <span id="<?php echo $taxName; ?>-ajax-response"></span>
                     </p>
@@ -88,9 +111,10 @@ class CategoryMetabox
 
     public static function filterTermsCkecklistArgs($args)
     {
-        if (isset($args['taxonomy']) && CalendarEvent::TAX_CATEGORY == $args['taxonomy']) {
+        if (isset($args['taxonomy']) && CalendarEvent::TAX_CATEGORY === $args['taxonomy']) {
             $args['walker'] = new CategoryRadiolistWalker;
         }
+
         return $args;
     }
 
@@ -114,20 +138,28 @@ class CategoryMetabox
             $walker = $parsedArgs['walker'];
         }
 
-        $taxonomy = $parsedArgs['taxonomy'];
+        $taxonomy           = $parsedArgs['taxonomy'];
         $descendantsAndSelf = (int) $parsedArgs['descendants_and_self'];
 
         $args = ['taxonomy' => $taxonomy];
 
         $tax = get_taxonomy($taxonomy);
-        $args['disabled'] = !current_user_can($tax->cap->assign_terms);
+        if (!$tax || empty($tax->cap->assign_terms)) {
+            $args['disabled'] = true;
+        } else {
+            $args['disabled'] = !current_user_can($tax->cap->assign_terms);
+        }
 
         $args['list_only'] = !empty($parsedArgs['list_only']);
 
         if (is_array($parsedArgs['selected_cats'])) {
             $args['selected_cats'] = array_map('intval', $parsedArgs['selected_cats']);
         } elseif ($postId) {
-            $args['selected_cats'] = wp_get_object_terms($postId, $taxonomy, array_merge($args, ['fields' => 'ids']));
+            $args['selected_cats'] = wp_get_object_terms(
+                $postId,
+                $taxonomy,
+                array_merge($args, ['fields' => 'ids'])
+            );
         } else {
             $args['selected_cats'] = [];
         }
@@ -156,8 +188,11 @@ class CategoryMetabox
                     'hide_empty'   => 0,
                 ]
             );
+
             $self = get_term($descendantsAndSelf, $taxonomy);
-            array_unshift($categories, $self);
+            if ($self && !is_wp_error($self)) {
+                array_unshift($categories, $self);
+            }
         } else {
             $categories = (array) get_terms(
                 [
@@ -172,19 +207,23 @@ class CategoryMetabox
         if ($parsedArgs['checked_ontop']) {
             // Post-process $categories rather than adding an exclude to the get_terms() query
             // to keep the query the same across all posts (for any query cache).
-            $checked_categories = [];
-            $keys = array_keys($categories);
+            $checkedCategories = [];
+            $keys              = array_keys($categories);
 
             foreach ($keys as $k) {
-                if (in_array($categories[$k]->term_id, $args['selected_cats'], true)) {
-                    $checked_categories[] = $categories[$k];
+                if (
+                    isset($categories[$k]->term_id)
+                    && in_array($categories[$k]->term_id, $args['selected_cats'], true)
+                ) {
+                    $checkedCategories[] = $categories[$k];
                     unset($categories[$k]);
                 }
             }
 
             // Put checked categories on top.
-            $output .= $walker->walk($checked_categories, 0, $args);
+            $output .= $walker->walk($checkedCategories, 0, $args);
         }
+
         // Then the rest of them.
         $output .= $walker->walk($categories, 0, $args);
 
@@ -197,50 +236,74 @@ class CategoryMetabox
 
     public static function addTerm()
     {
-        $action = $_POST['action'];
-        $tax_name = substr($action, 4);
-        $taxonomy = get_taxonomy($tax_name);
+        $action = isset($_POST['action']) ? sanitize_key(wp_unslash($_POST['action'])) : '';
+        if (empty($action) || strpos($action, 'add-') !== 0) {
+            wp_die(0);
+        }
+
+        $taxName  = substr($action, 4);
+        $taxonomy = get_taxonomy($taxName);
+
+        if (!$taxonomy) {
+            wp_die(0);
+        }
+
         check_ajax_referer($action, '_ajax_nonce-add-' . $taxonomy->name);
-        if (current_user_can($taxonomy->cap->edit_terms)) {
-            $names = explode(',', $_POST['new' . $taxonomy->name]);
 
-            foreach ($names as $catName) {
-                $catName = trim($catName);
-                $category_nicename = sanitize_title($catName);
-                if ('' === $category_nicename) {
-                    continue;
-                }
+        if (empty($taxonomy->cap->edit_terms) || !current_user_can($taxonomy->cap->edit_terms)) {
+            wp_die(0);
+        }
 
-                if (!$catId = term_exists($catName, $taxonomy->name)) {
-                    $catId = wp_insert_term($catName, $taxonomy->name);
-                }
+        $rawNames = isset($_POST['new' . $taxonomy->name])
+            ? wp_unslash($_POST['new' . $taxonomy->name])
+            : '';
 
-                if (is_wp_error($catId)) {
-                    continue;
-                } else if (is_array($catId)) {
-                    $catId = $catId['term_id'];
-                }
+        $names = explode(',', $rawNames);
+        $add   = null;
 
-                $data = sprintf(
-                    '<li id="%1$s-%2$s" class="category-bgcolor"><label class="selectit"><input id="in-%1$s-%2$s" type="radio" name="tax_input[%1$s][]" value="%2$s"> %3$s</label></li>',
-                    esc_attr($taxonomy->name),
-                    intval($catId),
-                    esc_html($catName)
-                );
-
-                $add = array(
-                    'what' => $taxonomy->name,
-                    'id' => $catId,
-                    'data' => str_replace(array("\n", "\t"), '', $data),
-                    'position' => -1
-                );
+        foreach ($names as $catName) {
+            $catName = sanitize_text_field(trim($catName));
+            if ($catName === '') {
+                continue;
             }
 
-            $x = new \WP_Ajax_Response($add);
-            $x->send();
-        } else {
-            return false;
+            $categoryNicename = sanitize_title($catName);
+            if ($categoryNicename === '') {
+                continue;
+            }
+
+            $catId = term_exists($catName, $taxonomy->name);
+            if (!$catId) {
+                $catId = wp_insert_term($catName, $taxonomy->name);
+            }
+
+            if (is_wp_error($catId)) {
+                continue;
+            } elseif (is_array($catId)) {
+                $catId = $catId['term_id'];
+            }
+
+            $data = sprintf(
+                '<li id="%1$s-%2$s" class="category-bgcolor"><label class="selectit"><input id="in-%1$s-%2$s" type="radio" name="tax_input[%1$s][]" value="%2$s"> %3$s</label></li>',
+                esc_attr($taxonomy->name),
+                (int) $catId,
+                esc_html($catName)
+            );
+
+            $add = [
+                'what'     => $taxonomy->name,
+                'id'       => $catId,
+                'data'     => str_replace(["\n", "\t"], '', $data),
+                'position' => -1,
+            ];
         }
+
+        if (!$add) {
+            wp_die(0);
+        }
+
+        $x = new \WP_Ajax_Response($add);
+        $x->send();
     }
 
     public static function saveSingleTerm($post_id)
@@ -255,37 +318,53 @@ class CategoryMetabox
             return $post_id;
         }
 
-        // Make sure we're on the supported post type.
-        if (isset($_REQUEST['post_type']) && $_REQUEST['post_type'] != CalendarFeed::POST_TYPE) {
+        // Make sure we are on a supported post type.
+        $postType = get_post_type($post_id);
+        if (!in_array($postType, [CalendarEvent::POST_TYPE, CalendarFeed::POST_TYPE], true)) {
+            return $post_id;
+        }
+
+        // Check taxonomy exists.
+        $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
+        if (!$taxonomy || empty($taxonomy->cap->edit_terms)) {
             return $post_id;
         }
 
         // Check capabilities.
-        $taxonomy = get_taxonomy(CalendarEvent::TAX_CATEGORY);
         if (!current_user_can($taxonomy->cap->edit_terms)) {
             return $post_id;
         }
 
         // If posts are being bulk edited, and no term is selected, do nothing.
-        if (!empty($_GET['bulk_edit']) && empty($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY])) {
+        if (
+            !empty($_GET['bulk_edit'])
+            && empty($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY])
+        ) {
             return $post_id;
         }
 
         // Verify nonce.
-        if (!isset($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY]) || !wp_verify_nonce($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY], 'radio_nonce-' . CalendarEvent::TAX_CATEGORY)) {
+        if (
+            !isset($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY])
+            || !wp_verify_nonce(
+                wp_unslash($_REQUEST['_radio_nonce-' . CalendarEvent::TAX_CATEGORY]),
+                'radio_nonce-' . CalendarEvent::TAX_CATEGORY
+            )
+        ) {
             return $post_id;
         }
 
         // OK, we need to make sure we're only saving 1 term.
         if (!empty($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY])) {
-            $terms = (array) $_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY];
-            $singleTerm = intval($terms[array_key_last($terms)]);
+            $terms      = (array) wp_unslash($_REQUEST['tax_input'][CalendarEvent::TAX_CATEGORY]);
+            $terms      = array_map('intval', $terms);
+            $singleTerm = (int) $terms[array_key_last($terms)];
         } else {
-            // If not saving any terms, set to default (if exist).
-            $singleTerm = intval(get_option('default_' . CalendarEvent::TAX_CATEGORY, 0));
+            // If not saving any terms, set to default (if exists).
+            $singleTerm = (int) get_option('default_' . CalendarEvent::TAX_CATEGORY, 0);
         }
 
-        // Set the single terms.
+        // Set the single term.
         wp_set_object_terms($post_id, $singleTerm, CalendarEvent::TAX_CATEGORY);
 
         return $post_id;
