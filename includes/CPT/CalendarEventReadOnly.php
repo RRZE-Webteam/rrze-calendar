@@ -5,34 +5,39 @@ namespace RRZE\Calendar\CPT;
 defined('ABSPATH') || exit;
 
 /**
- * Make imported calendar events read-only
+ * Make imported calendar events read-only.
+ *
  * @package RRZE\Calendar\CPT
  */
 class CalendarEventReadOnly
 {
     public static function init(): void
     {
-        // Core: make WP think user cannot edit those posts => title becomes plain text
+        // Core: make WP think user cannot edit those posts => title becomes plain text.
         add_filter('map_meta_cap', [__CLASS__, 'mapMetaCap'], 10, 4);
 
-        // UX: remove row actions (edit/quick edit/trash)
+        // UX: remove row actions (edit/quick edit/trash).
         add_filter('post_row_actions', [__CLASS__, 'removeRowActions'], 10, 2);
 
-        // Safety: block direct access to edit screen
+        // Safety: block direct access to edit screen.
         add_action('load-post.php', [__CLASS__, 'blockEditScreen']);
     }
 
     /**
-     * Check if a calendar_event is imported from an ICS feed.
+     * Check if a calendar event is imported from an ICS feed.
      */
-    private static function isIcsImported(int $postId): bool
+    private static function isIcsImported($postId): bool
     {
+        $postId = (int) $postId;
+
         if ($postId <= 0) {
             return false;
         }
-        if (get_post_type($postId) !== 'calendar_event') {
+
+        if (get_post_type($postId) !== CalendarEvent::POST_TYPE) {
             return false;
         }
+
         return (bool) get_post_meta($postId, 'ics_feed_id', true);
     }
 
@@ -44,14 +49,26 @@ class CalendarEventReadOnly
      * - "Edit", "Quick edit"
      * - direct edit access (cap check fails)
      */
-    public static function mapMetaCap(array $caps, string $cap, int $user_id, array $args): array
+    public static function mapMetaCap($caps, $cap, $userId, $args): array
     {
-        // Handle only edit/delete capabilities for posts
+        if (!is_array($caps)) {
+            $caps = [];
+        }
+
+        // Handle only edit/delete capabilities for posts.
         if (!in_array($cap, ['edit_post', 'delete_post'], true)) {
             return $caps;
         }
 
-        $postId = isset($args[0]) ? (int) $args[0] : 0;
+        $postId = 0;
+
+        if (is_array($args) && isset($args[0])) {
+            $postId = (int) $args[0];
+        }
+
+        if ($postId <= 0) {
+            return $caps;
+        }
 
         if (!self::isIcsImported($postId)) {
             return $caps;
@@ -66,7 +83,7 @@ class CalendarEventReadOnly
      */
     public static function removeRowActions(array $actions, \WP_Post $post): array
     {
-        if ($post->post_type !== 'calendar_event') {
+        if ($post->post_type !== CalendarEvent::POST_TYPE) {
             return $actions;
         }
 
@@ -75,9 +92,9 @@ class CalendarEventReadOnly
         }
 
         unset($actions['edit']);
-        unset($actions['inline hide-if-no-js']); // Quick edit
+        unset($actions['inline hide-if-no-js']);
 
-        // Optional: also hide trash
+        // Optional: also hide trash.
         // unset($actions['trash']);
 
         return $actions;
@@ -89,7 +106,6 @@ class CalendarEventReadOnly
      */
     public static function blockEditScreen(): void
     {
-        // Only in wp-admin edit screen loader
         $postId = isset($_GET['post']) ? (int) $_GET['post'] : 0;
         if ($postId <= 0) {
             return;
@@ -99,13 +115,10 @@ class CalendarEventReadOnly
             return;
         }
 
-        // If WP already denies edit_post, show a nice message instead of generic permission error.
-        if (!current_user_can('edit_post', $postId)) {
-            wp_die(
-                __('This event was imported from an ICS feed and cannot be edited.', 'rrze-calendar'),
-                __('Read-only event', 'rrze-calendar'),
-                ['response' => 403]
-            );
-        }
+        wp_die(
+            __('This event was imported from an ICS feed and cannot be edited.', 'rrze-calendar'),
+            __('Read-only event', 'rrze-calendar'),
+            ['response' => 403]
+        );
     }
 }
