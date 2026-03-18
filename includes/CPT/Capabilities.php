@@ -1,34 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RRZE\Calendar\CPT;
 
 defined('ABSPATH') || exit;
 
 /**
- * Capabilities class
- * @package RRZE\Calendar\CPT
+ * Centralized capability definitions for RRZE Calendar CPTs.
+ *
+ * This class does not assign capabilities to roles.
+ * It only provides capability mappings and helpers for CPT registration
+ * and capability inspection.
  */
-class Capabilities
+final class Capabilities
 {
     /**
-     * Get current CPT args
-     * @return array The current CPT args
+     * Capability configuration for all supported CPTs.
+     *
+     * @return array<string, array{
+     *     capability_type: string,
+     *     capabilities: array<string, string>,
+     *     map_meta_cap: bool
+     * }>
      */
-    protected static function currentCptArgs()
+    protected static function currentCptArgs(): array
     {
         return [
-            CalendarEvent::POST_TYPE => [
-                'capability_type' => CalendarEvent::POST_TYPE,
-                'capabilities' => [
+            CalendarEvent::POST_TYPE => self::buildArgs(
+                'post',
+                [
                     // Meta capabilities
                     'edit_post'              => 'edit_post',
                     'read_post'              => 'read_post',
                     'delete_post'            => 'delete_post',
+
                     // Primitive capabilities used outside of map_meta_cap()
                     'edit_posts'             => 'edit_posts',
                     'edit_others_posts'      => 'edit_others_posts',
                     'publish_posts'          => 'publish_posts',
                     'read_private_posts'     => 'read_private_posts',
+
                     // Primitive capabilities used within map_meta_cap()
                     'read'                   => 'read',
                     'delete_posts'           => 'delete_posts',
@@ -37,22 +49,23 @@ class Capabilities
                     'delete_others_posts'    => 'delete_others_posts',
                     'edit_private_posts'     => 'edit_private_posts',
                     'edit_published_posts'   => 'edit_published_posts',
-                    'create_posts'           => 'edit_posts'
-                ],
-                'map_meta_cap' => true
-            ],
-            CalendarFeed::POST_TYPE => [
-                'capability_type' => CalendarFeed::POST_TYPE,
-                'capabilities' => [
+                    'create_posts'           => 'edit_posts',
+                ]
+            ),
+            CalendarFeed::POST_TYPE => self::buildArgs(
+                'page',
+                [
                     // Meta capabilities
                     'edit_post'              => 'edit_page',
                     'read_post'              => 'read_page',
                     'delete_post'            => 'delete_page',
+
                     // Primitive capabilities used outside of map_meta_cap()
                     'edit_posts'             => 'edit_pages',
                     'edit_others_posts'      => 'edit_others_pages',
                     'publish_posts'          => 'publish_pages',
                     'read_private_posts'     => 'read_private_pages',
+
                     // Primitive capabilities used within map_meta_cap()
                     'read'                   => 'read',
                     'delete_posts'           => 'delete_pages',
@@ -61,100 +74,140 @@ class Capabilities
                     'delete_others_posts'    => 'delete_others_pages',
                     'edit_private_posts'     => 'edit_private_pages',
                     'edit_published_posts'   => 'edit_published_pages',
-                    'create_posts'           => 'edit_pages'
-                ],
-                'map_meta_cap' => true
-            ]
+                    'create_posts'           => 'edit_pages',
+                ]
+            ),
         ];
     }
 
     /**
-     * Get default CPT args
-     * @return array The default CPT args
+     * Default capability configuration used as fallback.
+     *
+     * @return array{
+     *     capability_type: string,
+     *     capabilities: array<string, string>,
+     *     map_meta_cap: bool
+     * }
      */
-    protected static function defaultCptArgs()
+    protected static function defaultCptArgs(): array
     {
         return [
             'capability_type' => 'post',
-            'capabilities' => [],
-            'map_meta_cap' => true
+            'capabilities'    => [],
+            'map_meta_cap'    => true,
         ];
     }
 
     /**
-     * Get CPT array args
-     * @param string $cpt CPT name
-     * @return array The CPT args
+     * Build CPT capability args.
+     *
+     * @param string $capabilityType Capability type for the CPT.
+     * @param array<string, string> $capabilities Custom capability mapping.
+     * @param bool $mapMetaCap Whether WordPress should map meta caps.
+     * @return array{
+     *     capability_type: string,
+     *     capabilities: array<string, string>,
+     *     map_meta_cap: bool
+     * }
      */
-    protected static function cptArgs(string $cpt)
+    protected static function buildArgs(
+        string $capabilityType,
+        array $capabilities,
+        bool $mapMetaCap = true
+    ): array {
+        return [
+            'capability_type' => $capabilityType,
+            'capabilities'    => $capabilities,
+            'map_meta_cap'    => $mapMetaCap,
+        ];
+    }
+
+    /**
+     * Get capability args for a given CPT or fallback to defaults.
+     *
+     * @param string $cpt CPT name.
+     * @return array{
+     *     capability_type: string,
+     *     capabilities: array<string, string>,
+     *     map_meta_cap: bool
+     * }
+     */
+    protected static function cptArgs(string $cpt): array
     {
         $current = self::currentCptArgs();
-        $default = self::defaultCptArgs();
-        return isset($current[$cpt]) ? $current[$cpt] : $default;
+
+        return $current[$cpt] ?? self::defaultCptArgs();
     }
 
     /**
-     * Get CPT object args
-     * @param string $cpt CPT name
-     * @return object The CPT object args
+     * Get CPT args as object for get_post_type_capabilities().
+     *
+     * @param string $cpt CPT name.
+     * @return object
      */
-    protected static function getCptArgs(string $cpt)
+    protected static function getCptArgs(string $cpt): object
     {
         $cptArgs = self::cptArgs($cpt);
-        $args = [
+
+        return (object) [
             'capability_type' => $cptArgs['capability_type'],
-            'capabilities' => $cptArgs['capabilities'],
-            'map_meta_cap' => $cptArgs['map_meta_cap']
+            'capabilities'    => $cptArgs['capabilities'],
+            'map_meta_cap'    => $cptArgs['map_meta_cap'],
         ];
-        return (object) $args;
     }
 
     /**
-     * Get current CPT args
-     * @return array The current CPT args
+     * Get all current CPT capability args.
+     *
+     * @return array<string, array{
+     *     capability_type: string,
+     *     capabilities: array<string, string>,
+     *     map_meta_cap: bool
+     * }>
      */
-    public static function getCurrentCptArgs()
+    public static function getCurrentCptArgs(): array
     {
         return self::currentCptArgs();
     }
 
     /**
-     * Get CPT capability type
-     * @param string $cpt CPT name
-     * @return string|array The capability type
+     * Get CPT capability type.
+     *
+     * @param string $cpt CPT name.
+     * @return string
      */
-    public static function getCptCapabilityType(string $cpt)
+    public static function getCptCapabilityType(string $cpt): string
     {
-        $cptArgs = self::cptArgs($cpt);
-        return $cptArgs['capability_type'];
+        return self::cptArgs($cpt)['capability_type'];
     }
 
     /**
-     * Get CPT capabilities
-     * @param string $cpt CPT name
-     * @return string[] Array of the capabilities
+     * Get CPT custom capabilities.
+     *
+     * @param string $cpt CPT name.
+     * @return array<string, string>
      */
-    public static function getCptCustomCaps(string $cpt)
+    public static function getCptCustomCaps(string $cpt): array
     {
-        $cptArgs = self::cptArgs($cpt);
-        return $cptArgs['capabilities'];
+        return self::cptArgs($cpt)['capabilities'];
     }
 
     /**
-     * Get CPT map meta cap
-     * @param string $cpt CPT name
-     * @return bool Whether to use the internal default meta capability handling
+     * Get CPT map_meta_cap setting.
+     *
+     * @param string $cpt CPT name.
+     * @return bool
      */
-    public static function getCptMapMetaCap(string $cpt)
+    public static function getCptMapMetaCap(string $cpt): bool
     {
-        $cptArgs = self::cptArgs($cpt);
-        return $cptArgs['map_meta_cap'];
+        return self::cptArgs($cpt)['map_meta_cap'];
     }
 
     /**
-     * Get CPT capabilities
-     * @param string $cpt CPT name
-     * @return object Object with all the capabilities as member variables
+     * Get resolved post type capabilities for a CPT.
+     *
+     * @param string $cpt CPT name.
+     * @return object
      */
     public static function getCptCaps(string $cpt): object
     {
