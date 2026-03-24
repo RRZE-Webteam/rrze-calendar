@@ -323,22 +323,39 @@ class Events
                 $metaLocation   = '';
                 $locationOut    = '';
 
-                if ($location !== '' && $vcUrl === '') {
+                $locationName = trim(wp_strip_all_tags($location));
+                $hasLocation  = $locationName !== '';
+                $hasVcUrl     = $vcUrl !== '';
+
+                if ($hasLocation && ! $hasVcUrl) {
                     // Offline
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
-                    $metaLocation   = '<meta itemprop="location" content="' . esc_attr(wp_strip_all_tags($location)) . '" />';
-                    $locationOut    = $location;
-                } elseif ($location === '' && $vcUrl !== '') {
+                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/Place">'
+                        . '<span itemprop="name">' . esc_html($locationName) . '</span>'
+                        . '</span>';
+                    $locationOut    = esc_html($locationName);
+                } elseif (! $hasLocation && $hasVcUrl) {
                     // Online
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OnlineEventAttendanceMode" />';
-                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vcUrl) . '" /></span>';
+                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation">'
+                        . '<meta itemprop="url" content="' . esc_url($vcUrl) . '" />'
+                        . '</span>';
                     $locationOut    = esc_html__('Online', 'rrze-calendar');
-                } elseif ($location !== '' && $vcUrl !== '') {
+                } elseif ($hasLocation && $hasVcUrl) {
                     // Hybrid
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
-                    $metaLocation   = '<meta itemprop="location" content="' . esc_attr(wp_strip_all_tags($location)) . '" />'
-                        . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation"><meta itemprop="url" content="' . esc_url($vcUrl) . '" /></span>';
-                    $locationOut    = '<p>' . esc_html(wp_strip_all_tags($location)) . ' / ' . esc_html__('Online', 'rrze-calendar') . '</p>';
+                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/Place">'
+                        . '<span itemprop="name">' . esc_html($locationName) . '</span>'
+                        . '</span>'
+                        . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation">'
+                        . '<meta itemprop="url" content="' . esc_url($vcUrl) . '" />'
+                        . '</span>';
+                    $locationOut    = '<p>' . esc_html($locationName) . ' / ' . esc_html__('Online', 'rrze-calendar') . '</p>';
+                } else {
+                    // No location info
+                    $metaAttendance = '';
+                    $metaLocation   = '';
+                    $locationOut    = esc_html__('Location not specified', 'rrze-calendar');
                 }
 
                 $output .= '<li class="event-item" itemscope itemtype="https://schema.org/Event">';
@@ -425,8 +442,8 @@ class Events
                         .   ($dateOut !== '' ? '<div class="event-time">' . esc_html($dateOut) . '</div>' : '')
                         .   ($timeOut !== '' ? '<div class="event-time">' . esc_html($timeOut) . '</div>' : '')
                         .   '<div class="event-title" itemprop="name">' . $eventTitle . '</div>'
-                        .   '<div class="event-location">' . $locationOut . '</div>'
-                        .   $metaStart . $metaEnd . $metaLocation . $metaAttendance
+                        .   '<div class="event-location">' . $locationOut . $metaLocation . '</div>'
+                        .   $metaStart . $metaEnd . $metaAttendance
                         . '</div>';
                 }
 
