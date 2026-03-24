@@ -330,27 +330,19 @@ class Events
                 if ($hasLocation && ! $hasVcUrl) {
                     // Offline
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OfflineEventAttendanceMode" />';
-                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/Place">'
-                        . '<span itemprop="name">' . esc_html($locationName) . '</span>'
-                        . '</span>';
+                    $metaLocation   = '<meta itemprop="location" content="' . esc_attr($locationName) . '" />';
                     $locationOut    = esc_html($locationName);
                 } elseif (! $hasLocation && $hasVcUrl) {
                     // Online
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/OnlineEventAttendanceMode" />';
-                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation">'
-                        . '<meta itemprop="url" content="' . esc_url($vcUrl) . '" />'
-                        . '</span>';
+                    $metaLocation   = '<meta itemprop="location" content="' . esc_url($vcUrl) . '" />';
                     $locationOut    = esc_html__('Online', 'rrze-calendar');
                 } elseif ($hasLocation && $hasVcUrl) {
                     // Hybrid
                     $metaAttendance = '<meta itemprop="eventAttendanceMode" content="https://schema.org/MixedEventAttendanceMode" />';
-                    $metaLocation   = '<span itemprop="location" itemscope itemtype="https://schema.org/Place">'
-                        . '<span itemprop="name">' . esc_html($locationName) . '</span>'
-                        . '</span>'
-                        . '<span itemprop="location" itemscope itemtype="https://schema.org/VirtualLocation">'
-                        . '<meta itemprop="url" content="' . esc_url($vcUrl) . '" />'
-                        . '</span>';
-                    $locationOut    = '<p>' . esc_html($locationName) . ' / ' . esc_html__('Online', 'rrze-calendar') . '</p>';
+                    $metaLocation   = '<meta itemprop="location" content="' . esc_attr($locationName) . '" />'
+                        . '<meta itemprop="location" content="' . esc_url($vcUrl) . '" />';
+                    $locationOut    = esc_html($locationName) . ' / ' . esc_html__('Online', 'rrze-calendar');
                 } else {
                     // No location info
                     $metaAttendance = '';
