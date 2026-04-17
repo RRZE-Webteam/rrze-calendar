@@ -3,7 +3,7 @@
         'name' => 'rrze/rrze-calendar',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'ca7b84fad37425dff22dff273848c93451a39453',
+        'reference' => '343918d218275bf7be829ccab11e27157d241c4e',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -40,7 +40,7 @@
         'rrze/rrze-calendar' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'ca7b84fad37425dff22dff273848c93451a39453',
+            'reference' => '343918d218275bf7be829ccab11e27157d241c4e',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
