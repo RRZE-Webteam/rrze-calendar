@@ -93,28 +93,6 @@ class Main
                 $assetFile['dependencies'],
                 plugin()->getVersion(true)
             );
-
-            if ($screen->post_type === CalendarFeed::POST_TYPE && $screen->base === 'edit') {
-                wp_localize_script(
-                    'rrze-calendar-admin',
-                    'rrzeCalendarFeedUpdate',
-                    [
-                        'ajaxUrl' => admin_url('admin-ajax.php'),
-                        'action' => CalendarFeed::UPDATE_PREFLIGHT_ACTION,
-                        'nonce' => wp_create_nonce(CalendarFeed::UPDATE_PREFLIGHT_NONCE),
-                        'tokenQueryArg' => CalendarFeed::UPDATE_TOKEN_QUERY_ARG,
-                        'strings' => [
-                            'checking' => __('Checking feed…', 'rrze-calendar'),
-                            'title' => __('Delete all imported events?', 'rrze-calendar'),
-                            'emptySnapshotMessage' => __('The feed is a complete calendar but contains no active events eligible for import. Updating it will permanently delete %d imported events. This cannot be undone.', 'rrze-calendar'),
-                            'cancellationMessage' => __('The cancellation update would permanently delete all %d imported events. This cannot be undone.', 'rrze-calendar'),
-                            'confirm' => __('Delete events and update', 'rrze-calendar'),
-                            'cancel' => __('Cancel', 'rrze-calendar'),
-                            'error' => __('The feed could not be checked. Existing events were not changed.', 'rrze-calendar'),
-                        ],
-                    ]
-                );
-            }
         }
     }
 

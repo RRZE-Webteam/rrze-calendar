@@ -271,37 +271,9 @@ class Export
                     }
                 }
             }
-        }
-
-        // Cancellations received as METHOD:CANCEL deltas are stored as
-        // local occurrence dates. Export them as EXDATE values using the
-        // series' original local start time.
-        $cancelledOccurrences = (array) ($icsMeta['cancelled_occurrences'] ?? []);
-        if (! empty($cancelledOccurrences)) {
-            $startValue = str_replace(',', ' ', (string) ($icsMeta['dt_start'] ?? ''));
-            $startTime = preg_match('/\s(\d{2}:\d{2}(?::\d{2})?)/', $startValue, $matches)
-                ? $matches[1]
-                : '00:00:00';
-            if (strlen($startTime) === 5) {
-                $startTime .= ':00';
+            if (!empty($exdates)) {
+                $args['exdate'] = implode(',', $exdates);
             }
-
-            foreach ($cancelledOccurrences as $date) {
-                $date = substr((string) $date, 0, 10);
-                $dt = \DateTime::createFromFormat(
-                    'Y-m-d H:i:s',
-                    $date . ' ' . $startTime,
-                    wp_timezone()
-                );
-                if ($dt instanceof \DateTime) {
-                    $dt->setTimezone(new \DateTimeZone('UTC'));
-                    $exdates[] = $dt->format('Ymd\THis\Z');
-                }
-            }
-        }
-
-        if (! empty($exdates)) {
-            $args['exdate'] = implode(',', array_values(array_unique($exdates)));
         }
 
         // RDATE

@@ -13,33 +13,19 @@ class Events
 
     private static $limitDays = 365;
 
-    private static $syncLocks = [];
-
     public static function updateFeedsItems()
     {
         self::deleteUnlinkedEvents();
 
         $feeds = self::getFeeds();
         foreach ($feeds as $post) {
-            if (! self::acquireSyncLock($post->ID)) {
-                continue;
-            }
-
-            try {
-                if ($post->post_status == 'publish') {
-                    $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
-                    $pastDays = absint($pastDays);
-                    $storedState = self::getStoredState($post->ID);
-                    if (self::updateItems($post->ID, true, $pastDays)) {
-                        if (! self::insertData($post->ID)) {
-                            self::restoreStoredState($post->ID, $storedState);
-                        }
-                    }
-                } else {
-                    self::deleteEvent($post->ID);
-                }
-            } finally {
-                self::releaseSyncLock($post->ID);
+            if ($post->post_status == 'publish') {
+                $pastDays = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
+                $pastDays = absint($pastDays);
+                self::updateItems($post->ID, true, $pastDays);
+                self::insertData($post->ID);
+            } else {
+                self::deleteEvent($post->ID);
             }
         }
     }
@@ -59,125 +45,19 @@ class Events
         return get_posts($args);
     }
 
-    public static function updateItems(int $postId, bool $cache = true, int $pastDays = 365, int $limitDays = 365): bool
+    public static function updateItems(int $postId, bool $cache = true, int $pastDays = 365, int $limitDays = 365)
     {
         $events = Import::getEvents($postId, $cache, $pastDays, $limitDays);
 
-        return self::storeItems($postId, $events);
-    }
-
-    /**
-     * Store a previously fetched feed result.
-     *
-     * @param int $postId
-     * @param array|false $events
-     * @return bool
-     */
-    public static function storeItems(int $postId, array|false $events): bool
-    {
-        if ($events === false) {
-            update_post_meta($postId, CalendarFeed::FEED_DATETIME, current_time('mysql', true));
-            update_post_meta(
-                $postId,
-                CalendarFeed::FEED_ERROR,
-                __('The calendar could not be retrieved or is incomplete.', 'rrze-calendar')
-            );
-
-            return false;
-        }
-
+        $error = ! $events ? __('No events found.', 'rrze-calendar') : '';
         $items = ! empty($events['events']) ? $events['events'] : [];
         $meta  = ! empty($events['meta']) ? $events['meta'] : [];
-        $isCancellation = ($meta['update_type'] ?? 'snapshot') === 'cancellation';
-        if ($isCancellation) {
-            $items = self::filterStoredItemsForCancellations(
-                (array) get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true),
-                (array) ($meta['cancellations'] ?? [])
-            );
-        }
-        if (empty($items) && ! $isCancellation) {
-            $meta['event_count'] = self::countEvents($postId);
-        }
-        $error = empty($items) && ! $isCancellation
-            ? __('No active events found.', 'rrze-calendar')
-            : '';
 
         // Store last fetch time in GMT (2nd param true => GMT date)
         update_post_meta($postId, CalendarFeed::FEED_DATETIME, current_time('mysql', true));
         update_post_meta($postId, CalendarFeed::FEED_ERROR, $error);
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, $items);
         update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
-
-        return true;
-    }
-
-    /**
-     * Remove cancellation targets from the stored snapshot used by the feed UI.
-     *
-     * @param array $items
-     * @param array $cancellations
-     * @return array
-     */
-    private static function filterStoredItemsForCancellations(
-        array $items,
-        array $cancellations
-    ): array {
-        foreach ($items as $key => $event) {
-            $uid = (string) ($event->uid ?? '');
-            foreach ($cancellations as $cancellation) {
-                if (($cancellation['uid'] ?? '') !== $uid) {
-                    continue;
-                }
-
-                $recurrenceDate = (string) ($cancellation['recurrence_date'] ?? '');
-                $eventTimestamp = $event->dtstart_array[2] ?? null;
-                $eventDate = $eventTimestamp
-                    ? wp_date('Y-m-d', (int) $eventTimestamp, wp_timezone())
-                    : '';
-
-                if ($recurrenceDate === '' || $eventDate === $recurrenceDate) {
-                    unset($items[$key]);
-                    break;
-                }
-            }
-        }
-
-        return array_values($items);
-    }
-
-    /**
-     * Capture stored feed data so a failed rebuild can restore it.
-     *
-     * @param int $postId
-     * @return array
-     */
-    public static function getStoredState(int $postId): array
-    {
-        return [
-            'items' => get_post_meta($postId, CalendarFeed::FEED_EVENTS_ITEMS, true),
-            'meta' => get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true),
-        ];
-    }
-
-    /**
-     * Restore feed data after a failed or protected rebuild.
-     *
-     * @param int $postId
-     * @param array $state
-     * @return void
-     */
-    public static function restoreStoredState(int $postId, array $state): void
-    {
-        update_post_meta(
-            $postId,
-            CalendarFeed::FEED_EVENTS_ITEMS,
-            $state['items'] ?? []
-        );
-        update_post_meta(
-            $postId,
-            CalendarFeed::FEED_EVENTS_META,
-            $state['meta'] ?? []
-        );
     }
 
     /**
@@ -373,9 +253,6 @@ class Events
             'readable_rrule' => $event->rrule ? Utils::humanReadableRecurrence($event->rrule) : '',
             'exdate_array'   => ! empty($event->exdate_array) ? $event->exdate_array : [],
             'rdate_array'    => ! empty($event->rdate_array) ? $event->rdate_array : [],
-            'cancelled_occurrences' => ! empty($event->cancelled_occurrences)
-                ? (array) $event->cancelled_occurrences
-                : [],
         ];
 
         // Events with different start and end dates
@@ -596,10 +473,6 @@ class Events
                                     $data[$i]['rdate_array'] = $event['rdate_array'];
                                 }
 
-                                if (! empty($event['cancelled_occurrences'])) {
-                                    $data[$i]['cancelled_occurrences'] = $event['cancelled_occurrences'];
-                                }
-
                                 // Location
                                 $data[$i]['location'] = $event['location'];
 
@@ -691,10 +564,6 @@ class Events
                                 // RDATE
                                 if (! empty($event['rdate_array'])) {
                                     $data[$i]['rdate_array'] = $event['rdate_array'];
-                                }
-
-                                if (! empty($event['cancelled_occurrences'])) {
-                                    $data[$i]['cancelled_occurrences'] = $event['cancelled_occurrences'];
                                 }
 
                                 // Location
@@ -791,45 +660,12 @@ class Events
      * Insert ICS event data in the CalendarEvent::POST_TYPE post type.
      *
      * @param int $postId
-     * @param bool $allowDestructiveDelete
-     * @return bool
+     * @return void
      */
-    public static function insertData(int $postId, bool $allowDestructiveDelete = false): bool
+    public static function insertData(int $postId)
     {
         $items = [];
         $post  = get_post($postId);
-        $meta  = get_post_meta($postId, CalendarFeed::FEED_EVENTS_META, true);
-        $meta  = is_array($meta) ? $meta : [];
-
-        if (($meta['update_type'] ?? 'snapshot') === 'cancellation') {
-            $cancellations = (array) ($meta['cancellations'] ?? []);
-            if (empty($cancellations)) {
-                $cancellations = array_map(
-                    fn($uid) => ['uid' => (string) $uid, 'recurrence_date' => ''],
-                    (array) ($meta['cancelled_event_uids'] ?? [])
-                );
-            }
-
-            if (
-                self::cancellationsWouldDeleteAll($postId, $cancellations)
-                && ! $allowDestructiveDelete
-            ) {
-                $meta['event_count'] = self::countEvents($postId);
-                update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
-                update_post_meta(
-                    $postId,
-                    CalendarFeed::FEED_ERROR,
-                    __('The cancellation would delete all imported events and requires manual confirmation.', 'rrze-calendar')
-                );
-                return false;
-            }
-
-            self::applyCancellations($postId, $cancellations);
-            $meta['event_count'] = self::countEvents($postId);
-            update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
-            update_post_meta($postId, CalendarFeed::FEED_ERROR, '');
-            return true;
-        }
 
         if (get_post_type($post) === CalendarFeed::POST_TYPE) {
             $pastDays  = get_post_meta($post->ID, CalendarFeed::FEED_PAST_DAYS, true) ?: self::$pastDays;
@@ -840,493 +676,88 @@ class Events
 
         $items = count($items) ? self::getListData($postId, $items) : $items;
 
-        if (! count($items)) {
-            if ($allowDestructiveDelete) {
-                self::deleteEvent($postId);
-                $meta['event_count'] = 0;
-                update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
-            } elseif (self::countEvents($postId) > 0) {
-                update_post_meta(
-                    $postId,
-                    CalendarFeed::FEED_ERROR,
-                    __('The update would delete all imported events and requires manual confirmation.', 'rrze-calendar')
-                );
-                return false;
-            }
-            return true;
+        if (count($items)) {
+            self::deleteEvent($postId);
+        } else {
+            return;
         }
-
-        $oldEventIds = self::getEventIds($postId);
-        $newEventIds = [];
 
         foreach ($items as $event) {
-            $eventId = self::insertEventPost($postId, $post, $event);
-            if ($eventId === false) {
-                self::deleteEventIds($newEventIds);
-                $meta['event_count'] = count($oldEventIds);
-                update_post_meta($postId, CalendarFeed::FEED_EVENTS_META, $meta);
-                update_post_meta(
-                    $postId,
-                    CalendarFeed::FEED_ERROR,
-                    __('The feed was retrieved, but replacement events could not be created. Existing events were preserved.', 'rrze-calendar')
-                );
-                return false;
-            }
-
-            $newEventIds[] = $eventId;
-        }
-
-        self::deleteEventIds($oldEventIds);
-        update_post_meta($postId, CalendarFeed::FEED_ERROR, '');
-
-        return true;
-    }
-
-    /**
-     * Create one imported event post and its required metadata.
-     *
-     * @param int $feedId
-     * @param object $feedPost
-     * @param array $event
-     * @return int|false
-     */
-    private static function insertEventPost(int $feedId, object $feedPost, array $event): int|false
-    {
-        if (empty($event['uid']) || empty($event['dt_start']) || empty($event['dt_end'])) {
-            return false;
-        }
-
-        $args = [
-            'post_author'  => $feedPost->post_author,
-            'post_title'   => $event['summary'] ?? '',
-            'post_content' => '',
-            'post_excerpt' => $event['description'] ?? '',
-            'post_type'    => CalendarEvent::POST_TYPE,
-            'post_status'  => 'publish',
-        ];
-
-        $eventId = wp_insert_post($args, true, false);
-        if (is_wp_error($eventId) || ! $eventId) {
-            return false;
-        }
-
-        try {
-            $dtStart = Utils::wpLocalToTimestamp((string) $event['dt_start']);
-            $dtEnd   = Utils::wpLocalToTimestamp((string) $event['dt_end']);
-            $requiredMeta = [
-                'event-uid' => $event['uid'],
-                'start' => $dtStart,
-                'end' => $dtEnd,
-                'ics_feed_id' => $feedId,
-                'ics_event_meta' => $event,
+            $args = [
+                'post_author'  => $post->post_author,
+                'post_title'   => $event['summary'],
+                'post_content' => '',
+                'post_excerpt' => $event['description'] ?? '',
+                'post_type'    => CalendarEvent::POST_TYPE,
+                'post_status'  => 'publish',
             ];
 
-            foreach ($requiredMeta as $key => $value) {
-                if (add_post_meta($eventId, $key, $value, true) === false) {
-                    wp_delete_post($eventId, true);
-                    return false;
-                }
+            $eventId = wp_insert_post($args, false, false);
+            if (! $eventId) {
+                continue;
             }
 
-            add_post_meta($eventId, 'description', $event['description'] ?? '', true);
-            add_post_meta($eventId, 'location', $event['location'] ?? '', true);
+            update_post_meta($eventId, 'event-uid', $event['uid']);
 
-            if (! empty($event['allday'])) {
+            // Copy taxonomy terms from feed post
+            $terms = get_the_terms($postId, CalendarEvent::TAX_CATEGORY);
+            if ($terms && ! is_wp_error($terms)) {
+                $termIds = wp_list_pluck($terms, 'term_id');
+                wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_CATEGORY);
+            }
+
+            $terms = get_the_terms($postId, CalendarEvent::TAX_TAG);
+            if ($terms && ! is_wp_error($terms)) {
+                $termIds = wp_list_pluck($terms, 'term_id');
+                wp_set_post_terms($eventId, $termIds, CalendarEvent::TAX_TAG);
+            }
+
+            // Convert dt_start / dt_end (Y-m-d[ H:i:s]) to WP local timestamps (CMB2 compatible)
+            $dtStart = Utils::wpLocalToTimestamp((string) $event['dt_start']);
+            $dtEnd   = Utils::wpLocalToTimestamp((string) $event['dt_end']);
+
+            add_post_meta($eventId, 'start', $dtStart, true);
+            add_post_meta($eventId, 'end', $dtEnd, true);
+
+            $allDay = $event['allday'] ?? false;
+            if ($allDay) {
                 add_post_meta($eventId, 'all-day', 'on', true);
             }
 
-            if (! empty($event['ocurrences'])) {
-                add_post_meta($eventId, 'ics_event_ocurrences', $event['ocurrences'], true);
-            }
+            add_post_meta($eventId, 'description', $event['description'], true);
+            add_post_meta($eventId, 'location', $event['location'], true);
 
-            foreach ([CalendarEvent::TAX_CATEGORY, CalendarEvent::TAX_TAG] as $taxonomy) {
-                $terms = get_the_terms($feedId, $taxonomy);
-                if (! $terms || is_wp_error($terms)) {
-                    continue;
-                }
+            add_post_meta($eventId, 'ics_feed_id', $postId, true);
+            add_post_meta($eventId, 'ics_event_meta', $event, true);
 
-                $result = wp_set_post_terms(
-                    $eventId,
-                    wp_list_pluck($terms, 'term_id'),
-                    $taxonomy
-                );
-                if (is_wp_error($result)) {
-                    wp_delete_post($eventId, true);
-                    return false;
-                }
+            $ocurrences = $event['ocurrences'] ?? false;
+            if ($ocurrences) {
+                add_post_meta($eventId, 'ics_event_ocurrences', $ocurrences, true);
             }
-        } catch (\Throwable $e) {
-            wp_delete_post($eventId, true);
-            return false;
         }
-
-        return (int) $eventId;
     }
 
     public static function deleteEvent(int $feedId)
     {
-        self::deleteEventIds(self::getEventIds($feedId));
-    }
+        $metaKey   = 'ics_feed_id';
+        $metaValue = $feedId;
 
-    /**
-     * Get imported event IDs for a feed.
-     *
-     * @param int $feedId
-     * @return array
-     */
-    private static function getEventIds(int $feedId): array
-    {
-        return array_map(
-            'absint',
-            get_posts(
-                [
-                    'fields'         => 'ids',
-                    'meta_key'       => 'ics_feed_id',
-                    'meta_value'     => $feedId,
-                    'post_type'      => CalendarEvent::POST_TYPE,
-                    'post_status'    => 'any',
-                    'posts_per_page' => -1,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Permanently delete event posts by ID.
-     *
-     * @param array $postIds
-     * @return void
-     */
-    private static function deleteEventIds(array $postIds): void
-    {
-        foreach ($postIds as $postId) {
-            wp_delete_post(absint($postId), true);
-        }
-    }
-
-    /**
-     * Count published events imported from a feed.
-     *
-     * @param int $feedId
-     * @return int
-     */
-    public static function countEvents(int $feedId): int
-    {
         $query = new \WP_Query(
             [
-                'fields'         => 'ids',
-                'meta_key'       => 'ics_feed_id',
-                'meta_value'     => $feedId,
+                'meta_key'       => $metaKey,
+                'meta_value'     => $metaValue,
                 'post_type'      => CalendarEvent::POST_TYPE,
-                'post_status'    => 'publish',
-                'posts_per_page' => 1,
-            ]
-        );
-
-        return (int) $query->found_posts;
-    }
-
-    /**
-     * Hash the local imported-event state used by destructive confirmations.
-     *
-     * @param int $feedId
-     * @return string
-     */
-    public static function getEventStateHash(int $feedId): string
-    {
-        $state = [];
-        $postIds = self::getEventIds($feedId);
-        sort($postIds, SORT_NUMERIC);
-
-        foreach ($postIds as $postId) {
-            $state[] = [
-                'id' => $postId,
-                'uid' => (string) get_post_meta($postId, 'event-uid', true),
-                'occurrences' => get_post_meta($postId, 'ics_event_ocurrences', true),
-            ];
-        }
-
-        return hash('sha256', serialize($state));
-    }
-
-    /**
-     * Acquire an atomic per-feed synchronization lock.
-     *
-     * @param int $feedId
-     * @return bool
-     */
-    public static function acquireSyncLock(int $feedId): bool
-    {
-        $key = self::getSyncLockKey($feedId);
-        $now = time();
-        $token = wp_generate_uuid4();
-        $lock = [
-            'token' => $token,
-            'created' => $now,
-        ];
-
-        if (add_option($key, $lock, '', false)) {
-            self::$syncLocks[$feedId] = $token;
-            return true;
-        }
-
-        $existingLock = get_option($key, []);
-        $created = is_array($existingLock) ? (int) ($existingLock['created'] ?? 0) : 0;
-        if ($created > 0 && ($now - $created) < 15 * MINUTE_IN_SECONDS) {
-            return false;
-        }
-
-        delete_option($key);
-
-        if (! add_option($key, $lock, '', false)) {
-            return false;
-        }
-
-        self::$syncLocks[$feedId] = $token;
-
-        return true;
-    }
-
-    /**
-     * Release the per-feed synchronization lock.
-     *
-     * @param int $feedId
-     * @return void
-     */
-    public static function releaseSyncLock(int $feedId): void
-    {
-        $token = self::$syncLocks[$feedId] ?? '';
-        if ($token === '') {
-            return;
-        }
-
-        $key = self::getSyncLockKey($feedId);
-        $existingLock = get_option($key, []);
-        if (
-            is_array($existingLock)
-            && ! empty($existingLock['token'])
-            && hash_equals((string) $existingLock['token'], $token)
-        ) {
-            delete_option($key);
-        }
-
-        unset(self::$syncLocks[$feedId]);
-    }
-
-    /**
-     * Build a synchronization lock option name.
-     *
-     * @param int $feedId
-     * @return string
-     */
-    private static function getSyncLockKey(int $feedId): string
-    {
-        return 'rrze_calendar_sync_lock_' . $feedId;
-    }
-
-    /**
-     * Determine whether cancellations would remove every imported event post.
-     *
-     * @param int $feedId
-     * @param array $cancellations
-     * @return bool
-     */
-    public static function cancellationsWouldDeleteAll(int $feedId, array $cancellations): bool
-    {
-        $posts = self::getImportedEventPosts($feedId);
-        if (empty($posts)) {
-            return false;
-        }
-
-        foreach ($posts as $post) {
-            if (! self::cancellationDeletesPost($post, $cancellations)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Apply targeted ICS cancellations.
-     *
-     * @param int $feedId
-     * @param array $cancellations
-     * @return void
-     */
-    private static function applyCancellations(int $feedId, array $cancellations): void
-    {
-        $cancellations = array_values(
-            array_filter(
-                $cancellations,
-                fn($cancellation) => ! empty($cancellation['uid'])
-            )
-        );
-        $uids = array_values(
-            array_unique(array_column($cancellations, 'uid'))
-        );
-
-        if (empty($uids)) {
-            return;
-        }
-
-        $posts = self::getImportedEventPosts($feedId, $uids);
-
-        foreach ($posts as $post) {
-            $uid = (string) get_post_meta($post->ID, 'event-uid', true);
-
-            foreach ($cancellations as $cancellation) {
-                if ($cancellation['uid'] !== $uid) {
-                    continue;
-                }
-
-                $recurrenceDate = (string) ($cancellation['recurrence_date'] ?? '');
-                if ($recurrenceDate === '') {
-                    wp_delete_post($post->ID, true);
-                    break;
-                }
-
-                $eventMeta = get_post_meta($post->ID, 'ics_event_meta', true);
-                $eventMeta = is_array($eventMeta) ? $eventMeta : [];
-                $isRecurring = ! empty($eventMeta['rrule']);
-                if ($isRecurring) {
-                    self::persistRecurringCancellation($post->ID, $eventMeta, $recurrenceDate);
-                }
-
-                $occurrences = get_post_meta($post->ID, 'ics_event_ocurrences', true);
-                if (is_array($occurrences) && ! empty($occurrences)) {
-                    $remaining = array_values(
-                        array_filter(
-                            $occurrences,
-                            fn($date) => substr((string) $date, 0, 10) !== $recurrenceDate
-                        )
-                    );
-
-                    if (count($remaining) === count($occurrences)) {
-                        break;
-                    }
-
-                    if (empty($remaining) && ! $isRecurring) {
-                        wp_delete_post($post->ID, true);
-                    } else {
-                        // Keep a truthy sentinel for recurring posts with no
-                        // occurrences in the current import window. Otherwise
-                        // the frontend falls back to the series DTSTART.
-                        update_post_meta(
-                            $post->ID,
-                            'ics_event_ocurrences',
-                            empty($remaining) ? [''] : $remaining
-                        );
-                    }
-                    break;
-                }
-
-                $eventDate = is_array($eventMeta)
-                    ? substr((string) ($eventMeta['dt_start'] ?? ''), 0, 10)
-                    : '';
-
-                if (! $isRecurring && $eventDate === $recurrenceDate) {
-                    wp_delete_post($post->ID, true);
-                }
-                break;
-            }
-        }
-    }
-
-    /**
-     * Query imported event posts, optionally limited to ICS UIDs.
-     *
-     * @param int $feedId
-     * @param array $uids
-     * @return array
-     */
-    private static function getImportedEventPosts(int $feedId, array $uids = []): array
-    {
-        $metaQuery = [
-            [
-                'key' => 'ics_feed_id',
-                'value' => $feedId,
-            ],
-        ];
-
-        if (! empty($uids)) {
-            $metaQuery = [
-                'relation' => 'AND',
-                $metaQuery[0],
-                [
-                    'key' => 'event-uid',
-                    'value' => array_values(array_unique(array_map('strval', $uids))),
-                    'compare' => 'IN',
-                ],
-            ];
-        }
-
-        return get_posts(
-            [
-                'meta_query'     => $metaQuery,
-                'post_type'      => CalendarEvent::POST_TYPE,
-                'post_status'    => 'publish',
                 'posts_per_page' => -1,
             ]
         );
-    }
 
-    /**
-     * Determine whether the supplied cancellations delete a specific post.
-     *
-     * @param object $post
-     * @param array $cancellations
-     * @return bool
-     */
-    private static function cancellationDeletesPost(object $post, array $cancellations): bool
-    {
-        $uid = (string) get_post_meta($post->ID, 'event-uid', true);
-        $eventMeta = get_post_meta($post->ID, 'ics_event_meta', true);
-        $eventMeta = is_array($eventMeta) ? $eventMeta : [];
-        $isRecurring = ! empty($eventMeta['rrule']);
-
-        foreach ($cancellations as $cancellation) {
-            if (($cancellation['uid'] ?? '') !== $uid) {
-                continue;
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                wp_delete_post(get_the_ID(), true);
             }
-
-            $recurrenceDate = (string) ($cancellation['recurrence_date'] ?? '');
-            if ($recurrenceDate === '') {
-                return true;
-            }
-
-            if ($isRecurring) {
-                return false;
-            }
-
-            $eventDate = substr((string) ($eventMeta['dt_start'] ?? ''), 0, 10);
-            if ($eventDate === $recurrenceDate) {
-                return true;
-            }
+            wp_reset_postdata();
         }
-
-        return false;
-    }
-
-    /**
-     * Persist a recurring-instance cancellation for later ICS export.
-     *
-     * @param int $postId
-     * @param array $eventMeta
-     * @param string $recurrenceDate
-     * @return void
-     */
-    private static function persistRecurringCancellation(
-        int $postId,
-        array $eventMeta,
-        string $recurrenceDate
-    ): void {
-        $cancelledOccurrences = (array) ($eventMeta['cancelled_occurrences'] ?? []);
-        $cancelledOccurrences[] = $recurrenceDate;
-        $eventMeta['cancelled_occurrences'] = array_values(
-            array_unique(array_filter(array_map('strval', $cancelledOccurrences)))
-        );
-        update_post_meta($postId, 'ics_event_meta', $eventMeta);
     }
 
     public static function deleteUnlinkedEvents()
