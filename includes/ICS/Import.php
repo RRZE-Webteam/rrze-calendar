@@ -17,6 +17,195 @@ class Import
     const DEFAULT_SPAN = 2;
 
     /**
+     * Check whether the response contains a complete VCALENDAR wrapper.
+     *
+     * The bundled parser accepts truncated input such as only
+     * "BEGIN:VCALENDAR", so completeness must be verified before an empty
+     * result can be treated as authoritative.
+     *
+     * @param string $icsContent
+     * @return bool
+     */
+    public static function isCompleteCalendar(string $icsContent): bool
+    {
+        $icsContent = trim($icsContent);
+        $icsContent = preg_replace('/^\xEF\xBB\xBF/', '', $icsContent);
+        $icsContent = str_replace(["\r\n", "\n\r", "\r"], "\n", (string) $icsContent);
+        $lines = explode("\n", $icsContent);
+
+        if (count($lines) < 2) {
+            return false;
+        }
+
+        $lastLine = array_key_last($lines);
+        if (
+            strtoupper(trim($lines[0])) !== 'BEGIN:VCALENDAR'
+            || strtoupper(trim($lines[$lastLine])) !== 'END:VCALENDAR'
+        ) {
+            return false;
+        }
+
+        $components = [];
+        foreach ($lines as $lineNumber => $line) {
+            if (str_starts_with($line, ' ') || str_starts_with($line, "\t")) {
+                continue;
+            }
+
+            $line = strtoupper(trim($line));
+
+            if (preg_match('/^BEGIN:([A-Z0-9-]+)$/', $line, $matches)) {
+                if (empty($components) && $lineNumber !== 0) {
+                    return false;
+                }
+                $components[] = $matches[1];
+                continue;
+            }
+
+            if (! preg_match('/^END:([A-Z0-9-]+)$/', $line, $matches)) {
+                continue;
+            }
+
+            if (array_pop($components) !== $matches[1]) {
+                return false;
+            }
+
+            if (empty($components) && $lineNumber !== $lastLine) {
+                return false;
+            }
+        }
+
+        return empty($components);
+    }
+
+    /**
+     * Validate required VEVENT properties before invoking the permissive parser.
+     *
+     * @param string $icsContent
+     * @return bool
+     */
+    public static function hasValidEventComponents(string $icsContent): bool
+    {
+        $icsContent = str_replace(["\r\n", "\n\r", "\r"], "\n", $icsContent);
+        $rawLines = explode("\n", $icsContent);
+        $lines = [];
+
+        foreach ($rawLines as $line) {
+            if (
+                ! empty($lines)
+                && (str_starts_with($line, ' ') || str_starts_with($line, "\t"))
+            ) {
+                $lines[array_key_last($lines)] .= substr($line, 1);
+            } else {
+                $lines[] = $line;
+            }
+        }
+
+        $isCancellationCalendar = (bool) preg_match('/^METHOD\s*:\s*CANCEL\s*$/mi', $icsContent);
+        $event = null;
+        $nestedDepth = 0;
+
+        foreach ($lines as $line) {
+            $normalized = strtoupper(trim($line));
+            if ($normalized === 'BEGIN:VEVENT') {
+                if ($event !== null) {
+                    return false;
+                }
+                $event = [];
+                $nestedDepth = 0;
+                continue;
+            }
+
+            if ($normalized === 'END:VEVENT') {
+                if (
+                    $event === null
+                    || $nestedDepth !== 0
+                    || ! self::isValidEventComponent($event, $isCancellationCalendar)
+                ) {
+                    return false;
+                }
+                $event = null;
+                $nestedDepth = 0;
+                continue;
+            }
+
+            if ($event === null) {
+                continue;
+            }
+
+            if (str_starts_with($normalized, 'BEGIN:')) {
+                $nestedDepth++;
+                continue;
+            }
+
+            if (str_starts_with($normalized, 'END:')) {
+                if ($nestedDepth === 0) {
+                    return false;
+                }
+                $nestedDepth--;
+                continue;
+            }
+
+            if ($nestedDepth > 0 || ! str_contains($line, ':')) {
+                continue;
+            }
+
+            [$property, $value] = explode(':', $line, 2);
+            $property = strtoupper(explode(';', $property, 2)[0]);
+            if (in_array($property, ['UID', 'DTSTART', 'RECURRENCE-ID'], true)) {
+                $event[$property] = trim($value);
+            }
+        }
+
+        return $event === null;
+    }
+
+    /**
+     * Validate one parsed VEVENT property set.
+     *
+     * @param array $event
+     * @param bool $isCancellationCalendar
+     * @return bool
+     */
+    private static function isValidEventComponent(
+        array $event,
+        bool $isCancellationCalendar
+    ): bool {
+        if (empty($event['UID'])) {
+            return false;
+        }
+
+        if (
+            ! empty($event['DTSTART'])
+            && ! self::isValidIcsDateValue($event['DTSTART'])
+        ) {
+            return false;
+        }
+
+        if (
+            ! empty($event['RECURRENCE-ID'])
+            && ! self::isValidIcsDateValue($event['RECURRENCE-ID'])
+        ) {
+            return false;
+        }
+
+        return $isCancellationCalendar || ! empty($event['DTSTART']);
+    }
+
+    /**
+     * Validate an RFC 5545 DATE or DATE-TIME value used by this importer.
+     *
+     * @param string $value
+     * @return bool
+     */
+    private static function isValidIcsDateValue(string $value): bool
+    {
+        return (bool) preg_match(
+            '/^\d{8}(?:T\d{6}Z?)?$/',
+            strtoupper(trim($value))
+        );
+    }
+
+    /**
      * getEvents
      *
      * @param integer $feedID
@@ -70,12 +259,26 @@ class Import
 
         // Get ICS file contents
         $icsContent = Cache::getIcalCache($url);
+        if (
+            $icsContent !== false
+            && (
+                ! self::isCompleteCalendar((string) $icsContent)
+                || ! self::hasValidEventComponents((string) $icsContent)
+            )
+        ) {
+            Cache::deleteIcalCache($url);
+            $icsContent = false;
+        }
+
         if ($icsContent === false) {
             $icsContent = self::urlGetContent($url);
-            if (strpos((string) $icsContent, 'BEGIN:VCALENDAR') === 0) {
+            if (
+                self::isCompleteCalendar((string) $icsContent)
+                && self::hasValidEventComponents((string) $icsContent)
+            ) {
                 Cache::setIcalCache($url, $icsContent);
             } else {
-                $icsContent = '';
+                return false;
             }
         }
 
@@ -85,17 +288,125 @@ class Import
         // ICS data is not empty
         if ($icsContent) {
             try {
-                // Parse ICS contents
-                $ICal = new ICal('ICal.ics', [
+                $isCancellationCalendar = (bool) preg_match('/^METHOD\s*:\s*CANCEL\s*$/mi', $icsContent);
+                $parserOptions = [
                     'defaultSpan'                 => $defaultSpan,
                     'defaultTimeZone'             => $wpTz->getName(),
                     'disableCharacterReplacement' => false,
-                    'filterDaysAfter'             => $filterDaysAfter,
-                    'filterDaysBefore'            => $filterDaysBefore,
                     'skipRecurrence'              => false,
-                ]);
+                ];
+
+                // Cancellation messages are deltas, not snapshots. Their DTSTART
+                // may be far outside the import window, especially for old
+                // recurring series, so they must be parsed without date filters.
+                if ($isCancellationCalendar) {
+                    $parserOptions['skipRecurrence'] = true;
+                } else {
+                    $parserOptions['filterDaysAfter'] = $filterDaysAfter;
+                    $parserOptions['filterDaysBefore'] = $filterDaysBefore;
+                }
+
+                // Parse ICS contents
+                $ICal = new ICal('ICal.ics', $parserOptions);
                 $ICal->initString($icsContent);
-            } catch (\Exception $e) {
+                $events = [];
+                $cancellations = [];
+
+                if ($isCancellationCalendar) {
+                    foreach ($ICal->events() as $event) {
+                        if (! empty($event->uid)) {
+                            $cancellations[] = self::getCancellationData($event);
+                        }
+                    }
+                } elseif ($ICal->hasEvents()) {
+                    $events = $ICal->eventsFromRange($rangeStart, $rangeEnd) ?: [];
+                }
+
+                foreach ($events as $i => $event) {
+                    if (strtoupper(trim((string) ($event->status ?? ''))) === 'CANCELLED') {
+                        if (! empty($event->uid)) {
+                            $cancellations[] = self::getCancellationData($event);
+                        }
+                        unset($events[$i]);
+                    }
+                }
+
+                if (! empty($cancellations)) {
+                    foreach ($events as $i => $event) {
+                        foreach ($cancellations as $cancellation) {
+                            if ((string) ($event->uid ?? '') !== $cancellation['uid']) {
+                                continue;
+                            }
+
+                            if (
+                                $cancellation['recurrence_date'] === ''
+                                || self::getEventDate($event) === $cancellation['recurrence_date']
+                            ) {
+                                unset($events[$i]);
+                                break;
+                            }
+                        }
+                    }
+
+                    foreach ($events as $event) {
+                        $cancelledOccurrences = [];
+                        foreach ($cancellations as $cancellation) {
+                            if (
+                                (string) ($event->uid ?? '') === $cancellation['uid']
+                                && $cancellation['recurrence_date'] !== ''
+                            ) {
+                                $cancelledOccurrences[] = $cancellation['recurrence_date'];
+                            }
+                        }
+
+                        if (! empty($cancelledOccurrences)) {
+                            $event->additionalProperties['cancelled_occurrences'] = array_values(
+                                array_unique($cancelledOccurrences)
+                            );
+                        }
+                    }
+                }
+
+                // Only import selected events
+                $include = (string) get_post_meta($feedID, CalendarFeed::FEED_INCLUDE, true);
+                if ($include != '') {
+                    foreach ($events as $i => $event) {
+                        if (! str_contains((string) ($event->summary ?? ''), $include)) {
+                            unset($events[$i]);
+                        }
+                    }
+                }
+                // Skip excluded events
+                $exclude = (string) get_post_meta($feedID, CalendarFeed::FEED_EXCLUDE, true);
+                if ($exclude != '') {
+                    foreach ($events as $i => $event) {
+                        if (str_contains((string) ($event->summary ?? ''), $exclude)) {
+                            unset($events[$i]);
+                        }
+                    }
+                }
+
+                $events = array_values($events);
+                $cancelledUids = array_values(
+                    array_unique(array_column($cancellations, 'uid'))
+                );
+
+                return [
+                    'events' => $events,
+                    'meta' => [
+                        'event_count' => count($events),
+                        'source_event_count' => $ICal->eventCount,
+                        'cancelled_event_count' => count($cancellations),
+                        'cancelled_event_uids' => $cancelledUids,
+                        'cancellations' => $cancellations,
+                        'update_type' => $isCancellationCalendar ? 'cancellation' : 'snapshot',
+                        'calendar_hash' => hash('sha256', $icsContent),
+                        'free_busy_count' => $ICal->freeBusyCount,
+                        'todo_count' => $ICal->todoCount,
+                        'alarmCount' => $ICal->alarmCount
+                    ]
+                ];
+            } catch (\Throwable $e) {
                 do_action(
                     'rrze.log.error',
                     'Plugin: {plugin} ICal-Error: {error}',
@@ -106,47 +417,38 @@ class Import
                 );
                 return false;
             }
-            // Free up some memory
-            unset($icsContent);
-
-            // Has events?
-            if (
-                is_object($ICal)
-                && $ICal->hasEvents()
-                && $events = $ICal->eventsFromRange($rangeStart, $rangeEnd)
-            ) {
-                // Only import selected events
-                $include = (string) get_post_meta($feedID, CalendarFeed::FEED_INCLUDE, true);
-                if ($include != '') {
-                    foreach ($events as $i => $event) {
-                        if (!str_contains($event->summary, $include)) {
-                            unset($events[$i]);
-                        }
-                    }
-                }
-                // Skip excluded events
-                $exclude = (string) get_post_meta($feedID, CalendarFeed::FEED_EXCLUDE, true);
-                if ($exclude != '') {
-                    foreach ($events as $i => $event) {
-                        if (str_contains($event->summary, $exclude)) {
-                            unset($events[$i]);
-                        }
-                    }
-                }
-
-                return [
-                    'events' => $events,
-                    'meta' => [
-                        'event_count' => $ICal->eventCount,
-                        'free_busy_count' => $ICal->freeBusyCount,
-                        'todo_count' => $ICal->todoCount,
-                        'alarmCount' => $ICal->alarmCount
-                    ]
-                ];
-            }
         }
 
         return false;
+    }
+
+    /**
+     * Build cancellation metadata for a parsed event.
+     *
+     * @param object $event
+     * @return array
+     */
+    private static function getCancellationData(object $event): array
+    {
+        return [
+            'uid' => (string) ($event->uid ?? ''),
+            'recurrence_date' => self::getEventDate($event, 'recurrence_id_array'),
+        ];
+    }
+
+    /**
+     * Get an event property date in the WordPress timezone.
+     *
+     * @param object $event
+     * @param string $property
+     * @return string
+     */
+    private static function getEventDate(object $event, string $property = 'dtstart_array'): string
+    {
+        $value = $event->{$property} ?? [];
+        $timestamp = is_array($value) ? ($value[2] ?? null) : null;
+
+        return $timestamp ? wp_date('Y-m-d', (int) $timestamp, wp_timezone()) : '';
     }
 
     /**

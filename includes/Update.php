@@ -91,8 +91,18 @@ class Update
                 add_post_meta($postId, CalendarFeed::FEED_URL, $row->url, true);
 
                 if ($row->active) {
-                    Events::updateItems($postId);
-                    Events::insertData($postId);
+                    if (Events::acquireSyncLock($postId)) {
+                        try {
+                            $storedState = Events::getStoredState($postId);
+                            if (Events::updateItems($postId)) {
+                                if (! Events::insertData($postId)) {
+                                    Events::restoreStoredState($postId, $storedState);
+                                }
+                            }
+                        } finally {
+                            Events::releaseSyncLock($postId);
+                        }
+                    }
                 }
             }
         }

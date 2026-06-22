@@ -9,10 +9,20 @@ namespace RRZE\Calendar\CPT;
 defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
-use RRZE\Calendar\ICS\{Events, Metabox};
+use RRZE\Calendar\ICS\{Events, Import, Metabox};
 
 class CalendarFeed
 {
+    const UPDATE_PREFLIGHT_ACTION = 'rrze_calendar_feed_update_preflight';
+
+    const UPDATE_PREFLIGHT_NONCE = 'rrze_calendar_feed_update_preflight';
+
+    const UPDATE_TOKEN_QUERY_ARG = 'rrze_calendar_feed_update_token';
+
+    const UPDATE_STATUS_QUERY_ARG = 'rrze_calendar_feed_update_status';
+
+    const UPDATE_TOKEN_TTL = 5 * MINUTE_IN_SECONDS;
+
     /**
      * Post Type.
      * @var string
@@ -96,6 +106,8 @@ class CalendarFeed
 
         // Handle actions links.
         add_action('admin_init', [__CLASS__, 'handleActionLinks']);
+        add_action('wp_ajax_' . self::UPDATE_PREFLIGHT_ACTION, [__CLASS__, 'preflightUpdate']);
+        add_action('admin_notices', [__CLASS__, 'updateAdminNotice']);
 
         // List Table Columns
         add_filter('post_row_actions', [__CLASS__, 'addActionLinks'], 10, 2);
@@ -112,7 +124,9 @@ class CalendarFeed
         add_action('transition_post_status', [__CLASS__, 'maybeDelete'], 10, 3);
 
         // Save Feed Items.
-        add_action('save_post', [__CLASS__, 'savePost'], 10, 2);
+        // Run after Metabox::save() so URL/include/exclude settings from the
+        // current request are used for the fetch.
+        add_action('save_post', [__CLASS__, 'savePost'], 20, 2);
 
         // Add Metabox.
         Metabox::init();
@@ -467,8 +481,9 @@ class CalendarFeed
             );
         } else {
             $action['update'] = sprintf(
-                '<a href="%1$s" aria-label="%2$s">%3$s</a>',
+                '<a href="%1$s" class="rrze-calendar-update-feed" data-feed-id="%2$d" aria-label="%3$s">%4$s</a>',
                 esc_url(wp_nonce_url(add_query_arg(['action' => 'update'], $adminUrl), $nonce)),
+                (int) $post->ID,
                 esc_attr(__('Update ICS Feed', 'rrze-calendar')),
                 __('Update', 'rrze-calendar')
             );
@@ -515,10 +530,25 @@ class CalendarFeed
             if ($action == 'activate' && $post->post_status != 'publish') {
                 wp_publish_post($postId);
             } elseif ($action == 'update' && $post->post_status == 'publish') {
-                $data = [
-                    'ID' => $postId
-                ];
-                wp_update_post($data);
+                $token = isset($_GET[self::UPDATE_TOKEN_QUERY_ARG])
+                    && is_string($_GET[self::UPDATE_TOKEN_QUERY_ARG])
+                    ? sanitize_text_field(wp_unslash($_GET[self::UPDATE_TOKEN_QUERY_ARG]))
+                    : '';
+                $preflight = $token !== '' ? self::consumeUpdateToken($postId, $token) : [];
+
+                if ($token !== '' && $preflight === null) {
+                    $updateStatus = 'expired';
+                } else {
+                    $pastDays = get_post_meta($postId, self::FEED_PAST_DAYS, true) ?: 365;
+                    $updateStatus = self::saveData(
+                        $postId,
+                        $pastDays,
+                        ! empty($preflight),
+                        ! empty($preflight['allow_destructive_delete']),
+                        (string) ($preflight['calendar_hash'] ?? ''),
+                        (string) ($preflight['event_state_hash'] ?? '')
+                    );
+                }
             } else {
                 $data = [
                     'ID' => $postId,
@@ -528,9 +558,216 @@ class CalendarFeed
             }
 
             $redirectTo = admin_url('edit.php?post_type=' . self::POST_TYPE);
-            wp_redirect($redirectTo);
+            if (! empty($updateStatus)) {
+                $redirectTo = add_query_arg(
+                    self::UPDATE_STATUS_QUERY_ARG,
+                    $updateStatus,
+                    $redirectTo
+                );
+            }
+            wp_safe_redirect($redirectTo);
             exit;
         }
+    }
+
+    /**
+     * Preflight a manual feed update without changing imported posts.
+     *
+     * @return void
+     */
+    public static function preflightUpdate()
+    {
+        check_ajax_referer(self::UPDATE_PREFLIGHT_NONCE, 'nonce');
+
+        $postId = isset($_POST['post_id']) && is_scalar($_POST['post_id'])
+            ? absint($_POST['post_id'])
+            : 0;
+        $post = get_post($postId);
+
+        if (! $post || get_post_type($postId) !== self::POST_TYPE || $post->post_status !== 'publish') {
+            wp_send_json_error(
+                ['message' => __('Invalid ICS feed.', 'rrze-calendar')],
+                400
+            );
+        }
+
+        $postTypeObject = get_post_type_object(self::POST_TYPE);
+        if (! current_user_can($postTypeObject->cap->publish_posts, $postId)) {
+            wp_send_json_error(
+                ['message' => __('You do not have permissions to perform this action.', 'rrze-calendar')],
+                403
+            );
+        }
+
+        $pastDays = get_post_meta($postId, self::FEED_PAST_DAYS, true) ?: 365;
+        $events = Import::getEvents($postId, false, absint($pastDays));
+
+        if ($events === false) {
+            wp_send_json_error(
+                ['message' => __('The calendar could not be retrieved or is incomplete. Existing events were not changed.', 'rrze-calendar')],
+                422
+            );
+        }
+
+        $importedEventCount = Events::countEvents($postId);
+        $isEmpty = empty($events['events']);
+        $isSnapshot = ($events['meta']['update_type'] ?? 'snapshot') === 'snapshot';
+        $cancellations = (array) ($events['meta']['cancellations'] ?? []);
+        $requiresConfirmation = (
+            $isSnapshot
+            && $isEmpty
+            && $importedEventCount > 0
+        ) || (
+            ! $isSnapshot
+            && Events::cancellationsWouldDeleteAll($postId, $cancellations)
+        );
+        $token = self::createUpdateToken(
+            $postId,
+            $requiresConfirmation,
+            (string) ($events['meta']['calendar_hash'] ?? ''),
+            Events::getEventStateHash($postId)
+        );
+
+        wp_send_json_success(
+            [
+                'token' => $token,
+                'requires_confirmation' => $requiresConfirmation,
+                'imported_event_count' => $importedEventCount,
+                'confirmation_type' => $isSnapshot ? 'empty_snapshot' : 'cancellation',
+            ]
+        );
+    }
+
+    /**
+     * Store a short-lived, one-time token proving a successful preflight.
+     *
+     * @param int $postId
+     * @param bool $allowDestructiveDelete
+     * @param string $calendarHash
+     * @param string $eventStateHash
+     * @return string
+     */
+    private static function createUpdateToken(
+        int $postId,
+        bool $allowDestructiveDelete,
+        string $calendarHash,
+        string $eventStateHash
+    ): string
+    {
+        $token = wp_generate_password(32, false, false);
+        set_transient(
+            self::getUpdateTokenKey($postId, $token),
+            [
+                'token' => $token,
+                'allow_destructive_delete' => $allowDestructiveDelete,
+                'calendar_hash' => $calendarHash,
+                'event_state_hash' => $eventStateHash,
+            ],
+            self::UPDATE_TOKEN_TTL
+        );
+
+        return $token;
+    }
+
+    /**
+     * Validate and consume a preflight token.
+     *
+     * @param int $postId
+     * @param string $token
+     * @return array|null
+     */
+    private static function consumeUpdateToken(int $postId, string $token): ?array
+    {
+        if ($token === '') {
+            return null;
+        }
+
+        $key = self::getUpdateTokenKey($postId, $token);
+        $preflight = get_transient($key);
+
+        if (
+            ! is_array($preflight)
+            || empty($preflight['token'])
+            || ! hash_equals((string) $preflight['token'], $token)
+        ) {
+            return null;
+        }
+
+        delete_transient($key);
+
+        return $preflight;
+    }
+
+    /**
+     * Build the per-user transient key for update preflight data.
+     *
+     * @param int $postId
+     * @param string $token
+     * @return string
+     */
+    private static function getUpdateTokenKey(int $postId, string $token): string
+    {
+        return sprintf(
+            'rrze_calendar_update_%d_%d_%s',
+            get_current_user_id(),
+            $postId,
+            substr(hash('sha256', $token), 0, 20)
+        );
+    }
+
+    /**
+     * Display the outcome of a manual feed update.
+     *
+     * @return void
+     */
+    public static function updateAdminNotice(): void
+    {
+        $status = isset($_GET[self::UPDATE_STATUS_QUERY_ARG])
+            && is_string($_GET[self::UPDATE_STATUS_QUERY_ARG])
+            ? sanitize_key(wp_unslash($_GET[self::UPDATE_STATUS_QUERY_ARG]))
+            : '';
+
+        $notices = [
+            'updated' => [
+                'success',
+                __('The ICS feed was updated.', 'rrze-calendar'),
+            ],
+            'protected' => [
+                'warning',
+                __('The update would remove all imported events. Existing events were preserved; run Update again and confirm the warning to continue.', 'rrze-calendar'),
+            ],
+            'expired' => [
+                'error',
+                __('The update confirmation expired or was already used. Existing events were not changed.', 'rrze-calendar'),
+            ],
+            'stale' => [
+                'warning',
+                __('The feed changed after it was checked. Existing events were preserved; please run Update again.', 'rrze-calendar'),
+            ],
+            'failed' => [
+                'error',
+                __('The calendar could not be retrieved or was incomplete. Existing events were preserved.', 'rrze-calendar'),
+            ],
+            'replacement_failed' => [
+                'error',
+                __('Replacement events could not be created. Existing events were preserved.', 'rrze-calendar'),
+            ],
+            'busy' => [
+                'warning',
+                __('This feed is already being synchronized. Existing events were not changed; please try again.', 'rrze-calendar'),
+            ],
+        ];
+
+        if (! isset($notices[$status])) {
+            return;
+        }
+
+        [$type, $message] = $notices[$status];
+        printf(
+            '<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+            esc_attr($type),
+            esc_html($message)
+        );
     }
 
     /**
@@ -634,7 +871,20 @@ class CalendarFeed
             return;
         }
 
-        $pastDays = $_POST[self::FEED_PAST_DAYS] ?? 365;
+        if (
+            array_key_exists(self::FEED_URL, $_POST)
+            && (
+                ! is_string($_POST[self::FEED_URL])
+                || ! Utils::validateUrl(wp_unslash($_POST[self::FEED_URL]))
+            )
+        ) {
+            return;
+        }
+
+        $pastDays = isset($_POST[self::FEED_PAST_DAYS])
+            && is_scalar($_POST[self::FEED_PAST_DAYS])
+            ? $_POST[self::FEED_PAST_DAYS]
+            : 365;
         self::saveData($postId, $pastDays);
     }
 
@@ -642,13 +892,96 @@ class CalendarFeed
      * Save Data.
      * @param int $postId
      * @param int $pastDays
-     * @return void
+     * @param bool $cache
+     * @param bool $allowDestructiveDelete
+     * @param string $expectedCalendarHash
+     * @param string $expectedEventStateHash
+     * @return string
      */
-    private static function saveData($postId, $pastDays)
+    private static function saveData(
+        $postId,
+        $pastDays,
+        bool $cache = false,
+        bool $allowDestructiveDelete = false,
+        string $expectedCalendarHash = '',
+        string $expectedEventStateHash = ''
+    ): string
     {
-        $pastDays = absint($pastDays) ?: 365;
-        Events::updateItems($postId, false, $pastDays);
-        Events::insertData($postId);
+        if (! Events::acquireSyncLock($postId)) {
+            return 'busy';
+        }
+
+        try {
+            $pastDays = absint($pastDays) ?: 365;
+
+            if (
+                $expectedEventStateHash !== ''
+                && ! hash_equals(
+                    $expectedEventStateHash,
+                    Events::getEventStateHash($postId)
+                )
+            ) {
+                update_post_meta(
+                    $postId,
+                    self::FEED_ERROR,
+                    __('Imported events changed after confirmation. Existing events were preserved.', 'rrze-calendar')
+                );
+                return 'stale';
+            }
+
+            $events = Import::getEvents($postId, $cache, $pastDays);
+
+            if ($events === false) {
+                Events::storeItems($postId, false);
+                return 'failed';
+            }
+
+            $calendarHash = (string) ($events['meta']['calendar_hash'] ?? '');
+            if (
+                $expectedCalendarHash !== ''
+                && (
+                    $calendarHash === ''
+                    || ! hash_equals($expectedCalendarHash, $calendarHash)
+                )
+            ) {
+                update_post_meta(
+                    $postId,
+                    self::FEED_ERROR,
+                    __('The feed changed after confirmation. Existing events were preserved.', 'rrze-calendar')
+                );
+                return 'stale';
+            }
+
+            $storedState = Events::getStoredState($postId);
+            Events::storeItems($postId, $events);
+
+            $isSnapshot = ($events['meta']['update_type'] ?? 'snapshot') === 'snapshot';
+            $requiresConfirmation = (
+                $isSnapshot
+                && empty($events['events'])
+                && Events::countEvents($postId) > 0
+            ) || (
+                ! $isSnapshot
+                && Events::cancellationsWouldDeleteAll(
+                    $postId,
+                    (array) ($events['meta']['cancellations'] ?? [])
+                )
+            );
+
+            $updated = Events::insertData($postId, $allowDestructiveDelete);
+            if (! $updated) {
+                Events::restoreStoredState($postId, $storedState);
+                return $requiresConfirmation && ! $allowDestructiveDelete
+                    ? 'protected'
+                    : 'replacement_failed';
+            }
+
+            return $requiresConfirmation && ! $allowDestructiveDelete
+                ? 'protected'
+                : 'updated';
+        } finally {
+            Events::releaseSyncLock($postId);
+        }
     }
 
     /**
