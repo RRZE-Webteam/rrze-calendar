@@ -163,30 +163,10 @@ class Import
             'method' => 'GET'
         ];
 
-        $response = wp_safe_remote_get($url, $args);
+        $response = wp_safe_remote_get($url . '?layout=premium', $args);
 
         if (wp_remote_retrieve_response_code($response) != 200) {
-            // Workaround for https://www.rrze.fau.de/2026/08/kalenderabruf-ueber-ics-links-im-microsoft-exchange-sind-derzeit-gestoert-2026-08-25/
-            // -> Browser-Request emulieren
-            // -> Zurücksetzen, wenn Ursache von Microsoft behoben!
-            $args = [
-                'timeout' => static::TIMEOUT_IN_SECONDS,
-                'sslverify' => true,
-                'redirection' => 5,
-                'headers'     => [
-                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
-                    'Sec-Fetch-Dest' => 'document',
-                    'Sec-Fetch-Mode' => 'navigate',
-                    'Sec-Fetch-Site' => 'none',
-                    'Sec-Fetch-User' => '?1',
-                    'Upgrade-Insecure-Requests' => '1',
-                ]
-            ];
-            $response = wp_safe_remote_get($url, $args);
-            if (wp_remote_retrieve_response_code($response) != 200) {
-                return false;
-            }
+            return false;
         }
         return $response['body'] ?? false;
     }
