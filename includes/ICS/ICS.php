@@ -48,7 +48,8 @@ class ICS
         'summary',
         'rrule',
         'exdate',
-        'rdate'
+        'rdate',
+        'timezone'
     ];
 
     /**
@@ -120,12 +121,27 @@ class ICS
             'VERSION:2.0'
         ];
 
+        foreach ($this->timezoneComponents() as $line) {
+            $icsProps[] = $line;
+        }
+
         if (!empty($this->data)) {
             foreach ($this->data as $properties) {
                 $icsProps[] = 'BEGIN:VEVENT';
                 $props = [];
+                $timezone = !empty($properties['timezone']) && $properties['timezone'] !== 'UTC'
+                    ? new \DateTimeZone($properties['timezone']) : null;
                 foreach ($properties as $k => $v) {
-                    $props[strtoupper($k)] = $v;
+                    if ($k === 'timezone') {
+                        continue;
+                    }
+                    $key = strtoupper($k);
+                    if ($timezone && in_array($k, ['dtstart', 'dtend'], true)) {
+                        $v = (new \DateTimeImmutable($v, new \DateTimeZone('UTC')))
+                            ->setTimezone($timezone)->format('Ymd\THis');
+                        $key .= ';TZID="' . $timezone->getName() . '"';
+                    }
+                    $props[$key] = $v;
                 }
                 $props['DTSTAMP'] = $this->formatTimestamp('now');
                 foreach ($props as $k => $v) {
@@ -137,6 +153,44 @@ class ICS
 
         $icsProps[] = 'END:VCALENDAR';
         return $icsProps;
+    }
+
+    /**
+     * Collect one timezone definition per zone used by recurring events.
+     *
+     * @return string[] Unfolded timezone component lines.
+     */
+    private function timezoneComponents(): array
+    {
+        $ranges = [];
+        foreach ($this->data as $properties) {
+            $zone = $properties['timezone'] ?? 'UTC';
+            if ($zone === 'UTC' || empty($properties['dtstart'])) {
+                continue;
+            }
+            $start = (new \DateTimeImmutable($properties['dtstart']))->getTimestamp();
+            $end = (new \DateTimeImmutable($properties['dtend'] ?? $properties['dtstart']))->getTimestamp();
+            if (preg_match('/(?:^|;)UNTIL=(\d{8}T\d{6}Z?)(?:;|$)/', $properties['rrule'] ?? '', $matches)) {
+                $end = max($end, (new \DateTimeImmutable($matches[1], new \DateTimeZone($zone)))->getTimestamp());
+            }
+            foreach (['exdate', 'rdate'] as $property) {
+                foreach (array_filter(explode(',', $properties[$property] ?? '')) as $date) {
+                    $timestamp = (new \DateTimeImmutable($date))->getTimestamp();
+                    $start = min($start, $timestamp);
+                    $end = max($end, $timestamp);
+                }
+            }
+            $ranges[$zone] = [
+                min($start, $ranges[$zone][0] ?? $start),
+                max($end, $ranges[$zone][1] ?? $end),
+            ];
+        }
+
+        $lines = [];
+        foreach ($ranges as $zone => [$start, $end]) {
+            $lines = array_merge($lines, TimeZone::build(new \DateTimeZone($zone), $start, $end));
+        }
+        return $lines;
     }
 
     /**
@@ -171,8 +225,8 @@ class ICS
      */
     private function formatTimestamp(string $timestamp)
     {
-        $dt = new \DateTime($timestamp);
-        return $dt->format(self::DT_FORMAT);
+        $dt = new \DateTimeImmutable($timestamp, new \DateTimeZone('UTC'));
+        return $dt->setTimezone(new \DateTimeZone('UTC'))->format(self::DT_FORMAT);
     }
 
     /**
