@@ -6,6 +6,7 @@ defined('ABSPATH') || exit;
 
 use RRZE\Calendar\Utils;
 use RRZE\Calendar\CPT\CalendarEvent;
+use RRZE\Calendar\CPT\CalendarFeed;
 use ICal\ICal;
 use RRule\RRule;
 use function RRZE\Calendar\plugin;
@@ -16,7 +17,7 @@ use function RRZE\Calendar\plugin;
  * Responsibilities:
  * - Listen to GET requests (?ical-plugin={slug}&action=export&ids=...&cats=...&tags=...)
  * - Query events by IDs and/or taxonomy filters
- * - Build RFC5545-compliant ICS content (UTC for dtstart/dtend, EXDATE/RDATE)
+ * - Build ICS content retaining the timezone of recurring timed events
  * - Stream the .ics file with safe headers
  */
 class Export
@@ -136,7 +137,8 @@ class Export
 
     /**
      * Extract event data from posts in a shape the ICS builder expects.
-     * dtstart/dtend MUST be in UTC (Y-m-d H:i:s), EXDATE/RDATE as UTC 'Ymd\THis\Z'.
+     * Date values are UTC instants; the builder applies the recurrence timezone.
+     * Single events and existing all-day exports retain their UTC representation.
      *
      * @param \WP_Post[] $posts
      * @return array<int,array<string,string>>
@@ -144,12 +146,13 @@ class Export
     private function getEvents(array $posts): array
     {
         $data = [];
+        $feedTimezones = [];
 
         foreach ($posts as $post) {
             // Load all meta at once (array of arrays)
             $meta = get_post_meta($post->ID, '', true);
 
-            // Timestamps (assumed local epoch seconds); normalize to int
+            // Stored Unix timestamps represent absolute instants.
             $startTs = isset($meta['start'][0]) ? (int) $meta['start'][0] : 0;
             $endTs   = isset($meta['end'][0])   ? (int) $meta['end'][0]   : 0;
 
@@ -173,10 +176,54 @@ class Export
                 $this->buildRruleFromIcsMeta($meta, $args);
             }
 
+            if (!empty($args['rrule']) && Utils::getMeta($meta, 'all-day') !== 'on') {
+                $args['timezone'] = $this->getRecurrenceTimezone($meta, $feedTimezones)->getName();
+            }
+
             $data[(int) $post->ID] = $args;
         }
 
         return $data;
+    }
+
+    /**
+     * Resolve a series timezone without changing stored events or import behavior.
+     *
+     * Imported feed items retain DTSTART's original TZID/UTC designation. Index
+     * them once per feed. Older imports without those items use their recorded
+     * display timezone, matching the existing calendar's local recurrence times.
+     *
+     * @param array $meta Raw event metadata.
+     * @param array $feedTimezones Per-export cache of feed ID and UID to timezone.
+     * @return \DateTimeZone The source timezone, or WordPress timezone for native events.
+     */
+    private function getRecurrenceTimezone(array $meta, array &$feedTimezones): \DateTimeZone
+    {
+        $feedId = (int) Utils::getMeta($meta, 'ics_feed_id');
+        if (!$feedId) {
+            return wp_timezone();
+        }
+
+        $icsMeta = Utils::getMeta($meta, 'ics_event_meta');
+        $fallback = !empty($icsMeta['timezone']) ? $icsMeta['timezone'] : wp_timezone()->getName();
+        $parser = new ICal(false, ['defaultTimeZone' => $fallback]);
+        if (!isset($feedTimezones[$feedId])) {
+            $feedTimezones[$feedId] = [];
+            $items = get_post_meta($feedId, CalendarFeed::FEED_EVENTS_ITEMS, true);
+            foreach (is_array($items) ? $items : [] as $item) {
+                if (!is_object($item) || empty($item->uid) || empty($item->dtstart)
+                    || !empty($item->recurrence_id) || isset($feedTimezones[$feedId][$item->uid])) {
+                    continue;
+                }
+                $zone = str_ends_with($item->dtstart, 'Z')
+                    ? 'UTC'
+                    : ($item->dtstart_array[0]['TZID'] ?? $fallback);
+                $feedTimezones[$feedId][$item->uid] = $parser->timeZoneStringToDateTimeZone($zone);
+            }
+        }
+
+        $uid = (string) Utils::getMeta($meta, 'event-uid');
+        return $feedTimezones[$feedId][$uid] ?? $parser->timeZoneStringToDateTimeZone($fallback);
     }
 
     /**
@@ -193,6 +240,11 @@ class Export
         if (!empty($rruleArgsJson)) {
             $decoded = json_decode((string) $rruleArgsJson, true);
             if (is_array($decoded) && !empty($decoded)) {
+                $decoded = array_change_key_case($decoded, CASE_UPPER);
+                $startTs = (int) Utils::getMeta($meta, 'start');
+                if ($startTs > 0) {
+                    $decoded['DTSTART'] = (new \DateTime('@' . $startTs))->setTimezone(wp_timezone());
+                }
                 $rr = new RRule($decoded);
                 // Convert to RFC string and strip leading "RRULE:" if present
                 $rfc = $rr->rfcString();
@@ -204,96 +256,95 @@ class Export
             $args['rrule'] = $rrule;
         }
 
-        // EXDATE
-        $exDateUtc = [];
-        $exceptionsCsv = Utils::getMeta($meta, 'exceptions');
-        if (!empty($exceptionsCsv)) {
-            foreach (explode(',', (string) $exceptionsCsv) as $datetimeStr) {
-                $datetimeStr = trim($datetimeStr);
-                if (Utils::validateDate($datetimeStr)) {
-                    $dt = new \DateTime($datetimeStr);
-                    $dt->setTimezone(new \DateTimeZone('UTC'));
-                    $exDateUtc[] = $dt->format('Ymd\THis\Z');
-                }
+        foreach (['exceptions' => 'exdate', 'additions' => 'rdate'] as $key => $property) {
+            $values = $this->getNativeRecurrenceDates($meta, $key);
+            if ($values) {
+                $args[$property] = implode(',', $values);
             }
-        }
-        if (!empty($exDateUtc)) {
-            $args['exdate'] = implode(',', $exDateUtc);
-        }
-
-        // RDATE
-        $rDateUtc = [];
-        $additionsCsv = Utils::getMeta($meta, 'additions');
-        if (!empty($additionsCsv)) {
-            foreach (explode(',', (string) $additionsCsv) as $datetimeStr) {
-                $datetimeStr = trim($datetimeStr);
-                if (Utils::validateDate($datetimeStr)) {
-                    $dt = new \DateTime($datetimeStr);
-                    $dt->setTimezone(new \DateTimeZone('UTC'));
-                    $rDateUtc[] = $dt->format('Ymd\THis\Z');
-                }
-            }
-        }
-        if (!empty($rDateUtc)) {
-            $args['rdate'] = implode(',', $rDateUtc);
         }
     }
 
     /**
-     * Build RRULE/EXDATE/RDATE from stored ICS (imported) meta block.
-     * Expects 'ics_event_meta' array with 'rrule', 'exdate_array', 'rdate_array'.
+     * Convert date-only exceptions/additions at the series' local start time.
      *
-     * @param array $meta Raw meta array from get_post_meta($id, '', true)
-     * @param array $args Reference to ICS event args
+     * The editor stores one date per line; accept older comma-separated values
+     * and explicit date-times as well. UTC conversion uses each occurrence's
+     * date, so an exclusion in winter still matches a summer-starting series.
+     *
+     * @param array $meta Raw event metadata.
+     * @param string $key The exceptions or additions meta key.
+     * @return string[] UTC iCalendar date-times.
+     */
+    private function getNativeRecurrenceDates(array $meta, string $key): array
+    {
+        $timezone = wp_timezone();
+        $start = (new \DateTimeImmutable('@' . (int) Utils::getMeta($meta, 'start')))->setTimezone($timezone);
+        $values = [];
+        foreach (preg_split('/[\r\n,]+/', (string) Utils::getMeta($meta, $key)) as $value) {
+            $value = trim($value);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                $value .= ' ' . $start->format('H:i:s');
+            }
+            $format = strlen($value) === 16 ? '!Y-m-d H:i' : '!Y-m-d H:i:s';
+            $date = \DateTimeImmutable::createFromFormat($format, $value, $timezone);
+            $errors = \DateTimeImmutable::getLastErrors();
+            if (!$date || ($errors && ($errors['warning_count'] || $errors['error_count']))) {
+                continue;
+            }
+            $values[] = $date->setTimezone(new \DateTimeZone('UTC'))->format(ICS::DT_FORMAT);
+        }
+        return array_values(array_unique($values));
+    }
+
+    /**
+     * Build the recurrence rule and dates from an imported event's metadata.
+     *
+     * @param array $meta Raw event metadata.
+     * @param array $args Reference to ICS event arguments.
+     * @return void
      */
     private function buildRruleFromIcsMeta(array $meta, array &$args): void
     {
         $icsMeta = Utils::getMeta($meta, 'ics_event_meta');
-
-        // RRULE
+        if (!is_array($icsMeta)) {
+            return;
+        }
         if (!empty($icsMeta['rrule']) && is_string($icsMeta['rrule'])) {
-            $args['rrule'] = (string) $icsMeta['rrule'];
+            $args['rrule'] = $icsMeta['rrule'];
         }
 
-        // EXDATE
-        $exdates = [];
-        $exdateArray = isset($icsMeta['exdate_array']) ? $icsMeta['exdate_array'] : [];
-        if (!empty($exdateArray) && is_array($exdateArray)) {
-            $tzid = isset($exdateArray[0]['TZID']) ? (string) $exdateArray[0]['TZID'] : '';
-            $tzObj = (new ICal())->timeZoneStringToDateTimeZone($tzid);
-
-            if (!empty($exdateArray[1]) && is_array($exdateArray[1])) {
-                foreach ($exdateArray[1] as $dateStr) {
-                    $dt = \DateTime::createFromFormat('Ymd\THis', (string) $dateStr, $tzObj);
-                    if ($dt instanceof \DateTime) {
-                        $dt->setTimezone(new \DateTimeZone('UTC'));
-                        $exdates[] = $dt->format('Ymd\THis\Z');
+        $fallback = $icsMeta['timezone'] ?? wp_timezone()->getName();
+        $parser = new ICal(false, ['defaultTimeZone' => $fallback]);
+        foreach (['exdate', 'rdate'] as $property) {
+            $timezone = $parser->timeZoneStringToDateTimeZone($fallback);
+            $values = [];
+            foreach (($icsMeta[$property . '_array'] ?? []) as $part) {
+                if (is_array($part) && (!$part || !array_is_list($part))) {
+                    $timezone = $parser->timeZoneStringToDateTimeZone($part['TZID'] ?? $fallback);
+                    continue;
+                }
+                foreach ((array) $part as $key => $dates) {
+                    if (!is_int($key)) {
+                        continue;
+                    }
+                    foreach (explode(',', (string) $dates) as $date) {
+                        // Keep UTC designators and support repeated property lines.
+                        if (!preg_match('/^\d{8}(?:T\d{6}Z?)?$/', $date)) {
+                            continue;
+                        }
+                        $utc = str_ends_with($date, 'Z');
+                        $format = strlen($date) === 8 ? '!Ymd' : ($utc ? '!Ymd\THis\Z' : '!Ymd\THis');
+                        $datetime = \DateTimeImmutable::createFromFormat($format, $date, $utc ? new \DateTimeZone('UTC') : $timezone);
+                        $errors = \DateTimeImmutable::getLastErrors();
+                        if (!$datetime || ($errors && ($errors['warning_count'] || $errors['error_count']))) {
+                            continue;
+                        }
+                        $values[] = $datetime->setTimezone(new \DateTimeZone('UTC'))->format(ICS::DT_FORMAT);
                     }
                 }
             }
-            if (!empty($exdates)) {
-                $args['exdate'] = implode(',', $exdates);
-            }
-        }
-
-        // RDATE
-        $rdates = [];
-        $rdateArray = isset($icsMeta['rdate_array']) ? $icsMeta['rdate_array'] : [];
-        if (!empty($rdateArray) && is_array($rdateArray)) {
-            $tzid = isset($rdateArray[0]['TZID']) ? (string) $rdateArray[0]['TZID'] : '';
-            $tzObj = (new ICal())->timeZoneStringToDateTimeZone($tzid);
-
-            if (!empty($rdateArray[1]) && is_array($rdateArray[1])) {
-                foreach ($rdateArray[1] as $dateStr) {
-                    $dt = \DateTime::createFromFormat('Ymd\THis', (string) $dateStr, $tzObj);
-                    if ($dt instanceof \DateTime) {
-                        $dt->setTimezone(new \DateTimeZone('UTC'));
-                        $rdates[] = $dt->format('Ymd\THis\Z');
-                    }
-                }
-            }
-            if (!empty($rdates)) {
-                $args['rdate'] = implode(',', $rdates);
+            if ($values) {
+                $args[$property] = implode(',', array_unique($values));
             }
         }
     }

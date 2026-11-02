@@ -20,6 +20,7 @@
         }
     },
     "scripts": {
+        "test": "php tests/ics-export.php",
         "wp:make-pot": "wp i18n make-pot ./ languages/rrze-calendar.pot --domain=rrze-calendar --exclude=node_modules,vendor,_tmp",
         "wp:make-php": "wp i18n make-php languages",
         "wp:make-json": [

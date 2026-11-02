@@ -78,3 +78,40 @@ Beispiele:
 
 Zu achten ist auf die Schreibweise, Inhalte der Attribute in Anführungszeichen eingeschlossen. Mehrere Inhalte, bspw. Kategorien werden durch Komma getrennt.
 Die Titelform einer Kategorie bzw. eines Schlagworts ist im Admin-Bereich unter Einstellungen › Kalendar › Kategorien bzw. Einstellungen › Kalendar › Schlagworte zu finden.
+
+
+## Änderungen in 2.5.11
+
+- Der ICS-Export erhält bei wiederkehrenden Terminen die lokale Zeitzone.
+  Beispielsweise bleibt eine Berliner Serie um 10:00 Uhr auch nach der
+  Zeitumstellung bei 10:00 Uhr. Die benötigten `VTIMEZONE`-Komponenten werden
+  aus der PHP-Zeitzonendatenbank erzeugt.
+- Bei importierten Serien wird die ursprüngliche Zeitzone aus den gespeicherten
+  Feed-Ereignissen verwendet, einschließlich Windows-Zeitzonen und explizitem UTC.
+  Sind diese Quelldaten bei älteren Importen nicht mehr vorhanden, verwendet der
+  Export die im Import gespeicherte Anzeigezeitzone, ersatzweise die WordPress-Zeitzone.
+- Ausnahmen und Zusatztermine behalten ihre zum jeweiligen Datum passende
+  Uhrzeit. Native Datumslisten unterstützen Zeilenumbrüche und ältere Kommalisten;
+  importierte Listen unterstützen UTC sowie wiederholte Zeitzonenangaben.
+- Version: **2.5.11**. Es werden keine gespeicherten Termine migriert. Import,
+  Backend, Shortcodes und Blöcke verwenden weiterhin ihre bisherigen Daten.
+  Einzeltermine und bestehende Ganztagsexporte behalten ihre UTC-Darstellung.
+
+Die exportierten Zeitzonendefinitionen enthalten die bekannten Umstellungen
+für mindestens die nächsten 100 Jahre und darüber hinaus bis zu einem expliziten
+`UNTIL` bzw. Zusatztermin. Bei unbegrenzten Abonnements sollten Kalenderclients den
+Feed regelmäßig aktualisieren, auch um spätere gesetzliche Zeitzonenänderungen
+zu übernehmen.
+
+### Export-Regressionstests
+
+`composer test` (alternativ `php tests/ics-export.php`) prüft den echten Exporter,
+den ICS-Builder und die mitgelieferten Parser ohne zusätzliche Testabhängigkeiten.
+WordPress-Metadaten und Textfunktionen werden durch kontrollierte Fixtures ersetzt.
+Die Tests benötigen weder Datenbank noch Netzwerk und verändern keine Termine.
+
+Geprüft werden Sommer-/Winterzeit, monatliche/wöchentliche Serien, Quellzeitzonen,
+UTC, Windows-Zeitzonen, ältere Importmetadaten, Ausnahmen/Zusatztermine, Einzel- und
+mehrtägige Termine, Ganztagsexporte, fehlende Endzeiten, feste UTC-Offsets,
+`VTIMEZONE`-Übergänge und der Abgleich mit der Serienberechnung der Kalenderansicht.
+Die Tests ersetzen keinen vollständigen WordPress- oder Kalenderclient-Test.
