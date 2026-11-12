@@ -49,6 +49,10 @@ class ICS
         'rrule',
         'exdate',
         'rdate',
+        'dtstart;value=date',
+        'dtend;value=date',
+        'exdate;value=date',
+        'rdate;value=date',
         'timezone'
     ];
 

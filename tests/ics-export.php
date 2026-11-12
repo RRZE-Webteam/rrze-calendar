@@ -328,7 +328,7 @@ check(true, str_contains($ics, 'EXDATE:20261028T090000Z,20261104T090000Z'), 'Imp
 check(true, str_contains($ics, 'RDATE:20261029T090000Z,20261105T090000Z'), 'Imported comma-separated RDATE values survive');
 check(['2026-10-21 10:00–10:45'], localTimes($ics), 'Imported exceptions still match');
 
-// Control cases for unchanged single, overnight and all-day event timestamps.
+// Control cases for timed events.
 fixture(nativeEvent('2026-11-04 10:00', '2026-11-04 11:30'));
 $single = exportEvents();
 check(true, str_contains($single, 'DTSTART:20261104T090000Z'), 'Single event remains UTC');
@@ -336,10 +336,55 @@ check(false, str_contains($single, 'BEGIN:VTIMEZONE'), 'Single event adds no tim
 check(['2026-11-04 10:00–11:30'], localTimes($single), 'Single event time is unchanged');
 fixture(nativeEvent('2026-10-24 23:00', '2026-10-25 04:00'));
 check(['2026-10-24 23:00–04:00'], localTimes(exportEvents()), 'Overnight event across DST preserves both instants');
-$allDay = nativeEvent('2026-11-04 00:00', '2026-11-05 00:00');
-$allDay['all-day'] = 'on';
+$allDay = nativeEvent('2027-04-07 00:00', '2027-04-09 23:55') + ['all-day' => 'on'];
 fixture($allDay);
-check(true, str_contains(exportEvents(), 'DTSTART:20261103T230000Z'), 'Existing all-day UTC export stays unchanged');
+$ics = exportEvents();
+check(true, str_contains($ics, "DTSTART;VALUE=DATE:20270407\r\nDTEND;VALUE=DATE:20270410\r\n"), 'WINT occupies April 7 through 9 inclusive');
+check(1, preg_match('/^DTSTAMP:\d{8}T\d{6}Z\r$/m', $ics), 'All-day DTSTAMP remains a UTC timestamp');
+check(false, str_contains($ics, 'VTIMEZONE'), 'All-day events need no timezone component');
+
+// A 25-hour day catches accidental addition of 86400 seconds to local midnight.
+fixture(nativeEvent('2026-10-25 00:00', '2026-10-25 00:00') + ['all-day' => 'on']);
+check(true, str_contains(exportEvents(), "DTEND;VALUE=DATE:20261026\r\n"), 'One full day across the autumn clock change');
+$GLOBALS['test_timezone'] = 'America/Los_Angeles';
+$series = nativeEvent('2027-03-06 22:00', '2027-03-06 23:30', [
+    'FREQ' => 'WEEKLY', 'UNTIL' => '@' . (new DateTimeImmutable('2027-03-20 23:59:59', wp_timezone()))->getTimestamp(),
+]) + ['all-day' => 'on', 'exceptions' => '2027-03-13', 'additions' => '2027-03-14 23:30'];
+fixture($series);
+$ics = exportEvents();
+preg_match_all('/^(?:DTSTART|RRULE|EXDATE|RDATE)[:;][^\r\n]+/m', $ics, $lines);
+check(true, in_array('DTSTART;VALUE=DATE:20270306', $lines[0], true), 'All-day start belongs to the subsite calendar day');
+check(true, str_contains($ics, "DTEND;VALUE=DATE:20270307\r\n"), 'The local end date advances one day');
+check(1, preg_match('/\bUNTIL=20270320(?:;|\r)/', $ics), 'UNTIL includes the last local calendar date');
+check(true, in_array('EXDATE;VALUE=DATE:20270313', $lines[0], true), 'All-day exception uses a DATE');
+check(true, in_array('RDATE;VALUE=DATE:20270314', $lines[0], true), 'All-day addition ignores its time');
+$dates = [];
+foreach (new \RRule\RSet(implode("\n", $lines[0])) as $date) {
+    $dates[] = $date->format('Ymd');
+}
+check(['20270306', '20270314', '20270320'], $dates, 'Recurrence set includes the addition and final Saturday');
+$GLOBALS['test_timezone'] = 'Europe/Berlin';
+
+$legacyAllDay = $allDay;
+unset($legacyAllDay['end']);
+fixture($legacyAllDay);
+$ics = exportEvents();
+check(true, str_contains($ics, "DTSTART;VALUE=DATE:20270407\r\n"), 'Legacy event without an end is an all-day event');
+check(false, str_contains($ics, 'DTEND'), 'Omitting the end gives a DATE event its one-day default');
+
+// Each event in a combined download keeps its own date type.
+fixture($allDay, 1);
+fixture(nativeEvent('2027-04-07 00:00', '2027-04-09 23:55'), 2);
+fixture(nativeEvent('2027-04-07 10:00', '2027-04-07 11:00', ['FREQ' => 'WEEKLY', 'COUNT' => 2]), 3);
+fixture($allDay + ['ics_feed_id' => 50, 'ics_event_meta' => ['rrule' => 'FREQ=WEEKLY;COUNT=2']], 4);
+$ics = exportEvents([1, 2, 3, 4]);
+preg_match_all('/BEGIN:VEVENT\r\n(.*?)END:VEVENT/s', $ics, $events);
+check(4, count($events[1]), 'Mixed export contains all four events');
+check(true, str_contains($events[1][0], 'DTSTART;VALUE=DATE:20270407'), 'Only the native all-day event uses DATE');
+check(true, str_contains($events[1][1], "DTSTART:20270406T220000Z\r\nDTEND:20270409T215500Z"), 'Unmarked midnight start stays timed');
+check(true, str_contains($events[1][2], 'DTSTART;TZID="Europe/Berlin":20270407T100000'), 'Timed series keeps its timezone');
+check(true, str_contains($events[1][3], "DTSTART:20270406T220000Z\r\nDTEND:20270409T215500Z"), 'Imported all-day series keeps its UTC bounds');
+
 $missingEnd = nativeEvent('2026-11-04 10:00', '2026-11-04 11:30');
 unset($missingEnd['end']);
 fixture($missingEnd);

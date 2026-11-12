@@ -80,6 +80,14 @@ Zu achten ist auf die Schreibweise, Inhalte der Attribute in Anführungszeichen 
 Die Titelform einer Kategorie bzw. eines Schlagworts ist im Admin-Bereich unter Einstellungen › Kalendar › Kategorien bzw. Einstellungen › Kalendar › Schlagworte zu finden.
 
 
+## Änderungen in 2.5.12
+
+- Bei redaktionell angelegten Ganztagsterminen genügen im Editor das Startdatum
+  und der letzte Veranstaltungstag. Die Uhrzeitfelder werden ausgeblendet.
+- Der ICS-Export gibt diese Termine als Kalendertage aus. Ein Termin vom 7. bis
+  einschließlich 9. April belegt beim Import genau diese drei Tage. Das gilt
+  auch für bereits gespeicherte Termine beim nächsten Download.
+
 ## Änderungen in 2.5.11
 
 - Der ICS-Export erhält bei wiederkehrenden Terminen die lokale Zeitzone.

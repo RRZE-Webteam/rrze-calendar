@@ -57,6 +57,26 @@ jQuery(document).ready(function ($) {
     let newStartDateInput = $("body.post-new-php input#start_date");
     let newEndDateInput = $("body.post-new-php input#end_date");
 
+    const eventInfo = $("#rrze-calendar-event-info");
+    const allDayCheck = eventInfo.find("#all-day");
+    const timeInputs = eventInfo.find("#start_time, #end_time");
+
+    /**
+     * Show and require the start and end times only for timed events.
+     * Keep their values so the editor can switch back before saving.
+     *
+     * @return {void}
+     */
+    function toggleEventTimes() {
+        const timed = !allDayCheck.prop("checked");
+        timeInputs.prop("required", timed).toggle(timed);
+    }
+
+    if (allDayCheck.length) {
+        toggleEventTimes();
+        allDayCheck.on("change", toggleEventTimes);
+    }
+
     if (repeatCheck.length > 0) {
         triggerRepeatFields();
     }

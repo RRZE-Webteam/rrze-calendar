@@ -91,7 +91,7 @@ class Main
                 'rrze-calendar-admin',
                 plugins_url('build/admin.js', plugin()->getBasename()),
                 $assetFile['dependencies'],
-                plugin()->getVersion(true)
+                $assetFile['version']
             );
         }
     }
