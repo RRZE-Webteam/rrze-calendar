@@ -137,8 +137,8 @@ class Export
 
     /**
      * Extract event data from posts in a shape the ICS builder expects.
-     * Date values are UTC instants; the builder applies the recurrence timezone.
-     * Single events and existing all-day exports retain their UTC representation.
+     * Native all-day events use site-local calendar dates and an exclusive end.
+     * Timed events and imported events start from their stored UTC instants.
      *
      * @param \WP_Post[] $posts
      * @return array<int,array<string,string>>
@@ -156,27 +156,37 @@ class Export
             $startTs = isset($meta['start'][0]) ? (int) $meta['start'][0] : 0;
             $endTs   = isset($meta['end'][0])   ? (int) $meta['end'][0]   : 0;
 
-            // Convert to UTC ISO-like strings the ICS builder consumes
-            $dtstart = $startTs > 0 ? Utils::timestampToIcsUtc($startTs) : '';
-            $dtend = $endTs > 0 ? Utils::timestampToIcsUtc($endTs) : '';
+            $native = empty(Utils::getMeta($meta, 'ics_feed_id'));
+            $allDay = Utils::getMeta($meta, 'all-day') === 'on';
+            if ($native && $allDay) {
+                $local = new \DateTimeImmutable('now', wp_timezone());
+                $dates = [
+                    'dtstart;value=date' => $startTs > 0 ? $local->setTimestamp($startTs)->format('Ymd') : '',
+                    'dtend;value=date'   => $endTs > 0 ? $local->setTimestamp($endTs)->modify('tomorrow')->format('Ymd') : '',
+                ];
+            } else {
+                $dates = [
+                    'dtstart' => $startTs > 0 ? Utils::timestampToIcsUtc($startTs) : '',
+                    'dtend'   => $endTs > 0 ? Utils::timestampToIcsUtc($endTs) : '',
+                ];
+            }
 
             $args = [
                 'summary'     => Utils::prepareSummaryFromPostTitle($post->post_title),
                 'uid'         => isset($meta['event-uid'][0]) ? (string) $meta['event-uid'][0] : '',
                 'description' => isset($meta['description'][0]) ? Utils::prepareDescriptionFromPostContent($meta['description'][0]) : '',
-                'dtstart'     => $dtstart,
-                'dtend'       => $dtend,
+                ...$dates,
                 'location'    => isset($meta['location'][0]) ? (string) $meta['location'][0] : '',
             ];
 
             // Decide RRULE source: internal builder or imported ICS meta
-            if (empty(Utils::getMeta($meta, 'ics_feed_id'))) {
-                $this->buildRrule($meta, $args);
+            if ($native) {
+                $this->buildRrule($meta, $args, $allDay);
             } else {
                 $this->buildRruleFromIcsMeta($meta, $args);
             }
 
-            if (!empty($args['rrule']) && Utils::getMeta($meta, 'all-day') !== 'on') {
+            if (!empty($args['rrule']) && !$allDay) {
                 $args['timezone'] = $this->getRecurrenceTimezone($meta, $feedTimezones)->getName();
             }
 
@@ -231,8 +241,9 @@ class Export
      *
      * @param array $meta Raw meta array from get_post_meta($id, '', true)
      * @param array $args Reference to ICS event args
+     * @param bool $allDay Whether the recurrence uses DATE values.
      */
-    private function buildRrule(array $meta, array &$args): void
+    private function buildRrule(array $meta, array &$args, bool $allDay): void
     {
         // RRULE
         $rruleArgsJson = Utils::getMeta($meta, 'event-rrule-args');
@@ -247,9 +258,13 @@ class Export
                 }
                 $rr = new RRule($decoded);
                 // Convert to RFC string and strip leading "RRULE:" if present
-                $rfc = $rr->rfcString();
+                $rfc = $rr->rfcString(!$allDay);
                 $pos = strpos($rfc, 'RRULE:');
                 $rrule = ($pos !== false) ? substr($rfc, $pos + strlen('RRULE:')) : $rfc;
+                if ($allDay) {
+                    // rfcString(false) writes UNTIL in DTSTART's local timezone.
+                    $rrule = preg_replace('/\b(UNTIL=\d{8})T\d{6}\b/', '$1', $rrule);
+                }
             }
         }
         if (!empty($rrule)) {
@@ -257,15 +272,15 @@ class Export
         }
 
         foreach (['exceptions' => 'exdate', 'additions' => 'rdate'] as $key => $property) {
-            $values = $this->getNativeRecurrenceDates($meta, $key);
+            $values = $this->getNativeRecurrenceDates($meta, $key, $allDay);
             if ($values) {
-                $args[$property] = implode(',', $values);
+                $args[$allDay ? $property . ';value=date' : $property] = implode(',', $values);
             }
         }
     }
 
     /**
-     * Convert date-only exceptions/additions at the series' local start time.
+     * Format native exceptions and additions using the event's date type.
      *
      * The editor stores one date per line; accept older comma-separated values
      * and explicit date-times as well. UTC conversion uses each occurrence's
@@ -273,9 +288,10 @@ class Export
      *
      * @param array $meta Raw event metadata.
      * @param string $key The exceptions or additions meta key.
-     * @return string[] UTC iCalendar date-times.
+     * @param bool $allDay Whether to omit the time from each local date.
+     * @return string[] iCalendar dates or UTC date-times.
      */
-    private function getNativeRecurrenceDates(array $meta, string $key): array
+    private function getNativeRecurrenceDates(array $meta, string $key, bool $allDay): array
     {
         $timezone = wp_timezone();
         $start = (new \DateTimeImmutable('@' . (int) Utils::getMeta($meta, 'start')))->setTimezone($timezone);
@@ -291,7 +307,7 @@ class Export
             if (!$date || ($errors && ($errors['warning_count'] || $errors['error_count']))) {
                 continue;
             }
-            $values[] = $date->setTimezone(new \DateTimeZone('UTC'))->format(ICS::DT_FORMAT);
+            $values[] = $allDay ? $date->format('Ymd') : $date->setTimezone(new \DateTimeZone('UTC'))->format(ICS::DT_FORMAT);
         }
         return array_values(array_unique($values));
     }
