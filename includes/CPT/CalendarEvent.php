@@ -693,7 +693,8 @@ class CalendarEvent
     public static function includeSingleTemplate($singleTemplate)
     {
         global $post;
-        if (!$post || $post->post_type != 'calendar_event')
+        // Block themes: keep the block template found by locate_block_template().
+        if (wp_is_block_theme() || !$post || $post->post_type != self::POST_TYPE)
             return $singleTemplate;
 
         return Templates::getCptCalendarEventSingleTpl();
@@ -707,7 +708,8 @@ class CalendarEvent
     public static function includeArchiveTemplate($archiveTemplate)
     {
         global $post;
-        if (!$post || $post->post_type != 'calendar_event')
+        // Block themes: keep the block template found by locate_block_template().
+        if (wp_is_block_theme() || !$post || $post->post_type != self::POST_TYPE)
             return $archiveTemplate;
 
         return Templates::getCptCalendarEventTpl();

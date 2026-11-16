@@ -80,6 +80,11 @@ Zu achten ist auf die Schreibweise, Inhalte der Attribute in Anführungszeichen 
 Die Titelform einer Kategorie bzw. eines Schlagworts ist im Admin-Bereich unter Einstellungen › Kalendar › Kategorien bzw. Einstellungen › Kalendar › Schlagworte zu finden.
 
 
+## Änderungen in 2.5.13
+
+- FSE-Templates werden nun auch unterstützt.
+- Die Titel der Kalenderansichten werden nicht mehr als `screen-reader-text` ausgegeben.
+
 ## Änderungen in 2.5.12
 
 - Bei redaktionell angelegten Ganztagsterminen genügen im Editor das Startdatum
