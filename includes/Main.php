@@ -39,6 +39,8 @@ class Main
         CalendarEvent::init();
         CalendarFeed::init();
 
+        Templates::init();
+
         Update::init();
 
         new Export();

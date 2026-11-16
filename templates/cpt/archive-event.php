@@ -7,17 +7,16 @@
  * @since FAU 1.0
  */
 
-use RRZE\Calendar\Shortcodes\Events;
+use RRZE\Calendar\Templates;
 
 if (isset($_GET['format']) && $_GET['format'] == 'embedded') {
     get_template_part('template-parts/index', 'embedded');
     return;
 }
-if ( is_active_sidebar( 'news-sidebar' ) && function_exists('fau_use_sidebar') ) { 
-    fau_use_sidebar(true);    
+if ( is_active_sidebar( 'news-sidebar' ) && function_exists('fau_use_sidebar') ) {
+    fau_use_sidebar(true);
 }
 get_header();
-global $wp_query;
 
 ?>
 
@@ -26,27 +25,15 @@ global $wp_query;
 		    <div class="post-row">
 			    <main class="entry-content">
 
-                    <?php if (empty($herotype)) {   ?>
-                        <h1 id="maintop"  class="screen-reader-text"><?php _e('Events', 'rrze-calendar'); ?></h1>
-                    <?php } else { ?>
-                        <h1 id="maintop" ><?php _e('Events', 'rrze-calendar');; ?></h1>
-                    <?php }
-                    $atts = [
-                        'number' => 99,
-                    ];
-                    $queryVars = $wp_query->query_vars;
-                    if (isset($queryVars['rrze-calendar-category']) && $queryVars['rrze-calendar-category'] != '') {
-                        $atts['categories'] = sanitize_title($queryVars['rrze-calendar-category']);
-                        $atts['abonnement_link'] = '1';
-                    }
-                    echo Events::shortcode($atts);
+                    <?php
+                    $showTitle = true;
+                    include Templates::getCptArchiveEventContentTpl();
                     ?>
 
 			    </main>
-		    </div>    
+		    </div>
 	    </div>
-	
-    </div>
-<?php 
-get_footer(); 
 
+    </div>
+<?php
+get_footer();

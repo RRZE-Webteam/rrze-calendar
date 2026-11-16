@@ -14,3 +14,4 @@ node_modules/
 /languages/*.mo
 ### Tmp ###
 /_tmp/
+*.po~
