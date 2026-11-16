@@ -280,13 +280,13 @@ class Calendar
             $currentMonth = wp_date('m', $nowTs, $tz);
             $currentDay   = wp_date('d', $nowTs, $tz);
 
-            $output .= '<p class="cal-type-select">'
+            $output .= '<div class="cal-type-select">'
                 . do_shortcode(
                     '[button style="ghost" link="?cal-year=' . (int) $year . '&cal-month=' . esc_attr($currentMonth) . '&cal-day=' . esc_attr($currentDay) . '" class="' . esc_attr($buttonDayClass) . '" title="' . esc_attr(__('View day', 'rrze-calendar')) . '"]' . __('Day', 'rrze-calendar') . '[/button]'
                         . '[button style="ghost" link="?cal-year=' . (int) $year . '&cal-month=' . esc_attr($currentMonth) . '" class="' . esc_attr($buttonMonthClass) . '" title="' . esc_attr(__('View monthly calendar', 'rrze-calendar')) . '"]' . __('Month', 'rrze-calendar') . '[/button]'
                         . '[button style="ghost" link="?cal-year=' . (int) $year . '" class="' . esc_attr($buttonYearClass) . '" title="' . esc_attr(__('View yearly calendar', 'rrze-calendar')) . '"]' . __('Year', 'rrze-calendar') . '[/button]'
                 )
-                . '</p>';
+                . '</div>';
         }
 
         $output .= self::buildCalendar(

@@ -10,8 +10,6 @@
 ### Node ###
 node_modules/
 ### WordPress ###
-/languages/*.pot
-/languages/*.mo
+*.po~
 ### Tmp ###
 /_tmp/
-*.po~
